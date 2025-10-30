@@ -1,0 +1,77 @@
+import { PrismaService } from '../prisma.service';
+export declare class UsersService {
+    private prisma;
+    constructor(prisma: PrismaService);
+    findById(id: string): import(".prisma/client").Prisma.Prisma__UserClient<{
+        id: string;
+        createdAt: Date;
+        name: string | null;
+        email: string;
+        sellerHandle: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        updatedAt: Date;
+        shopName: string | null;
+        shopLogoUrl: string | null;
+        shopBannerUrl: string | null;
+        shopBio: string | null;
+        country: string | null;
+        city: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        phone: string | null;
+        timezone: string | null;
+        notifyEmail: boolean;
+        notifySms: boolean;
+        notifyPush: boolean;
+        digestWeekly: boolean;
+        quietHoursStart: number | null;
+        quietHoursEnd: number | null;
+        pushSubscription: import("@prisma/client/runtime/library").JsonValue | null;
+    }, null, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
+    findOrCreateByEmail(email: string, name?: string, role?: string): import(".prisma/client").Prisma.Prisma__UserClient<{
+        id: string;
+        createdAt: Date;
+        name: string | null;
+        email: string;
+        sellerHandle: string | null;
+        role: import(".prisma/client").$Enums.Role;
+        updatedAt: Date;
+        shopName: string | null;
+        shopLogoUrl: string | null;
+        shopBannerUrl: string | null;
+        shopBio: string | null;
+        country: string | null;
+        city: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        phone: string | null;
+        timezone: string | null;
+        notifyEmail: boolean;
+        notifySms: boolean;
+        notifyPush: boolean;
+        digestWeekly: boolean;
+        quietHoursStart: number | null;
+        quietHoursEnd: number | null;
+        pushSubscription: import("@prisma/client/runtime/library").JsonValue | null;
+    }, never, import("@prisma/client/runtime/library").DefaultArgs, import(".prisma/client").Prisma.PrismaClientOptions>;
+    updateStorefrontProfile(userId: string, data: {
+        shopName?: string;
+        sellerHandle?: string;
+        shopLogoUrl?: string;
+        shopBannerUrl?: string;
+        shopBio?: string;
+        country?: string;
+        city?: string;
+    }): Promise<{
+        id: string;
+        sellerHandle: string;
+        shopName: string;
+        shopLogoUrl: string;
+        shopBannerUrl: string;
+        shopBio: string;
+        country: string;
+        city: string;
+        ratingAvg: number;
+        ratingCount: number;
+    }>;
+}

@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme variables (Light default) */
+:root {
+  --color-primary: #1C33FF;
+  --color-primary-foreground: #FFFFFF;
+
+  --color-accent: #F9A933;
+  --color-accent-foreground: #0C0C0D;
+
+  --color-success: #6DD333;
+  --color-success-foreground: #0C0C0D;
+
+  --color-muted: #F2F4F7;
+  --color-muted-foreground: #585E6B;
+
+  --color-border: #E4E6EB;
+
+  --color-background: #FFFFFF;
+  --color-foreground: #0C0C0D;
+
+  --color-card: #FFFFFF;
+  --color-card-foreground: #0C0C0D;
+}
+
+/* Dark theme */
+:root.dark {
+  --color-primary: #A8B4FF;
+  --color-primary-foreground: #0C0C0D;
+
+  --color-accent: #FFD675;
+  --color-accent-foreground: #0C0C0D;
+
+  --color-success: #8FE36A;
+  --color-success-foreground: #0C0C0D;
+
+  --color-muted: #0F1422;
+  --color-muted-foreground: #C5C8D0;
+
+  --color-border: #2E3240;
+
+  --color-background: #0C111D;
+  --color-foreground: #FFFFFF;
+
+  --color-card: #121828;
+  --color-card-foreground: #FFFFFF;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+}
+
+/* Button Variants */
+.btn-primary {
+  @apply px-6 py-3 rounded-xl bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+.btn-secondary {
+  @apply px-6 py-3 rounded-xl border border-border bg-background text-foreground font-semibold hover:bg-card transition-colors focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
