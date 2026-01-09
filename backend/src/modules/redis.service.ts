@@ -5,10 +5,44 @@ import Redis from 'ioredis';
 export class RedisService {
   private client: Redis;
 
+  private logger = console;
+
   constructor() {
-    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    this.client = new Redis(redisUrl, { 
+    const redisUrl = process.env.REDIS_URL;
+
+    if (!redisUrl) {
+      this.logger.warn('REDIS_URL not set, falling back to localhost:6379');
+    }
+
+    const url = redisUrl || 'redis://localhost:6379';
+
+    // Log masked URL for debugging
+    const sanitizedUrl = url.replace(/(:[^:@]*@)/, ':***@');
+    this.logger.log(`Initializing Redis client with URL: ${sanitizedUrl}`);
+
+    this.client = new Redis(url, {
       maxRetriesPerRequest: 3,
+      retryStrategy: (times) => {
+        const delay = Math.min(times * 50, 2000);
+        return delay;
+      },
+      // Prevent crash on connection error
+      reconnectOnError: (err) => {
+        const targetError = 'READONLY';
+        if (err.message.includes(targetError)) {
+          return true;
+        }
+        return false;
+      },
+    });
+
+    this.client.on('error', (err) => {
+      this.logger.error(`Redis connection error: ${err.message}`);
+      // Cleanly handle error to prevent unhandled rejection crashes
+    });
+
+    this.client.on('connect', () => {
+      this.logger.log('Successfully connected to Redis');
     });
   }
 
