@@ -12,11 +12,10 @@ import MobileMenuDrawer from './MobileMenuDrawer';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [showUserMenu, setShowUserMenu] = useState(false);
   const [showVisualSearch, setShowVisualSearch] = useState(false);
   const [showVoiceSearch, setShowVoiceSearch] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(3);
+  const [unreadCount, setUnreadCount] = useState(0);
   const { isDark, toggleTheme } = useTheme();
 
   const handleAdvancedSearch = (filters: SearchFilters) => {
@@ -44,16 +43,6 @@ export default function Header() {
     setShowVoiceSearch(false);
     if (typeof window.REACT_APP_NAVIGATE === 'function') {
       window.REACT_APP_NAVIGATE(`/products?q=${encodeURIComponent(query)}`);
-    }
-  };
-
-  const handleLogout = () => {
-    // Handle logout logic here
-    console.log('Logging out...');
-    setShowUserMenu(false);
-    // Redirect to home page
-    if (typeof window.REACT_APP_NAVIGATE === 'function') {
-      window.REACT_APP_NAVIGATE('/');
     }
   };
 
@@ -190,75 +179,19 @@ export default function Header() {
                 className="hidden md:flex relative w-10 h-10 items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
               >
                 <i className="ri-shopping-cart-line text-xl text-gray-700 dark:text-gray-300"></i>
-                <span className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
-                  3
-                </span>
               </a>
 
               {/* User Menu - Desktop Only */}
               <div className="relative hidden lg:block">
                 {/* ... existing user menu code ... */}
-                <button
-                  onClick={() => setShowUserMenu(!showUserMenu)}
-                  className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer whitespace-nowrap"
+                <a
+                  href="/auth/signin"
+                  className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                 >
-                  <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-semibold">JD</span>
-                  </div>
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">John Doe</span>
-                  <i className={`ri-arrow-down-s-line text-gray-500 dark:text-gray-400 transition-transform ${showUserMenu ? 'rotate-180' : ''}`}></i>
-                </button>
+                  <i className="ri-login-box-line"></i>
+                  <span className="text-sm font-medium">Sign In</span>
+                </a>
 
-                {/* Dropdown Menu */}
-                {showUserMenu && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-40"
-                      onClick={() => setShowUserMenu(false)}
-                    ></div>
-                    <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50 animate-fade-in">
-                      {/* ... existing dropdown content ... */}
-                      <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700">
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">John Doe</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">john.doe@example.com</p>
-                      </div>
-
-                      <div className="py-2">
-                        <a href="/account/settings" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-user-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">My Profile</span>
-                        </a>
-                        <a href="/buyer-orders" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-shopping-bag-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">My Orders</span>
-                        </a>
-                        <a href="/wishlist" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-heart-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Wishlist</span>
-                        </a>
-                        <a href="/loyalty" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-gift-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Loyalty Points</span>
-                        </a>
-                        <a href="/seller-dashboard" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-store-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Seller Dashboard</span>
-                        </a>
-                      </div>
-
-                      <div className="border-t border-gray-200 dark:border-gray-700 py-2">
-                        <a href="/account/settings" className="flex items-center space-x-3 px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer" onClick={() => setShowUserMenu(false)}>
-                          <i className="ri-settings-line text-lg text-gray-600 dark:text-gray-400"></i>
-                          <span className="text-sm text-gray-700 dark:text-gray-300">Settings</span>
-                        </a>
-                        <button onClick={handleLogout} className="w-full flex items-center space-x-3 px-4 py-2.5 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors cursor-pointer">
-                          <i className="ri-logout-box-line text-lg text-red-600 dark:text-red-400"></i>
-                          <span className="text-sm text-red-600 dark:text-red-400 font-medium">Logout</span>
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
               </div>
 
               {/* Mobile Menu Button - Visible on Tablet/Mobile */}

@@ -112,13 +112,7 @@ export default function LiveChat({
         {isOpen ? (
           <i className="ri-close-line text-2xl"></i>
         ) : (
-          <>
-            <i className="ri-message-3-line text-2xl"></i>
-            {/* Notification Badge */}
-            <span className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white">
-              1
-            </span>
-          </>
+          <i className="ri-message-3-line text-2xl"></i>
         )}
       </button>
 

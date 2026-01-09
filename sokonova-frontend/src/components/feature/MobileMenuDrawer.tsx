@@ -67,15 +67,10 @@ export default function MobileMenuDrawer({ isOpen, onClose }: MobileMenuDrawerPr
 
                     {/* User Profile (Quick Access) */}
                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50">
-                        <Link to="/account" onClick={onClose} className="flex items-center space-x-3">
-                            <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                                <i className="ri-user-line text-gray-500 dark:text-gray-400"></i>
-                            </div>
-                            <div>
-                                <p className="text-sm font-semibold text-gray-900 dark:text-white">John Doe</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">View Profile</p>
-                            </div>
-                            <i className="ri-arrow-right-s-line ml-auto text-gray-400"></i>
+                        <Link to="/auth/signin" onClick={onClose} className="flex items-center space-x-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg px-4 py-3 transition-colors">
+                            <i className="ri-login-box-line text-xl"></i>
+                            <span className="font-medium">Sign In</span>
+                            <i className="ri-arrow-right-s-line ml-auto"></i>
                         </Link>
                     </div>
 
