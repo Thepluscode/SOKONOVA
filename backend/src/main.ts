@@ -20,7 +20,13 @@ async function bootstrap() {
 
   // CORS
   app.enableCors({
-    origin: [/localhost:3000$/, /localhost:54112$/, /localhost:\d+$/],
+    origin: [
+      /localhost:3000$/,
+      /localhost:54112$/,
+      /localhost:\d+$/,
+      'https://sokonova-frontend-production.up.railway.app',
+      /\.up\.railway\.app$/  // Allow all Railway subdomains
+    ],
     credentials: true,
   })
 
