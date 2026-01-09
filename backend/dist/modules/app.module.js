@@ -9,7 +9,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AppModule = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("./prisma.service");
-const redis_service_1 = require("./redis.service");
 const auth_module_1 = require("./auth/auth.module");
 const products_module_1 = require("./products/products.module");
 const cart_module_1 = require("./cart/cart.module");
@@ -69,8 +68,8 @@ exports.AppModule = AppModule = __decorate([
             teams_module_1.TeamsModule,
             audit_logs_module_1.AuditLogsModule,
         ],
-        providers: [prisma_service_1.PrismaService, redis_service_1.RedisService],
-        exports: [prisma_service_1.PrismaService, redis_service_1.RedisService],
+        providers: [prisma_service_1.PrismaService],
+        exports: [prisma_service_1.PrismaService],
     })
 ], AppModule);
 //# sourceMappingURL=app.module.js.map

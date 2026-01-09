@@ -20,8 +20,8 @@ async function bootstrap() {
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, transform: true }));
     app.useGlobalFilters(new sentry_exception_filter_1.SentryExceptionFilter());
     const port = process.env.PORT || 4001;
-    await app.listen(port);
-    console.log(`🚀 Application is running on: http://localhost:${port}`);
+    await app.listen(port, '0.0.0.0');
+    console.log(`🚀 Application is running on: http://0.0.0.0:${port}`);
 }
 bootstrap();
 //# sourceMappingURL=main.js.map

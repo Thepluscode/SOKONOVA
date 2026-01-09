@@ -4,20 +4,34 @@ import { PrismaService } from '../prisma.service';
 @Injectable()
 export class ProductsService {
   [x: string]: any;
-  getByIds(idArray: string[]) {
-    throw new Error('Method not implemented.');
+  async getByIds(idArray: string[]) {
+    return this.prisma.product.findMany({
+      where: { id: { in: idArray } },
+    });
   }
-  list(arg0: { sellerId: string; category: string; }) {
-    throw new Error('Method not implemented.');
+  async list(filters?: { sellerId?: string; category?: string; }) {
+    return this.prisma.product.findMany({
+      where: filters || {},
+      include: {
+        seller: {
+          select: {
+            id: true,
+            shopName: true,
+            ratingAvg: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
   }
-  getById(id: string) {
-    throw new Error('Method not implemented.');
+  async getById(id: string) {
+    return this.getProductById(id);
   }
   create(body: { sellerId: string; title: string; description: string; price: number; currency?: string; imageUrl?: string; category?: string; }) {
     return this.createProduct(body);
   }
-  update(id: string, body: { title?: string; description?: string; price?: number; currency?: string; imageUrl?: string; category?: string; }) {
-    throw new Error('Method not implemented.');
+  async update(id: string, body: { title?: string; description?: string; price?: number; currency?: string; imageUrl?: string; category?: string; }) {
+    return this.updateProduct(id, body);
   }
   constructor(private prisma: PrismaService) {}
 

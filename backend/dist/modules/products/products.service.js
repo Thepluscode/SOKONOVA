@@ -13,20 +13,34 @@ exports.ProductsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
 let ProductsService = class ProductsService {
-    getByIds(idArray) {
-        throw new Error('Method not implemented.');
+    async getByIds(idArray) {
+        return this.prisma.product.findMany({
+            where: { id: { in: idArray } },
+        });
     }
-    list(arg0) {
-        throw new Error('Method not implemented.');
+    async list(filters) {
+        return this.prisma.product.findMany({
+            where: filters || {},
+            include: {
+                seller: {
+                    select: {
+                        id: true,
+                        shopName: true,
+                        ratingAvg: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
     }
-    getById(id) {
-        throw new Error('Method not implemented.');
+    async getById(id) {
+        return this.getProductById(id);
     }
     create(body) {
         return this.createProduct(body);
     }
-    update(id, body) {
-        throw new Error('Method not implemented.');
+    async update(id, body) {
+        return this.updateProduct(id, body);
     }
     constructor(prisma) {
         this.prisma = prisma;

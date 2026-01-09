@@ -2,12 +2,77 @@ import { PrismaService } from '../prisma.service';
 export declare class ProductsService {
     private prisma;
     [x: string]: any;
-    getByIds(idArray: string[]): void;
-    list(arg0: {
+    getByIds(idArray: string[]): Promise<{
+        id: string;
         sellerId: string;
-        category: string;
-    }): void;
-    getById(id: string): void;
+        title: string;
+        description: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        imageUrl: string | null;
+        category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }[]>;
+    list(filters?: {
+        sellerId?: string;
+        category?: string;
+    }): Promise<({
+        seller: {
+            id: string;
+            ratingAvg: number;
+            shopName: string;
+        };
+    } & {
+        id: string;
+        sellerId: string;
+        title: string;
+        description: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        imageUrl: string | null;
+        category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+    })[]>;
+    getById(id: string): Promise<{
+        seller: {
+            id: string;
+            ratingAvg: number;
+            ratingCount: number;
+            shopName: string;
+            shopLogoUrl: string;
+        };
+        inventory: {
+            id: string;
+            updatedAt: Date;
+            productId: string;
+            quantity: number;
+        };
+        _count: {
+            views: number;
+        };
+    } & {
+        id: string;
+        sellerId: string;
+        title: string;
+        description: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        imageUrl: string | null;
+        category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     create(body: {
         sellerId: string;
         title: string;
@@ -18,18 +83,18 @@ export declare class ProductsService {
         category?: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     update(id: string, body: {
         title?: string;
@@ -38,7 +103,21 @@ export declare class ProductsService {
         currency?: string;
         imageUrl?: string;
         category?: string;
-    }): void;
+    }): Promise<{
+        id: string;
+        sellerId: string;
+        title: string;
+        description: string;
+        price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        imageUrl: string | null;
+        category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
+        viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
+    }>;
     constructor(prisma: PrismaService);
     createProduct(data: {
         sellerId: string;
@@ -50,47 +129,51 @@ export declare class ProductsService {
         category?: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getSellerProducts(sellerId: string): Promise<({
-        _count: {
-            views: number;
-        };
         inventory: {
             id: string;
             updatedAt: Date;
             productId: string;
             quantity: number;
         };
+        _count: {
+            views: number;
+        };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     getProductById(id: string): Promise<{
-        _count: {
-            views: number;
+        seller: {
+            id: string;
+            ratingAvg: number;
+            ratingCount: number;
+            shopName: string;
+            shopLogoUrl: string;
         };
         inventory: {
             id: string;
@@ -98,27 +181,23 @@ export declare class ProductsService {
             productId: string;
             quantity: number;
         };
-        seller: {
-            id: string;
-            shopName: string;
-            shopLogoUrl: string;
-            ratingAvg: number;
-            ratingCount: number;
+        _count: {
+            views: number;
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateProduct(productId: string, data: {
         title?: string;
@@ -129,18 +208,18 @@ export declare class ProductsService {
         category?: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateInventory(productId: string, quantity: number): Promise<{
         id: string;
@@ -150,32 +229,32 @@ export declare class ProductsService {
     }>;
     deleteProduct(productId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     recordProductView(userId: string, productId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }
