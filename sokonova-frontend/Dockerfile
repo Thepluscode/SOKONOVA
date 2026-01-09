@@ -38,6 +38,14 @@ COPY --from=builder /app/out /usr/share/nginx/html
 # Copy custom nginx config for SPA routing
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Copy startup script
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
+
+# Ensure proper permissions
+RUN chmod -R 755 /usr/share/nginx/html
+
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+# Start nginx with our script
+CMD ["/start.sh"]
