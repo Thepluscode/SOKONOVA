@@ -30,6 +30,8 @@ ENV VITE_PUBLIC_SUPABASE_ANON_KEY=$VITE_PUBLIC_SUPABASE_ANON_KEY
 RUN npm run build
 
 # Production stage - serve with nginx
+FROM nginx:alpine AS runner
+
 # Install envsubst (contained in gettext package)
 RUN apk add --no-cache gettext
 
