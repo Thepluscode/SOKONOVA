@@ -1,31 +1,115 @@
-
-import { Controller, Get, Param, Patch, Body } from '@nestjs/common'
-import { UsersService } from './users.service'
+import {
+  Controller,
+  Get,
+  Post,
+  Put,
+  Delete,
+  Param,
+  Body,
+  UseGuards,
+  Patch,
+  Query,
+} from '@nestjs/common';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
+import { UsersService } from './users.service';
 
 @Controller('users')
 export class UsersController {
-  constructor(private users: UsersService) {}
+  constructor(private readonly users: UsersService) {}
+
+  // /me endpoints - for current authenticated user
+  @Get('me')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUser(@Query('userId') userId: string) {
+    // TODO: Extract userId from JWT token instead of query param
+    return this.users.findOneById(userId);
+  }
+
+  @Patch('me')
+  @UseGuards(JwtAuthGuard)
+  updateCurrentUser(
+    @Query('userId') userId: string,
+    @Body() body: { name?: string; city?: string; country?: string; phone?: string; bio?: string },
+  ) {
+    // TODO: Extract userId from JWT token instead of query param
+    return this.users.updateUserProfile(userId, body);
+  }
+
+  @Post('me/password')
+  @UseGuards(JwtAuthGuard)
+  changePassword(
+    @Query('userId') userId: string,
+    @Body() body: { currentPassword: string; newPassword: string },
+  ) {
+    // TODO: Extract userId from JWT token and implement password change
+    // TODO: Verify currentPassword and hash newPassword
+    return { message: 'Password change endpoint - implementation pending' };
+  }
+
+  @Get('me/orders')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUserOrders(@Query('userId') userId: string) {
+    // TODO: Extract userId from JWT token
+    // This delegates to the orders service
+    return this.users.getBuyerProfile(userId).then(user => user?.orders || []);
+  }
+
+  @Get('me/wishlist')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUserWishlist(@Query('userId') userId: string) {
+    // TODO: Extract userId from JWT token
+    // This should delegate to the wishlist service
+    return { message: 'Wishlist endpoint - use /wishlist/user/:userId directly' };
+  }
+
+  @Get('me/reviews')
+  @UseGuards(JwtAuthGuard)
+  getCurrentUserReviews(@Query('userId') userId: string) {
+    // TODO: Extract userId from JWT token
+    // This should delegate to the reviews service
+    return { message: 'Reviews endpoint - use /reviews/user/:userId directly' };
+  }
 
   @Get(':id')
-  async getUser(@Param('id') id: string) {
-    return this.users.findById(id)
+  @UseGuards(JwtAuthGuard)
+  findOne(@Param('id') id: string) {
+    return this.users.findOneById(id);
+  }
+
+  @Get(':id/notification-preferences')
+  @UseGuards(JwtAuthGuard)
+  getNotificationPreferences(@Param('id') id: string) {
+    return this.users.findOneById(id);
+  }
+
+  @Patch(':id/profile')
+  @UseGuards(JwtAuthGuard)
+  updateProfile(
+    @Param('id') id: string,
+    @Body() body: { name?: string; city?: string; country?: string; phone?: string; bio?: string },
+  ) {
+    return this.users.updateUserProfile(id, body);
   }
 
   @Patch(':id/storefront')
-  async updateStorefront(
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
+  updateStorefrontProfile(
     @Param('id') id: string,
-    @Body()
-    body: {
-      shopName?: string;
-      sellerHandle?: string;
-      shopLogoUrl?: string;
-      shopBannerUrl?: string;
-      shopBio?: string;
-      country?: string;
-      city?: string;
-    }
+    @Body() body: { shopName?: string; shopLogoUrl?: string; shopBannerUrl?: string; shopBio?: string; sellerHandle?: string },
   ) {
-    // TODO: auth: ensure :id === session.user.id OR admin
-    return this.users.updateStorefrontProfile(id, body);
+    return this.users.updateSellerProfile(id, body);
+  }
+
+  @Patch(':id/notification-preferences')
+  @UseGuards(JwtAuthGuard)
+  updateNotificationPreferences(
+    @Param('id') id: string,
+    @Body() body: { notifyEmail?: boolean; notifySms?: boolean; notifyPush?: boolean },
+  ) {
+    return this.users.updateNotificationPreferences(id, body);
   }
 }

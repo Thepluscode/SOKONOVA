@@ -31,6 +31,10 @@ let SellerApplicationsService = class SellerApplicationsService {
                 country: dto.country,
                 city: dto.city,
                 storefrontDesc: dto.storefrontDesc,
+                bankName: dto.bankName || null,
+                accountNumber: dto.accountNumber || null,
+                accountName: dto.accountName || null,
+                bankCode: dto.bankCode || null,
                 status: 'PENDING',
                 adminNote: null,
                 reviewedAt: null,
@@ -42,9 +46,72 @@ let SellerApplicationsService = class SellerApplicationsService {
                 country: dto.country,
                 city: dto.city,
                 storefrontDesc: dto.storefrontDesc,
+                bankName: dto.bankName || null,
+                accountNumber: dto.accountNumber || null,
+                accountName: dto.accountName || null,
+                bankCode: dto.bankCode || null,
                 status: 'PENDING',
             },
         });
+    }
+    async applyAndActivateInstantly(dto) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: dto.userId },
+        });
+        if (!user) {
+            throw new common_1.NotFoundException('User not found');
+        }
+        if (user.role === 'SELLER' || user.role === 'ADMIN') {
+            throw new common_1.BadRequestException('User is already a seller');
+        }
+        const now = new Date();
+        const [application, updatedUser] = await this.prisma.$transaction([
+            this.prisma.sellerApplication.upsert({
+                where: { userId: dto.userId },
+                update: {
+                    businessName: dto.businessName,
+                    phone: dto.phone,
+                    country: dto.country,
+                    city: dto.city,
+                    storefrontDesc: dto.storefrontDesc,
+                    bankName: dto.bankName || null,
+                    accountNumber: dto.accountNumber || null,
+                    accountName: dto.accountName || null,
+                    bankCode: dto.bankCode || null,
+                    status: 'APPROVED',
+                    adminNote: 'Auto-approved for MVP launch',
+                    reviewedAt: now,
+                },
+                create: {
+                    userId: dto.userId,
+                    businessName: dto.businessName,
+                    phone: dto.phone,
+                    country: dto.country,
+                    city: dto.city,
+                    storefrontDesc: dto.storefrontDesc,
+                    bankName: dto.bankName || null,
+                    accountNumber: dto.accountNumber || null,
+                    accountName: dto.accountName || null,
+                    bankCode: dto.bankCode || null,
+                    status: 'APPROVED',
+                    adminNote: 'Auto-approved for MVP launch',
+                    reviewedAt: now,
+                },
+            }),
+            this.prisma.user.update({
+                where: { id: dto.userId },
+                data: {
+                    role: 'SELLER',
+                    shopName: dto.businessName,
+                },
+            }),
+        ]);
+        return {
+            success: true,
+            application,
+            user: updatedUser,
+            message: 'Seller activated instantly! You can now list products.',
+        };
     }
     async getMine(userId) {
         return this.prisma.sellerApplication.findUnique({

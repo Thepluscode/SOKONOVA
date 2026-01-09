@@ -1,52 +1,60 @@
 import { Controller, Get } from '@nestjs/common';
-import { PrismaService } from '../prisma/prisma.service';
+import { PrismaService } from '../modules/prisma.service';
+import { RedisService } from '../modules/redis.service';
 
 @Controller('health')
 export class HealthController {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private redis: RedisService,
+  ) { }
 
   @Get()
   async check() {
     const startTime = Date.now();
+    const result: any = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || 'development',
+      version: process.env.npm_package_version || '1.0.0',
+      checks: {},
+    };
 
+    // Check database connection
     try {
-      // Check database connection
       await this.prisma.$queryRaw`SELECT 1`;
       const dbLatency = Date.now() - startTime;
-
-      // Check Redis if available
-      let redisStatus = 'not_configured';
-      // TODO: Add Redis health check when implemented
-
-      return {
+      result.checks.database = {
         status: 'healthy',
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-        environment: process.env.NODE_ENV || 'development',
-        version: process.env.npm_package_version || '1.0.0',
-        checks: {
-          database: {
-            status: 'healthy',
-            latency: `${dbLatency}ms`,
-          },
-          redis: {
-            status: redisStatus,
-          },
-        },
+        latency: `${dbLatency}ms`,
       };
     } catch (error) {
-      return {
+      result.status = 'unhealthy';
+      result.checks.database = {
         status: 'unhealthy',
-        timestamp: new Date().toISOString(),
         error: error.message,
-        checks: {
-          database: {
-            status: 'unhealthy',
-            error: error.message,
-          },
-        },
       };
     }
+
+    // Check Redis connection
+    try {
+      const redisStart = Date.now();
+      await this.redis.getClient().ping();
+      const redisLatency = Date.now() - redisStart;
+      result.checks.redis = {
+        status: 'healthy',
+        latency: `${redisLatency}ms`,
+      };
+    } catch (error) {
+      result.status = 'degraded';
+      result.checks.redis = {
+        status: 'unhealthy',
+        error: error.message,
+      };
+    }
+
+    return result;
   }
 
   @Get('ready')

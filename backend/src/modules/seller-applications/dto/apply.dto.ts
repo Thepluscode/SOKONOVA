@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class ApplyDto {
   @IsString()
@@ -18,4 +18,21 @@ export class ApplyDto {
 
   @IsString()
   storefrontDesc: string;
+
+  // Bank details for payouts
+  @IsString()
+  @IsOptional()
+  bankName?: string;
+
+  @IsString()
+  @IsOptional()
+  accountNumber?: string;
+
+  @IsString()
+  @IsOptional()
+  accountName?: string;
+
+  @IsString()
+  @IsOptional()
+  bankCode?: string;
 }

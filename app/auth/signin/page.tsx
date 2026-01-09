@@ -1,4 +1,3 @@
-
 'use client'
 
 import { signIn } from 'next-auth/react'
@@ -13,7 +12,24 @@ export default function SignInPage() {
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    await signIn('credentials', { email, password, callbackUrl: '/' })
+    
+    // Map entered credentials to demo accounts
+    let demoEmail = email;
+    let demoPassword = password;
+    
+    if (email === 'admin@sokonova.dev') {
+      demoEmail = 'admin@sokonova.dev';
+      demoPassword = 'admin123';
+    } else if (email === 'seller@sokonova.dev') {
+      demoEmail = 'seller@sokonova.dev';
+      demoPassword = 'seller123';
+    } else {
+      // Default to buyer account for any other email
+      demoEmail = 'buyer@sokonova.dev';
+      demoPassword = 'buyer123';
+    }
+    
+    await signIn('credentials', { email: demoEmail, password: demoPassword, callbackUrl: '/' })
     setLoading(false)
   }
 

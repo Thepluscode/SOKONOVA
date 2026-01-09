@@ -21,20 +21,20 @@ let CartController = class CartController {
         this.cart = cart;
     }
     async getCart(userId, anonKey) {
-        const c = await this.cart.ensureCartForUser(userId, anonKey);
-        return c;
+        const cart = await this.cart.ensureCartForUser(userId, anonKey);
+        return cart;
     }
     async add(dto) {
-        await this.cart.addItem(dto.cartId, dto.productId, dto.qty);
-        return { ok: true };
+        const updatedCart = await this.cart.addItem(dto.cartId, dto.productId, dto.qty);
+        return updatedCart;
     }
     async remove(cartId, productId) {
-        await this.cart.removeItem(cartId, productId);
-        return { ok: true };
+        const updatedCart = await this.cart.removeItem(cartId, productId);
+        return updatedCart;
     }
     async clear(cartId) {
-        await this.cart.clear(cartId);
-        return { ok: true };
+        const updatedCart = await this.cart.clear(cartId);
+        return updatedCart;
     }
 };
 exports.CartController = CartController;

@@ -5,25 +5,18 @@ import Link from "next/link";
 import { DisputeButtonClient } from "../DisputeButtonClient";
 import { ReviewFormClient } from "../ReviewFormClient";
 
-/**
- * Order Tracking Page
- *
- * Shows shipping timeline and status for all items in an order.
- * Only accessible to the buyer who placed the order.
- */
-export default async function TrackingPage({
+export default async function OrderTrackingPage({
   params,
 }: {
   params: { orderId: string };
 }) {
-  // Get authenticated user
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
     redirect("/auth/login?callbackUrl=/orders/" + params.orderId + "/tracking");
   }
 
-  const userId = (session.user as any)?.id;
+  const userId = session.user.id;
 
   if (!userId) {
     redirect("/auth/login?callbackUrl=/orders/" + params.orderId + "/tracking");
@@ -45,7 +38,7 @@ export default async function TrackingPage({
         <div className="mx-auto max-w-2xl px-4 py-16 text-center">
           <h1 className="text-2xl font-semibold mb-4">Order Not Found</h1>
           <p className="text-muted-foreground mb-6">
-            We couldn't find this order or you don't have access to view it.
+            {"We couldn't find this order or you don't have access to view it."}
           </p>
           <Link
             href="/"

@@ -1,0 +1,8 @@
+# SOKONOVA Kubernetes Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sokonova
+  labels:
+    app.kubernetes.io/name: sokonova
+    app.kubernetes.io/part-of: sokonova-platform

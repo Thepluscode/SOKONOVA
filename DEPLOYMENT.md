@@ -251,7 +251,7 @@ railway run npx prisma studio
 Add these to your GitHub repository settings:
 
 **Vercel:**
-- `VERCEL_TOKEN` - Vercel auth token
+- `VERCEL_TOKEN` - Vercel auth token ODnEIck211aWIJY2TKZg8EF7
 - `VERCEL_ORG_ID` - Vercel organization ID
 - `VERCEL_PROJECT_ID` - Vercel project ID
 

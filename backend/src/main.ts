@@ -1,22 +1,35 @@
+// IMPORTANT: Import Sentry instrumentation FIRST before any other imports
+import './instrument';
 
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './modules/app.module'
 import { ValidationPipe } from '@nestjs/common'
 import helmet from 'helmet'
+import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
 
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
+
+  // Security
   app.use(helmet())
   app.use(morgan('dev'))
   app.use(cookieParser())
+
+  // CORS
   app.enableCors({
     origin: [/localhost:3000$/, /localhost:54112$/, /localhost:\d+$/],
     credentials: true,
   })
+
+  // Global pipes and filters
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
-  await app.listen(process.env.PORT || 4000)
+  app.useGlobalFilters(new SentryExceptionFilter())
+
+  const port = process.env.PORT || 4001
+  await app.listen(port)
+  console.log(`🚀 Application is running on: http://localhost:${port}`)
 }
 bootstrap()

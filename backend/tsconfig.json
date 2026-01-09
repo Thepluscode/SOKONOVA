@@ -1,4 +1,3 @@
-
 {
   "compilerOptions": {
     "module": "commonjs",
@@ -12,6 +11,21 @@
     "outDir": "./dist",
     "incremental": true,
     "skipLibCheck": true,
-    "strictNullChecks": false
-  }
+    "strictNullChecks": false,
+    "baseUrl": "./src",
+    "paths": {
+      "@/*": ["*"]
+    },
+    "disableReferencedProjectLoad": true,
+    "disableSourceOfProjectReferenceRedirect": true
+  },
+  "include": [
+    "src/**/*",
+    "../types/prisma-fix.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.e2e-spec.ts"
+  ]
 }

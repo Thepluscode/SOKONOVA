@@ -1,33 +1,101 @@
+import { getProductById } from "@/lib/api/products";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import Image from "next/image";
-import { notFound } from "next/navigation";
-import { getProduct } from "@/lib/api";
 import { AddToCartClient } from "./AddToCartClient";
+import { trackProductView } from "@/lib/api/productViews";
+import { ChatAssistant } from "@/components/ChatAssistant";
+import { ShareProduct } from "@/components/ShareProduct";
 
-export default async function ProductPage({
+export default async function ProductDetailPage({
   params,
 }: {
   params: { id: string };
 }) {
-  const p = await getProduct(params.id).catch(() => null);
-  if (!p) return notFound();
+  const session = await getServerSession(authOptions);
+  const product = await getProductById(params.id);
+  
+  // Track product view for personalized recommendations if user is logged in
+  if (session?.user?.id) {
+    try {
+      await trackProductView(session.user.id, params.id);
+    } catch (error) {
+      console.error("Failed to track product view:", error);
+    }
+  }
+
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 py-20 text-center">
+        <h1 className="text-2xl font-bold">Product not found</h1>
+        <p className="text-muted-foreground mt-2">
+          {"The product you're looking for doesn't exist or has been removed."}
+        </p>
+      </div>
+    );
+  }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 sm:px-6 py-10 grid md:grid-cols-2 gap-10">
-      <div className="relative aspect-square rounded-2xl overflow-hidden bg-muted">
-        <Image
-          src={p.imageUrl || "/mock-product.png"}
-          alt={p.title}
-          fill
-          className="object-cover"
-        />
-      </div>
-      <div>
-        <h1 className="text-3xl font-semibold">{p.title}</h1>
-        <div className="mt-2 text-muted-foreground">{p.description}</div>
-        <div className="mt-6 text-2xl font-semibold">
-          {p.currency} {Number(p.price).toFixed(2)}
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 py-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {/* Product Image */}
+        <div className="relative aspect-square rounded-2xl bg-muted overflow-hidden">
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+              No image available
+            </div>
+          )}
         </div>
-        <AddToCartClient id={p.id} />
+
+        {/* Product Details */}
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold">{product.title}</h1>
+            <div className="mt-2 flex items-center gap-2">
+              <span className="text-2xl font-semibold">
+                {product.currency} {product.price.toFixed(2)}
+              </span>
+              {product.inventory?.quantity !== undefined && (
+                <span className="text-sm text-muted-foreground">
+                  ({product.inventory.quantity} in stock)
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="prose max-w-none">
+            <p className="text-muted-foreground">{product.description}</p>
+          </div>
+
+          <div className="pt-4">
+            <AddToCartClient id={product.id} />
+          </div>
+          
+          {/* Chat Assistant - only show for logged in users */}
+          {session?.user?.id && (
+            <ChatAssistant 
+              userId={session.user.id} 
+              productId={product.id} 
+              productName={product.title} 
+            />
+          )}
+          
+          {/* Share Product - only show for logged in users */}
+          {session?.user?.id && (
+            <ShareProduct
+              userId={session.user.id}
+              productId={product.id}
+              productName={product.title}
+            />
+          )}
+        </div>
       </div>
     </div>
   );

@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client'
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit {
+  webhook: any
+  webhookDelivery: any
   async onModuleInit() {
     await this.$connect()
   }

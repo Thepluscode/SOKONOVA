@@ -170,7 +170,7 @@ The service provides convenient helper methods for common scenarios:
 
 ### Buyer Notifications
 
-```typescript
+``typescript
 // Payment successful
 await notificationsService.notifyOrderPaid(
   buyerId,
@@ -199,7 +199,7 @@ await notificationsService.notifyDisputeResolved(
 
 ### Seller Notifications
 
-```typescript
+``typescript
 // New paid order
 await notificationsService.notifySellerNewOrder(
   sellerId,
@@ -239,7 +239,7 @@ await notificationsService.notifyNewReview(
 
 ### Admin Notifications
 
-```typescript
+``typescript
 // Risk alert
 await notificationsService.notifyAdminRiskAlert(
   adminId,
@@ -382,7 +382,7 @@ await this.notificationsService.notifyDisputeOpened(
 ```
 
 **When dispute resolved:**
-```typescript
+``typescript
 await this.notificationsService.notifyDisputeResolved(
   dispute.buyerId,
   dispute.id,
@@ -424,7 +424,7 @@ for (const [sellerId, payout] of Object.entries(sellerPayouts)) {
 **File:** `backend/src/modules/reviews/reviews.service.ts`
 
 **After review created:**
-```typescript
+``typescript
 await this.notificationsService.notifyNewReview(
   review.sellerId,
   review.id,
@@ -539,7 +539,7 @@ export async function markAllNotificationsRead(userId: string) {
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getUnreadCount } from "@/lib/api";
+import { getUnreadCount } from "@/lib/api/notifications";
 
 export function NotificationBell({ userId }: { userId: string }) {
   const [count, setCount] = useState(0);
@@ -594,7 +594,7 @@ export function NotificationBell({ userId }: { userId: string }) {
 ```typescript
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getNotifications, markAllNotificationsRead } from "@/lib/api";
+import { getNotifications, markAllNotificationsRead } from "@/lib/api/notifications";
 import { NotificationsList } from "./notifications-list";
 
 export default async function NotificationsPage() {
@@ -630,7 +630,7 @@ export default async function NotificationsPage() {
 "use client";
 
 import { useState } from "react";
-import { markNotificationRead } from "@/lib/api";
+import { markNotificationRead } from "@/lib/api/notifications";
 
 export function NotificationsList({ notifications: initialNotifications, userId }) {
   const [notifications, setNotifications] = useState(initialNotifications);

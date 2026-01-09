@@ -1,192 +1,164 @@
-import { Body, Controller, Get, Param, Patch, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
 import { FulfillmentService } from './fulfillment.service';
-import {
-  MarkShippedDto,
-  MarkDeliveredDto,
-  MarkIssueDto,
-} from './dto/fulfillment.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '@prisma/client';
 
-/**
- * FulfillmentController
- *
- * Endpoints for order fulfillment and shipping tracking.
- *
- * Routes:
- * - /fulfillment/tracking/*     -> Buyer tracking endpoints
- * - /fulfillment/seller/*       -> Seller fulfillment management
- *
- * TODO: In production, add authentication guards:
- * - Buyer endpoints: verify userId matches session
- * - Seller endpoints: verify sellerId matches session + SELLER role
- */
 @Controller('fulfillment')
 export class FulfillmentController {
-  constructor(private fulfillment: FulfillmentService) {}
+  constructor(private readonly fulfillmentService: FulfillmentService) {}
 
-  /**
-   * Get order tracking for a buyer
-   *
-   * GET /fulfillment/tracking/:orderId?userId=buyer123
-   *
-   * Returns complete shipping timeline for all items in the order.
-   *
-   * TODO: Replace ?userId= with session-based auth:
-   * @UseGuards(JwtAuthGuard)
-   * async getTracking(@Param('orderId') orderId: string, @CurrentUser() user: User) {
-   *   return this.fulfillment.getOrderTracking(orderId, user.id);
-   * }
-   */
+  // GET /fulfillment/products/:productId/delivery-estimate
+  @Get('products/:productId/delivery-estimate')
+  async getDeliveryEstimate(
+    @Param('productId') productId: string,
+    @Query('location') location?: string,
+  ) {
+    return this.fulfillmentService.calculateDeliveryEstimate(productId, location);
+  }
+
+  // POST /fulfillment/shipping-options
+  @Post('shipping-options')
+  async getShippingOptions(
+    @Body() data: {
+      items: Array<{ productId: string; quantity: number }>;
+      location?: string;
+    },
+  ) {
+    return this.fulfillmentService.getShippingOptions(data.items, data.location);
+  }
+
+  // GET /fulfillment/track/:trackingNumber
+  @Get('track/:trackingNumber')
+  async trackShipment(@Param('trackingNumber') trackingNumber: string) {
+    return this.fulfillmentService.trackShipment(trackingNumber);
+  }
+
+  // GET /fulfillment/sellers/:sellerId/delivery-performance
+  @Get('sellers/:sellerId/delivery-performance')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async getDeliveryPerformance(@Param('sellerId') sellerId: string) {
+    return this.fulfillmentService.getDeliveryPerformanceMetrics(sellerId);
+  }
+
+  // GET /fulfillment/tracking/:orderId
   @Get('tracking/:orderId')
-  async getTracking(
+  @UseGuards(JwtAuthGuard)
+  async getOrderTracking(
     @Param('orderId') orderId: string,
     @Query('userId') userId: string,
   ) {
-    return this.fulfillment.getOrderTracking(orderId, userId);
+    return this.fulfillmentService.getOrderTracking(orderId, userId);
   }
 
-  /**
-   * Get seller's open fulfillment queue
-   *
-   * GET /fulfillment/seller/open?sellerId=seller123
-   *
-   * Returns all items that need shipping or are in transit.
-   *
-   * Response:
-   * [
-   *   {
-   *     id: "oi_123",
-   *     orderId: "order_456",
-   *     product: { title: "...", imageUrl: "..." },
-   *     qty: 2,
-   *     fulfillmentStatus: "PACKED",
-   *     order: {
-   *       shippingAddress: "123 Main St",
-   *       buyerName: "John Doe",
-   *       buyerEmail: "john@example.com"
-   *     }
-   *   }
-   * ]
-   *
-   * TODO: Add auth guard to ensure sellerId === session.user.id
-   */
+  // GET /fulfillment/seller/open
   @Get('seller/open')
-  async getSellerOpen(@Query('sellerId') sellerId: string) {
-    return this.fulfillment.getSellerOpenFulfillment(sellerId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
+  async getSellerOpenFulfillment(@Query('sellerId') sellerId: string) {
+    return this.fulfillmentService.getSellerOpenFulfillment(sellerId);
   }
 
-  /**
-   * Get seller's fulfillment statistics
-   *
-   * GET /fulfillment/seller/stats?sellerId=seller123
-   *
-   * Returns counts for each fulfillment status:
-   * {
-   *   PACKED: 5,
-   *   SHIPPED: 12,
-   *   DELIVERED: 143,
-   *   ISSUE: 2,
-   *   total: 162
-   * }
-   */
+  // GET /fulfillment/seller/stats
   @Get('seller/stats')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
   async getSellerStats(@Query('sellerId') sellerId: string) {
-    return this.fulfillment.getSellerStats(sellerId);
+    return this.fulfillmentService.getSellerStats(sellerId);
   }
 
-  /**
-   * Mark item as shipped
-   *
-   * PATCH /fulfillment/seller/ship/:orderItemId?sellerId=seller123
-   * {
-   *   "carrier": "DHL",
-   *   "trackingCode": "1234567890",
-   *   "note": "Expected delivery in 2-3 days"
-   * }
-   *
-   * Response:
-   * {
-   *   id: "oi_123",
-   *   fulfillmentStatus: "SHIPPED",
-   *   shippedAt: "2025-10-28T15:30:00.000Z",
-   *   trackingCode: "1234567890",
-   *   carrier: "DHL"
-   * }
-   *
-   * TODO: Add auth guard and ownership verification
-   */
+  // PATCH /fulfillment/seller/ship/:orderItemId
   @Patch('seller/ship/:orderItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
   async markShipped(
     @Param('orderItemId') orderItemId: string,
     @Query('sellerId') sellerId: string,
-    @Body() dto: MarkShippedDto,
+    @Body() data: { carrier?: string; trackingCode?: string; note?: string },
   ) {
-    return this.fulfillment.markShipped(
+    return this.fulfillmentService.markShipped(
       orderItemId,
       sellerId,
-      dto.carrier,
-      dto.trackingCode,
-      dto.note,
+      data.carrier,
+      data.trackingCode,
+      data.note,
     );
   }
 
-  /**
-   * Mark item as delivered
-   *
-   * PATCH /fulfillment/seller/deliver/:orderItemId?sellerId=seller123
-   * {
-   *   "proofUrl": "https://cdn.example.com/delivery-photo.jpg",
-   *   "note": "Left with receptionist"
-   * }
-   *
-   * Response:
-   * {
-   *   id: "oi_123",
-   *   fulfillmentStatus: "DELIVERED",
-   *   deliveredAt: "2025-10-30T10:15:00.000Z",
-   *   deliveryProofUrl: "https://..."
-   * }
-   *
-   * TODO: Add auth guard and ownership verification
-   * TODO: Consider requiring buyer confirmation for final delivery status
-   */
+  // PATCH /fulfillment/seller/deliver/:orderItemId
   @Patch('seller/deliver/:orderItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
   async markDelivered(
     @Param('orderItemId') orderItemId: string,
     @Query('sellerId') sellerId: string,
-    @Body() dto: MarkDeliveredDto,
+    @Body() data: { proofUrl?: string; note?: string },
   ) {
-    return this.fulfillment.markDelivered(
+    return this.fulfillmentService.markDelivered(
       orderItemId,
       sellerId,
-      dto.proofUrl,
-      dto.note,
+      data.proofUrl,
+      data.note,
     );
   }
 
-  /**
-   * Mark item as having an issue
-   *
-   * PATCH /fulfillment/seller/issue/:orderItemId?sellerId=seller123
-   * {
-   *   "note": "Package lost by carrier, initiating claim"
-   * }
-   *
-   * Response:
-   * {
-   *   id: "oi_123",
-   *   fulfillmentStatus: "ISSUE",
-   *   notes: "Package lost by carrier, initiating claim"
-   * }
-   *
-   * TODO: Add auth guard
-   * TODO: Trigger admin notification for issue queue
-   */
+  // PATCH /fulfillment/seller/issue/:orderItemId
   @Patch('seller/issue/:orderItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
   async markIssue(
     @Param('orderItemId') orderItemId: string,
     @Query('sellerId') sellerId: string,
-    @Body() dto: MarkIssueDto,
+    @Body() data: { note: string },
   ) {
-    return this.fulfillment.markIssue(orderItemId, sellerId, dto.note);
+    return this.fulfillmentService.markIssue(orderItemId, sellerId, data.note);
+  }
+
+  // NEW ENDPOINTS FOR LOGISTICS & FULFILLMENT EXCELLENCE
+
+  // GET /fulfillment/delivery-promise/:productId
+  @Get('delivery-promise/:productId')
+  async getDeliveryPromise(
+    @Param('productId') productId: string,
+    @Query('location') location?: string,
+  ) {
+    return this.fulfillmentService.calculateDeliveryPromise(productId, location);
+  }
+
+  // GET /fulfillment/exceptions/:orderItemId
+  @Get('exceptions/:orderItemId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async getExceptionStatus(@Param('orderItemId') orderItemId: string) {
+    return this.fulfillmentService.getExceptionStatus(orderItemId);
+  }
+
+  // GET /fulfillment/micro-fulfillment/:sellerId/metrics
+  @Get('micro-fulfillment/:sellerId/metrics')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async getMicroFulfillmentMetrics(@Param('sellerId') sellerId: string) {
+    return this.fulfillmentService.getMicroFulfillmentMetrics(sellerId);
+  }
+
+  // POST /fulfillment/micro-fulfillment/:sellerId/opt-in
+  @Post('micro-fulfillment/:sellerId/opt-in')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
+  async optInToMicroFulfillment(
+    @Param('sellerId') sellerId: string,
+    @Body() data: { partnerId: string },
+  ) {
+    return this.fulfillmentService.optInToMicroFulfillment(sellerId, data.partnerId);
+  }
+
+  // GET /fulfillment/micro-fulfillment/:sellerId/partners
+  @Get('micro-fulfillment/:sellerId/partners')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER)
+  async getFulfillmentPartners(@Param('sellerId') sellerId: string) {
+    return this.fulfillmentService.getFulfillmentPartners(sellerId);
   }
 }

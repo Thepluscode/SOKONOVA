@@ -1,5 +1,6 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { DiscoveryService } from './discovery.service';
+import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
 
 @Controller('discovery')
 export class DiscoveryController {
@@ -9,7 +10,15 @@ export class DiscoveryController {
   // GET /discovery/highlights
   @Get('highlights')
   async highlights() {
-    return this.disc.getHighlights();
+    return this.disc.getDiscoveryHighlights();
+  }
+
+  // AUTHENTICATED: personalized discovery for logged-in users
+  // GET /discovery/personalized
+  @Get('personalized')
+  @UseGuards(JwtAuthGuard)
+  async personalized(@Query('userId') userId: string) {
+    return this.disc.getPersonalizedDiscovery(userId);
   }
 
   // PUBLIC: category landing

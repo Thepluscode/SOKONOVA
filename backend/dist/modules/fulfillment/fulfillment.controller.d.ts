@@ -1,9 +1,48 @@
 import { FulfillmentService } from './fulfillment.service';
-import { MarkShippedDto, MarkDeliveredDto, MarkIssueDto } from './dto/fulfillment.dto';
 export declare class FulfillmentController {
-    private fulfillment;
-    constructor(fulfillment: FulfillmentService);
-    getTracking(orderId: string, userId: string): Promise<{
+    private readonly fulfillmentService;
+    constructor(fulfillmentService: FulfillmentService);
+    getDeliveryEstimate(productId: string, location?: string): Promise<{
+        productId: string;
+        location: string;
+        estimatedMinDays: number;
+        estimatedMaxDays: number;
+        confidenceLevel: number;
+        carriers: string[];
+    }>;
+    getShippingOptions(data: {
+        items: Array<{
+            productId: string;
+            quantity: number;
+        }>;
+        location?: string;
+    }): Promise<{
+        id: string;
+        name: string;
+        description: string;
+        cost: number;
+        estimatedDays: number;
+    }[]>;
+    trackShipment(trackingNumber: string): Promise<{
+        trackingNumber: string;
+        status: string;
+        estimatedDelivery: Date;
+        carrier: string;
+        events: {
+            timestamp: Date;
+            location: string;
+            description: string;
+        }[];
+    }>;
+    getDeliveryPerformance(sellerId: string): Promise<{
+        sellerId: string;
+        onTimeDeliveryRate: number;
+        avgDeliveryTime: number;
+        lateDeliveries: number;
+        totalDeliveries: number;
+        customerSatisfaction: number;
+    }>;
+    getOrderTracking(orderId: string, userId: string): Promise<{
         orderId: string;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
@@ -23,7 +62,7 @@ export declare class FulfillmentController {
             notes: string;
         }[];
     }>;
-    getSellerOpen(sellerId: string): Promise<{
+    getSellerOpenFulfillment(sellerId: string): Promise<{
         id: string;
         orderId: string;
         qty: number;
@@ -55,7 +94,11 @@ export declare class FulfillmentController {
         ISSUE: number;
         total: number;
     }>;
-    markShipped(orderItemId: string, sellerId: string, dto: MarkShippedDto): Promise<{
+    markShipped(orderItemId: string, sellerId: string, data: {
+        carrier?: string;
+        trackingCode?: string;
+        note?: string;
+    }): Promise<{
         order: {
             userId: string;
         };
@@ -64,10 +107,11 @@ export declare class FulfillmentController {
         createdAt: Date;
         updatedAt: Date;
         currency: string;
-        orderId: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
         productId: string;
+        notes: string | null;
+        orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
         feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -81,9 +125,12 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
-        notes: string | null;
+        exceptionNotified: boolean | null;
     }>;
-    markDelivered(orderItemId: string, sellerId: string, dto: MarkDeliveredDto): Promise<{
+    markDelivered(orderItemId: string, sellerId: string, data: {
+        proofUrl?: string;
+        note?: string;
+    }): Promise<{
         order: {
             userId: string;
         };
@@ -92,10 +139,11 @@ export declare class FulfillmentController {
         createdAt: Date;
         updatedAt: Date;
         currency: string;
-        orderId: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
         productId: string;
+        notes: string | null;
+        orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
         feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -109,17 +157,20 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
-        notes: string | null;
+        exceptionNotified: boolean | null;
     }>;
-    markIssue(orderItemId: string, sellerId: string, dto: MarkIssueDto): Promise<{
+    markIssue(orderItemId: string, sellerId: string, data: {
+        note: string;
+    }): Promise<{
         id: string;
         createdAt: Date;
         updatedAt: Date;
         currency: string;
-        orderId: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
         productId: string;
+        notes: string | null;
+        orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
         feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -133,6 +184,74 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
-        notes: string | null;
+        exceptionNotified: boolean | null;
     }>;
+    getDeliveryPromise(productId: string, location?: string): Promise<{
+        productId: string;
+        location: string;
+        promisedMinDays: number;
+        promisedMaxDays: number;
+        confidenceLevel: number;
+        sellerRating: number;
+        deliveryGuarantee: boolean;
+        message: string;
+    }>;
+    getExceptionStatus(orderItemId: string): Promise<{
+        orderItemId: string;
+        exceptionType: any;
+        exceptionSeverity: string;
+        nextAction: any;
+        slaDeadline: any;
+        orderDetails: {
+            orderId: string;
+            productTitle: string;
+            buyerName: string;
+            buyerEmail: string;
+            fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
+            shippedAt: Date;
+            expectedDelivery: Date;
+        };
+    }>;
+    getMicroFulfillmentMetrics(sellerId: string): Promise<{
+        optedIn: boolean;
+        partners: {
+            id: string;
+            name: string;
+            performance: {
+                onTimeRate: number;
+                avgProcessingTime: number;
+                accuracyRate: number;
+                costPerItem: number;
+            };
+            capacity: {
+                available: number;
+                total: number;
+            };
+        }[];
+        sellerMetrics: {
+            fulfillmentRate: number;
+            avgTurnaround: number;
+            costSavings: number;
+        };
+    }>;
+    optInToMicroFulfillment(sellerId: string, data: {
+        partnerId: string;
+    }): Promise<{
+        success: boolean;
+        sellerId: string;
+        partnerId: string;
+        optInDate: Date;
+    }>;
+    getFulfillmentPartners(sellerId: string): Promise<{
+        id: string;
+        name: string;
+        description: string;
+        locations: string[];
+        pricing: {
+            pickPack: number;
+            storage: number;
+        };
+        capabilities: string[];
+        rating: number;
+    }[]>;
 }

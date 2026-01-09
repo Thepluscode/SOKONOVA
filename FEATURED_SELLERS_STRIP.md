@@ -95,7 +95,7 @@ A premium horizontal scrolling carousel for featured sellers with smooth scroll 
 ### 1. Basic Usage (Home Page)
 
 ```tsx
-import { getFeaturedSellers } from "@/lib/api";
+import { getFeaturedSellers } from "@/lib/api/storefront";
 import { FeaturedSellersStrip } from "@/components/FeaturedSellersStrip";
 import { FeaturedSellersSkeleton } from "@/components/FeaturedSellersSkeleton";
 
@@ -144,7 +144,7 @@ export default async function CategoryPage({ params }) {
 
 ### 4. Loading State
 
-```tsx
+``tsx
 import { Suspense } from "react";
 
 export default function Page() {
@@ -380,7 +380,7 @@ Animations automatically disabled when user prefers reduced motion:
 
 ### API Endpoint (NestJS Example)
 
-```typescript
+``typescript
 // backend/src/storefront/storefront.controller.ts
 
 @Get('featured')
@@ -462,7 +462,7 @@ Adjust the `gap-4` class in the scroller div:
 
 Move arrow buttons or style differently:
 
-```tsx
+``tsx
 <div className="flex gap-2">
   <button className="btn-primary px-4 py-2">←</button>
   <button className="btn-primary px-4 py-2">→</button>
@@ -473,7 +473,7 @@ Move arrow buttons or style differently:
 
 Adjust the delay multiplier:
 
-```tsx
+``tsx
 transition={{ duration: 0.4, delay: 0.05 * i }}
 // Slower stagger: 50ms instead of 30ms
 ```
@@ -505,7 +505,7 @@ transition={{ duration: 0.4, delay: 0.05 * i }}
 
 ### Automated Testing (Jest Example)
 
-```typescript
+``typescript
 import { render, screen } from '@testing-library/react';
 import { FeaturedSellersStrip } from './FeaturedSellersStrip';
 

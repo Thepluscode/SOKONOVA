@@ -33,6 +33,10 @@ export class SellerApplicationsService {
         country: dto.country,
         city: dto.city,
         storefrontDesc: dto.storefrontDesc,
+        bankName: dto.bankName || null,
+        accountNumber: dto.accountNumber || null,
+        accountName: dto.accountName || null,
+        bankCode: dto.bankCode || null,
         status: 'PENDING',
         adminNote: null,
         reviewedAt: null,
@@ -44,9 +48,82 @@ export class SellerApplicationsService {
         country: dto.country,
         city: dto.city,
         storefrontDesc: dto.storefrontDesc,
+        bankName: dto.bankName || null,
+        accountNumber: dto.accountNumber || null,
+        accountName: dto.accountName || null,
+        bankCode: dto.bankCode || null,
         status: 'PENDING',
       },
     });
+  }
+
+  /**
+   * INSTANT ACTIVATION (MVP Mode)
+   * Auto-approves seller application immediately
+   * Use this to quickly onboard your first sellers
+   */
+  async applyAndActivateInstantly(dto: ApplyDto) {
+    // Check if already a seller
+    const user = await this.prisma.user.findUnique({
+      where: { id: dto.userId },
+    });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    if (user.role === 'SELLER' || user.role === 'ADMIN') {
+      throw new BadRequestException('User is already a seller');
+    }
+
+    // Create application and activate in one transaction
+    const now = new Date();
+    const [application, updatedUser] = await this.prisma.$transaction([
+      this.prisma.sellerApplication.upsert({
+        where: { userId: dto.userId },
+        update: {
+          businessName: dto.businessName,
+          phone: dto.phone,
+          country: dto.country,
+          city: dto.city,
+          storefrontDesc: dto.storefrontDesc,
+          bankName: dto.bankName || null,
+          accountNumber: dto.accountNumber || null,
+          accountName: dto.accountName || null,
+          bankCode: dto.bankCode || null,
+          status: 'APPROVED',
+          adminNote: 'Auto-approved for MVP launch',
+          reviewedAt: now,
+        },
+        create: {
+          userId: dto.userId,
+          businessName: dto.businessName,
+          phone: dto.phone,
+          country: dto.country,
+          city: dto.city,
+          storefrontDesc: dto.storefrontDesc,
+          bankName: dto.bankName || null,
+          accountNumber: dto.accountNumber || null,
+          accountName: dto.accountName || null,
+          bankCode: dto.bankCode || null,
+          status: 'APPROVED',
+          adminNote: 'Auto-approved for MVP launch',
+          reviewedAt: now,
+        },
+      }),
+      this.prisma.user.update({
+        where: { id: dto.userId },
+        data: {
+          role: 'SELLER',
+          shopName: dto.businessName,
+        },
+      }),
+    ]);
+
+    return {
+      success: true,
+      application,
+      user: updatedUser,
+      message: 'Seller activated instantly! You can now list products.',
+    };
   }
 
   // 2. Applicant can view their own status

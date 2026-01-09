@@ -14,7 +14,10 @@ export type NotificationType =
   | 'DISPUTE_RESOLVED'
   | 'PAYOUT_RELEASED'
   | 'RISK_ALERT'
-  | 'NEW_REVIEW';
+  | 'NEW_REVIEW'
+  | 'EXCEPTION_ALERT'
+  | 'SELLER_EXCEPTION'
+  | 'MICRO_FULFILLMENT_OPT_IN';
 
 @Injectable()
 export class NotificationsService {
@@ -51,7 +54,6 @@ export class NotificationsService {
           notifyPush: true,
           quietHoursStart: true,
           quietHoursEnd: true,
-          pushSubscription: true,
         },
       });
 
@@ -67,7 +69,7 @@ export class NotificationsService {
           type,
           title,
           body,
-          data: data || undefined,
+          message: body, // For backwards compatibility
         },
       });
 
@@ -82,7 +84,7 @@ export class NotificationsService {
         user.quietHoursEnd,
       );
 
-      // Send via external channels (fire and forget)
+      // Send via external channels (with proper error handling)
       const promises: Promise<any>[] = [];
 
       // Email notifications
@@ -92,7 +94,7 @@ export class NotificationsService {
         user.email &&
         !inQuietHours
       ) {
-        promises.push(this.email.send(user.email, title, body, data));
+        promises.push(this.sendWithTimeout(this.email.send(user.email, title, body, data), 5000));
       }
 
       // SMS notifications
@@ -102,7 +104,7 @@ export class NotificationsService {
         user.phone &&
         !inQuietHours
       ) {
-        promises.push(this.sms.send(user.phone, body));
+        promises.push(this.sendWithTimeout(this.sms.send(user.phone, body), 5000));
       }
 
       // WhatsApp notifications
@@ -112,16 +114,21 @@ export class NotificationsService {
         user.phone &&
         !inQuietHours
       ) {
-        promises.push(this.sms.sendWhatsApp(user.phone, body));
+        promises.push(this.sendWithTimeout(this.sms.sendWhatsApp(user.phone, body), 5000));
       }
 
-      // Don't await - send async
+      // Await the promises with proper error handling
       if (promises.length > 0) {
-        Promise.all(promises).catch((err) => {
+        try {
+          await Promise.all(promises);
+        } catch (error) {
           this.logger.error(
-            `Failed to send external notifications: ${err.message}`,
+            `Failed to send one or more external notifications: ${error.message}`,
+            error.stack,
           );
-        });
+          // Re-throw to let caller handle if needed
+          throw new Error(`Notification delivery failed: ${error.message}`);
+        }
       }
 
       return notification;
@@ -132,6 +139,18 @@ export class NotificationsService {
       );
       throw error;
     }
+  }
+
+  /**
+   * Send a promise with timeout
+   */
+  private async sendWithTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+    return Promise.race([
+      promise,
+      new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Notification send timeout')), timeoutMs),
+      ),
+    ]);
   }
 
   /**
@@ -368,6 +387,76 @@ export class NotificationsService {
       `${buyerName} left a ${rating}★ review on "${productTitle}".`,
       { reviewId },
       ['inapp'],
+    );
+  }
+
+  // NEW NOTIFICATION METHODS FOR LOGISTICS & FULFILLMENT EXCELLENCE
+
+  /**
+   * Notify buyer of exception with their order
+   */
+  async notifyException(
+    buyerId: string,
+    orderItemId: string,
+    priority: 'high_priority' | 'medium_priority' | 'low_priority',
+    message: string,
+  ) {
+    const priorityLabels = {
+      high_priority: 'High Priority',
+      medium_priority: 'Medium Priority',
+      low_priority: 'Low Priority',
+    };
+
+    return this.create(
+      buyerId,
+      'EXCEPTION_ALERT',
+      `Order Exception - ${priorityLabels[priority]}`,
+      message,
+      { orderItemId, priority },
+      ['inapp', 'email'],
+    );
+  }
+
+  /**
+   * Notify seller of exception requiring their attention
+   */
+  async notifySellerException(
+    sellerId: string,
+    orderItemId: string,
+    actionRequired: 'urgent_action_required' | 'attention_required' | 'review_required',
+    message: string,
+  ) {
+    const actionLabels = {
+      urgent_action_required: 'Urgent Action Required',
+      attention_required: 'Attention Required',
+      review_required: 'Review Required',
+    };
+
+    return this.create(
+      sellerId,
+      'SELLER_EXCEPTION',
+      `Fulfillment Exception - ${actionLabels[actionRequired]}`,
+      message,
+      { orderItemId, actionRequired },
+      ['inapp', 'email'],
+    );
+  }
+
+  /**
+   * Notify seller of successful micro-fulfillment opt-in
+   */
+  async notifyMicroFulfillmentOptIn(
+    sellerId: string,
+    partnerId: string,
+    message: string,
+  ) {
+    return this.create(
+      sellerId,
+      'MICRO_FULFILLMENT_OPT_IN',
+      'Micro-Fulfillment Service Activated',
+      message,
+      { partnerId },
+      ['inapp', 'email'],
     );
   }
 

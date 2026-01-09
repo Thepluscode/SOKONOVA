@@ -7,16 +7,13 @@ import {
   createSellerProduct,
   updateSellerProduct,
   updateSellerInventory,
-  sellerGetPendingPayout,
-  sellerPayoutCsvUrl,
-  sellerGetOpenFulfillment,
-  sellerMarkShipped,
-  sellerMarkDelivered,
-  sellerGetDisputes,
-  resolveDispute,
-  updateStorefront,
-  getSellerAnalyticsSummary,
-} from "@/lib/api";
+  promoteToSeller,
+} from "@/lib/api/seller";
+import { sellerGetOpenFulfillment, sellerMarkDelivered, sellerMarkShipped } from "@/lib/api/fulfillment";
+import { sellerGetDisputes, resolveDispute } from "@/lib/api/disputes";
+import { getSellerAnalyticsSummary } from "@/lib/api/analytics";
+import { sellerGetPendingPayout, sellerPayoutCsvUrl } from "@/lib/api/payouts";
+import { updateStorefront } from "@/lib/api/storefront";
 
 type Product = {
   id: string;
@@ -85,13 +82,13 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
   const loadProducts = async () => {
     setLoading(true);
     try {
-      const [productsData, payoutData, fulfillmentData, issuesData, analyticsData] = await Promise.all([
-        getSellerProducts(userId),
-        sellerGetPendingPayout(userId),
-        sellerGetOpenFulfillment(userId),
-        sellerGetDisputes(userId),
-        getSellerAnalyticsSummary(userId),
-      ]);
+      // Fix the void expression errors by properly handling the API calls
+      const productsData = await getSellerProducts(userId);
+      const payoutData = await sellerGetPendingPayout(userId);
+      const fulfillmentData = await sellerGetOpenFulfillment(userId);
+      const issuesData = await sellerGetDisputes(userId);
+      const analyticsData = await getSellerAnalyticsSummary(userId);
+      
       setProducts(productsData || []);
       setPayout(payoutData || null);
       setShipQueue(fulfillmentData || []);
@@ -228,7 +225,7 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-10">
+    <div>
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -721,7 +718,7 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
         </div>
         {products.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground">
-            No products yet. Click "New Product" to get started.
+            {'No products yet. Click "New Product" to get started.'}
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -1061,7 +1058,7 @@ function DisputeCard({
       </div>
 
       <div className="text-[10px] text-muted-foreground">
-        Choosing an action will update the dispute status and (depending on the action) update the item's fulfillment status. Refunds keep the item marked as ISSUE. Replacement can close it as DELIVERED.
+        {"Choosing an action will update the dispute status and (depending on the action) update the item's fulfillment status. Refunds keep the item marked as ISSUE. Replacement can close it as DELIVERED."}
       </div>
     </div>
   );

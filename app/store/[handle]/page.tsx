@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getStorefrontByHandle, getSellerReviews } from "@/lib/api";
+import { getStorefrontByHandle } from "@/lib/api/storefront";
+import { getSellerReviews } from "@/lib/api/reviews";
 import { ProductCard } from "@/components/ProductCard";
 
 export default async function StorefrontPage({
@@ -109,7 +110,7 @@ export default async function StorefrontPage({
 
           {products.length === 0 ? (
             <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-              This shop hasn't listed any products yet.
+              {"This shop hasn't listed any products yet."}
             </div>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">

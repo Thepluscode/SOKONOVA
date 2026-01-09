@@ -61,27 +61,145 @@ let CartService = class CartService {
         });
     }
     async addItem(cartId, productId, qty) {
-        const existing = await this.prisma.cartItem.findFirst({
-            where: { cartId, productId },
-        });
-        if (existing) {
-            return this.prisma.cartItem.update({
-                where: { id: existing.id },
-                data: { qty: existing.qty + qty },
+        return this.prisma.$transaction(async (tx) => {
+            const cart = await tx.cart.findUnique({
+                where: { id: cartId },
+                include: { items: true },
             });
-        }
-        return this.prisma.cartItem.create({
-            data: { cartId, productId, qty },
+            if (!cart) {
+                throw new common_1.NotFoundException('Cart not found');
+            }
+            const currentVersion = cart.version;
+            const product = await tx.product.findUnique({
+                where: { id: productId },
+                include: { inventory: true },
+            });
+            if (!product) {
+                throw new common_1.NotFoundException('Product not found');
+            }
+            const existingItem = cart.items.find(item => item.productId === productId);
+            const currentQty = (existingItem === null || existingItem === void 0 ? void 0 : existingItem.qty) || 0;
+            const newTotalQty = currentQty + qty;
+            if (product.inventory && product.inventory.quantity < newTotalQty) {
+                throw new common_1.BadRequestException(`Only ${product.inventory.quantity} units available. You currently have ${currentQty} in cart.`);
+            }
+            const cartItem = await tx.cartItem.findFirst({
+                where: {
+                    cartId,
+                    productId
+                }
+            });
+            let updatedItem;
+            if (cartItem) {
+                updatedItem = await tx.cartItem.update({
+                    where: {
+                        id: cartItem.id
+                    },
+                    data: {
+                        qty: { increment: qty },
+                        updatedAt: new Date()
+                    },
+                    include: {
+                        product: true
+                    }
+                });
+            }
+            else {
+                updatedItem = await tx.cartItem.create({
+                    data: {
+                        cartId,
+                        productId,
+                        qty
+                    },
+                    include: {
+                        product: true
+                    }
+                });
+            }
+            const updatedCart = await tx.cart.update({
+                where: {
+                    id: cartId,
+                    version: currentVersion
+                },
+                data: {
+                    version: { increment: 1 },
+                    updatedAt: new Date()
+                },
+                include: {
+                    items: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+            return updatedCart;
         });
     }
     async removeItem(cartId, productId) {
-        return this.prisma.cartItem.deleteMany({
-            where: { cartId, productId },
+        return this.prisma.$transaction(async (tx) => {
+            const cart = await tx.cart.findUnique({
+                where: { id: cartId },
+                include: { items: true },
+            });
+            if (!cart) {
+                throw new common_1.NotFoundException('Cart not found');
+            }
+            const currentVersion = cart.version;
+            await tx.cartItem.deleteMany({
+                where: { cartId, productId },
+            });
+            const updatedCart = await tx.cart.update({
+                where: {
+                    id: cartId,
+                    version: currentVersion
+                },
+                data: {
+                    version: { increment: 1 },
+                    updatedAt: new Date()
+                },
+                include: {
+                    items: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+            return updatedCart;
         });
     }
     async clear(cartId) {
-        return this.prisma.cartItem.deleteMany({
-            where: { cartId },
+        return this.prisma.$transaction(async (tx) => {
+            const cart = await tx.cart.findUnique({
+                where: { id: cartId },
+                include: { items: true },
+            });
+            if (!cart) {
+                throw new common_1.NotFoundException('Cart not found');
+            }
+            const currentVersion = cart.version;
+            await tx.cartItem.deleteMany({
+                where: { cartId },
+            });
+            const updatedCart = await tx.cart.update({
+                where: {
+                    id: cartId,
+                    version: currentVersion
+                },
+                data: {
+                    version: { increment: 1 },
+                    updatedAt: new Date()
+                },
+                include: {
+                    items: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+            });
+            return updatedCart;
         });
     }
 };

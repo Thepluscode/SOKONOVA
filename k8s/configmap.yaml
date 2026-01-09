@@ -1,0 +1,12 @@
+# SOKONOVA ConfigMap - Non-sensitive configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sokonova-config
+  namespace: sokonova
+data:
+  NODE_ENV: "production"
+  PORT: "4000"
+  FRONTEND_BASE_URL: "https://sokonova.com"
+  RATE_LIMIT_TTL: "60"
+  RATE_LIMIT_MAX: "100"

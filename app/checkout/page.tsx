@@ -1,17 +1,16 @@
-"use client";
+'use client'
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useCart } from "@/lib/cart";
-import { Button } from "@/components/ui/Button";
-import { createOrder, createPaymentIntent } from "@/lib/api";
+import { createOrder } from "@/lib/api/orders";
+import { createPaymentIntent } from "@/lib/api/payments";
 import Link from "next/link";
+import { Button } from "@/components/ui/Button";
 
 export default function CheckoutPage() {
-  const router = useRouter();
   const { data: session } = useSession();
-  const { cartId, items, clear } = useCart();
+  const { items, cartId, clear } = useCart();
   const [status, setStatus] = useState<
     "idle" | "processing" | "payment_initiated" | "paid" | "error"
   >("idle");
@@ -19,20 +18,20 @@ export default function CheckoutPage() {
   const [paymentInfo, setPaymentInfo] = useState<any>(null);
   const [formData, setFormData] = useState({
     fullName: "",
-    email: session?.user?.email || "",
+    email: "",
     address: "",
     city: "",
     provider: "flutterwave" as "flutterwave" | "paystack" | "stripe",
   });
 
-  // Calculate total from cart items (product details included)
+  // Calculate cart total
   const total = items.reduce((sum, line) => {
     const priceNum = Number(line.product?.price ?? 0);
     return sum + priceNum * line.qty;
   }, 0);
 
   const placeOrder = async () => {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!cartId || !userId) {
       setStatus("error");
       return;

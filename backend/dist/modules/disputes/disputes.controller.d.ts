@@ -14,10 +14,11 @@ export declare class DisputesController {
             createdAt: Date;
             updatedAt: Date;
             currency: string;
-            orderId: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
             productId: string;
+            notes: string | null;
+            orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -31,13 +32,13 @@ export declare class DisputesController {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
-            notes: string | null;
+            exceptionNotified: boolean | null;
         };
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.DisputeStatus;
         description: string;
         orderItemId: string;
         buyerId: string;
@@ -50,8 +51,8 @@ export declare class DisputesController {
     mine(buyerId: string): Promise<({
         orderItem: {
             product: {
-                title: string;
                 sellerId: string;
+                title: string;
                 imageUrl: string;
             };
             order: {
@@ -63,10 +64,11 @@ export declare class DisputesController {
             createdAt: Date;
             updatedAt: Date;
             currency: string;
-            orderId: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
             productId: string;
+            notes: string | null;
+            orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -80,13 +82,13 @@ export declare class DisputesController {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
-            notes: string | null;
+            exceptionNotified: boolean | null;
         };
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.DisputeStatus;
         description: string;
         orderItemId: string;
         buyerId: string;
@@ -104,18 +106,19 @@ export declare class DisputesController {
             };
             order: {
                 id: string;
-                createdAt: Date;
                 userId: string;
+                createdAt: Date;
             };
         } & {
             id: string;
             createdAt: Date;
             updatedAt: Date;
             currency: string;
-            orderId: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
             productId: string;
+            notes: string | null;
+            orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -129,7 +132,7 @@ export declare class DisputesController {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
-            notes: string | null;
+            exceptionNotified: boolean | null;
         };
         buyer: {
             id: string;
@@ -138,9 +141,9 @@ export declare class DisputesController {
         };
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.DisputeStatus;
         description: string;
         orderItemId: string;
         buyerId: string;
@@ -156,9 +159,9 @@ export declare class DisputesController {
         };
     } & {
         id: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.DisputeStatus;
         description: string;
         orderItemId: string;
         buyerId: string;

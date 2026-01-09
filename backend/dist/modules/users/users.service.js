@@ -16,37 +16,112 @@ let UsersService = class UsersService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    findById(id) {
-        return this.prisma.user.findUnique({ where: { id } });
-    }
-    findOrCreateByEmail(email, name, role) {
-        return this.prisma.user.upsert({
+    async findOneByEmail(email) {
+        const user = await this.prisma.user.findUnique({
             where: { email },
-            update: { name },
-            create: {
-                email,
-                name,
-                role: role === 'SELLER' ? 'SELLER' : role === 'ADMIN' ? 'ADMIN' : 'BUYER',
+        });
+        return user;
+    }
+    async findOneById(id) {
+        const user = await this.prisma.user.findUnique({
+            where: { id },
+        });
+        return user;
+    }
+    async createUser(data) {
+        const user = await this.prisma.user.create({
+            data: {
+                email: data.email,
+                name: data.name,
+                role: data.role || 'BUYER',
             },
         });
+        return user;
     }
-    async updateStorefrontProfile(userId, data) {
-        return this.prisma.user.update({
+    async updateUserProfile(userId, data) {
+        const user = await this.prisma.user.update({
             where: { id: userId },
             data,
-            select: {
-                id: true,
-                shopName: true,
-                sellerHandle: true,
-                shopLogoUrl: true,
-                shopBannerUrl: true,
-                shopBio: true,
-                country: true,
-                city: true,
-                ratingAvg: true,
-                ratingCount: true,
+        });
+        return user;
+    }
+    async updateSellerProfile(userId, data) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data,
+        });
+        return user;
+    }
+    async updateNotificationPreferences(userId, data) {
+        const user = await this.prisma.user.update({
+            where: { id: userId },
+            data,
+        });
+        return user;
+    }
+    async getSellerByHandle(handle) {
+        const seller = await this.prisma.user.findFirst({
+            where: {
+                sellerHandle: handle,
+                role: 'SELLER',
+            },
+            include: {
+                products: {
+                    take: 12,
+                    include: {
+                        _count: {
+                            select: {
+                                views: true,
+                            },
+                        },
+                    },
+                },
             },
         });
+        return seller;
+    }
+    async getBuyerProfile(userId) {
+        const buyer = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                orders: {
+                    take: 10,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        items: {
+                            include: {
+                                product: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        return buyer;
+    }
+    async getSellerProfile(userId) {
+        const seller = await this.prisma.user.findUnique({
+            where: { id: userId },
+            include: {
+                products: {
+                    take: 20,
+                    orderBy: { createdAt: 'desc' },
+                    include: {
+                        _count: {
+                            select: {
+                                views: true,
+                            },
+                        },
+                    },
+                },
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+        return seller;
     }
 };
 exports.UsersService = UsersService;

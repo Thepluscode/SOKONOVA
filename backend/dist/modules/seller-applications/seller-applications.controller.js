@@ -24,6 +24,9 @@ let SellerApplicationsController = class SellerApplicationsController {
     async apply(body) {
         return this.svc.apply(body);
     }
+    async activateInstant(body) {
+        return this.svc.applyAndActivateInstantly(body);
+    }
     async mine(userId) {
         return this.svc.getMine(userId);
     }
@@ -45,6 +48,13 @@ __decorate([
     __metadata("design:paramtypes", [apply_dto_1.ApplyDto]),
     __metadata("design:returntype", Promise)
 ], SellerApplicationsController.prototype, "apply", null);
+__decorate([
+    (0, common_1.Post)('activate-instant'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [apply_dto_1.ApplyDto]),
+    __metadata("design:returntype", Promise)
+], SellerApplicationsController.prototype, "activateInstant", null);
 __decorate([
     (0, common_1.Get)('mine'),
     __param(0, (0, common_1.Query)('userId')),

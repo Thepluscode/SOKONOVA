@@ -25,43 +25,147 @@ let OrdersService = class OrdersService {
             orderBy: { createdAt: 'desc' },
         });
     }
+    async findById(orderId) {
+        const order = await this.prisma.order.findUnique({
+            where: { id: orderId },
+            include: {
+                items: {
+                    include: {
+                        product: {
+                            include: {
+                                seller: {
+                                    select: {
+                                        id: true,
+                                        name: true,
+                                        sellerHandle: true,
+                                        shopLogoUrl: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        phone: true,
+                    },
+                },
+            },
+        });
+        if (!order) {
+            throw new common_1.NotFoundException('Order not found');
+        }
+        return order;
+    }
+    calculateFee(grossAmount) {
+        const gross = grossAmount;
+        const fee = gross * 0.10;
+        const net = gross - fee;
+        return { gross, fee, net };
+    }
+    async createDirect(userId, items, total, currency) {
+        let calculatedTotal = 0;
+        const orderItemsData = [];
+        for (const item of items) {
+            const product = await this.prisma.product.findUnique({
+                where: { id: item.productId },
+            });
+            if (!product) {
+                throw new common_1.NotFoundException(`Product ${item.productId} not found`);
+            }
+            const lineTotal = item.price * item.qty;
+            calculatedTotal += lineTotal;
+            const { gross, fee, net } = this.calculateFee(lineTotal);
+            orderItemsData.push({
+                productId: item.productId,
+                qty: item.qty,
+                price: item.price,
+                sellerId: product.sellerId,
+                grossAmount: gross,
+                feeAmount: fee,
+                netAmount: net,
+                payoutStatus: 'PENDING',
+                currency: currency || 'USD',
+            });
+        }
+        const order = await this.prisma.$transaction(async (tx) => {
+            const created = await tx.order.create({
+                data: {
+                    userId,
+                    total: calculatedTotal,
+                    currency,
+                    status: 'PENDING',
+                },
+            });
+            for (const itemData of orderItemsData) {
+                await tx.orderItem.create({
+                    data: {
+                        orderId: created.id,
+                        ...itemData,
+                    },
+                });
+            }
+            return created;
+        });
+        return order;
+    }
     async createFromCart(dto, cartId) {
         const cart = await this.prisma.cart.findUnique({
             where: { id: cartId },
             include: { items: { include: { product: true } } },
         });
-        if (!cart || !cart.items.length) {
-            throw new Error('Cart empty or not found');
+        if (!cart) {
+            throw new common_1.NotFoundException('Cart not found');
+        }
+        if (cart.userId !== dto.userId) {
+            throw new common_1.ForbiddenException('You do not have permission to access this cart');
+        }
+        if (!cart.items.length) {
+            throw new Error('Cart is empty');
+        }
+        let calculatedTotal = 0;
+        const orderItemsData = [];
+        for (const ci of cart.items) {
+            const unitPrice = Number(ci.product.price);
+            const qty = ci.qty;
+            const lineTotal = unitPrice * qty;
+            calculatedTotal += lineTotal;
+            const sellerId = ci.product.sellerId;
+            const { gross, fee, net } = this.calculateFee(lineTotal);
+            orderItemsData.push({
+                productId: ci.productId,
+                qty,
+                price: ci.product.price,
+                sellerId,
+                grossAmount: gross,
+                feeAmount: fee,
+                netAmount: net,
+                payoutStatus: 'PENDING',
+                currency: ci.product.currency || 'USD',
+            });
+        }
+        const tolerance = 0.01;
+        if (Math.abs(dto.total - calculatedTotal) > tolerance) {
+            throw new Error(`Total mismatch: expected ${calculatedTotal}, got ${dto.total}`);
         }
         const order = await this.prisma.$transaction(async (tx) => {
             const created = await tx.order.create({
                 data: {
                     userId: dto.userId,
-                    total: dto.total,
+                    total: calculatedTotal,
                     currency: dto.currency,
                     status: 'PENDING',
                     shippingAdr: dto.shippingAdr,
                 },
             });
-            for (const ci of cart.items) {
-                const sellerId = ci.product.sellerId;
-                const unitPrice = Number(ci.product.price);
-                const qty = ci.qty;
-                const gross = unitPrice * qty;
-                const fee = gross * 0.10;
-                const net = gross - fee;
+            for (const itemData of orderItemsData) {
                 await tx.orderItem.create({
                     data: {
                         orderId: created.id,
-                        productId: ci.productId,
-                        qty,
-                        price: ci.product.price,
-                        sellerId,
-                        grossAmount: gross,
-                        feeAmount: fee,
-                        netAmount: net,
-                        payoutStatus: 'PENDING',
-                        currency: ci.product.currency || 'USD',
+                        ...itemData,
                     },
                 });
             }

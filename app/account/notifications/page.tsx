@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { Bell, CheckCheck, Clock } from "lucide-react";
-import { getNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/api";
+import { getNotifications, markNotificationRead, markAllNotificationsRead } from "@/lib/api/notifications";
 
 /**
  * Notifications Inbox Page

@@ -7,15 +7,18 @@ export declare class CartController {
         items: ({
             product: {
                 id: string;
-                title: string;
                 createdAt: Date;
                 updatedAt: Date;
-                price: import("@prisma/client/runtime/library").Decimal;
-                sellerId: string;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 currency: string;
+                sellerId: string;
+                title: string;
                 description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
                 imageUrl: string | null;
                 category: string | null;
+                viewCount: number;
             };
         } & {
             id: string;
@@ -27,18 +30,109 @@ export declare class CartController {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         userId: string | null;
+        createdAt: Date;
         updatedAt: Date;
         anonKey: string | null;
+        version: number;
     }>;
     add(dto: CartAddDto): Promise<{
-        ok: boolean;
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
+        id: string;
+        userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        anonKey: string | null;
+        version: number;
     }>;
     remove(cartId: string, productId: string): Promise<{
-        ok: boolean;
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
+        id: string;
+        userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        anonKey: string | null;
+        version: number;
     }>;
     clear(cartId: string): Promise<{
-        ok: boolean;
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
+        id: string;
+        userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        anonKey: string | null;
+        version: number;
     }>;
 }

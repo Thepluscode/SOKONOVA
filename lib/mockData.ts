@@ -1,37 +1,44 @@
-
 import type { Product } from '@/types'
 
 export const products: Product[] = [
   {
     id: 'p-1',
-    name: 'Wireless Headphones',
+    title: 'Wireless Headphones',
+    description: 'Comfortable over-ear wireless headphones with rich sound.',
     price: 199.99,
     currency: 'USD',
-    image: '/mock-product.png',
-    description: 'Comfortable over-ear wireless headphones with rich sound.'
+    imageUrl: '/mock-product.png',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 'p-2',
-    name: 'Smartwatch Pro',
+    title: 'Smartwatch Pro',
+    description: 'Track health metrics and notifications on the go.',
     price: 149.00,
     currency: 'USD',
-    image: '/mock-product.png',
-    description: 'Track health metrics and notifications on the go.'
+    imageUrl: '/mock-product.png',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 'p-3',
-    name: 'Eco Water Bottle',
+    title: 'Eco Water Bottle',
+    description: 'Reusable stainless steel bottle with 24h insulation.',
     price: 24.50,
     currency: 'USD',
-    image: '/mock-product.png',
-    description: 'Reusable stainless steel bottle with 24h insulation.'
+    imageUrl: '/mock-product.png',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   },
   {
     id: 'p-4',
-    name: 'Bluetooth Speaker',
+    title: 'Bluetooth Speaker',
+    description: 'Portable speaker with deep bass and 12h battery life.',
     price: 89.00,
     currency: 'USD',
-    image: '/mock-product.png',
-    description: 'Portable speaker with deep bass and 12h battery life.'
+    imageUrl: '/mock-product.png',
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
   }
 ]

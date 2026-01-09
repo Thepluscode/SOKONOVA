@@ -1,27 +1,29 @@
-
 import { NextRequest, NextResponse } from 'next/server'
 import { getRedis } from '@/lib/redis'
-import { getOrCreateSessionId } from '@/lib/session'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import type { CartItem } from '@/types'
+import { cookies } from 'next/headers'
+import { nanoid } from 'nanoid'
+import type { RedisCartItem } from '@/types'
 
-const key = (sidOrUser: string, isUser: boolean) => isUser ? `sn:cart:user:${sidOrUser}` : `sn:cart:${sidOrUser}`
-
-async function currentKey(res?: NextResponse) {
-  const session = await getServerSession(authOptions)
-  if (session?.user?.id) return { k: key(session.user.id, true), res }
-  const r = res ?? NextResponse.next()
-  const sid = getOrCreateSessionId(r)
-  return { k: key(sid, false), res: r }
+async function currentKey() {
+  const cookieStore = cookies()
+  let anonKey = cookieStore.get('cart_anon_key')?.value
+  if (!anonKey) {
+    anonKey = `anon_${nanoid()}`
+    // Set cookie for 30 days
+    cookies().set('cart_anon_key', anonKey, {
+      maxAge: 60 * 60 * 24 * 30,
+      httpOnly: true,
+      sameSite: 'lax',
+    })
+  }
+  return { k: `cart:${anonKey}` }
 }
 
 export async function GET() {
-  const res = NextResponse.next()
-  const { k } = await currentKey(res)
+  const { k } = await currentKey()
   const redis = getRedis()
   const data = await redis.get(k)
-  const items: CartItem[] = data ? JSON.parse(data) : []
+  const items: RedisCartItem[] = data ? JSON.parse(data) : []
   return NextResponse.json({ items })
 }
 
@@ -32,7 +34,7 @@ export async function POST(req: NextRequest) {
   const { k } = await currentKey()
   const redis = getRedis()
   const data = await redis.get(k)
-  const items: CartItem[] = data ? JSON.parse(data) : []
+  const items: RedisCartItem[] = data ? JSON.parse(data) : []
 
   const i = items.findIndex(x => x.productId === productId)
   if (i >= 0) items[i].qty += qty ?? 1
@@ -50,7 +52,7 @@ export async function DELETE(req: NextRequest) {
   const { k } = await currentKey()
   const redis = getRedis()
   const data = await redis.get(k)
-  let items: CartItem[] = data ? JSON.parse(data) : []
+  let items: RedisCartItem[] = data ? JSON.parse(data) : []
 
   if (clear) items = []
   else if (productId) items = items.filter(x => x.productId !== productId)

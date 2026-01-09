@@ -1,15 +1,49 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getRegionPage } from "@/lib/api";
+import { getRegionPage } from "@/lib/api/discovery";
 import { ProductCard } from "@/components/ProductCard";
+
+interface Region {
+  slug: string;
+  label: string;
+}
+
+interface Seller {
+  id: string;
+  sellerHandle: string;
+  shopName?: string;
+  shopLogoUrl?: string;
+  city?: string;
+  country?: string;
+  ratingAvg?: number;
+  ratingCount?: number;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  imageUrl?: string;
+  seller?: {
+    shopName?: string;
+    sellerHandle?: string;
+  };
+}
+
+interface RegionPageData {
+  region: Region;
+  sellers: Seller[];
+  products: Product[];
+}
 
 export default async function RegionPage({
   params,
 }: {
   params: { regionSlug: string };
 }) {
-  const data = await getRegionPage(params.regionSlug).catch(() => null);
+  const data: RegionPageData | null = await getRegionPage(params.regionSlug).catch(() => null);
   if (!data) return notFound();
 
   const { region, sellers, products } = data;
@@ -31,11 +65,11 @@ export default async function RegionPage({
 
         {sellers.length === 0 ? (
           <div className="rounded-2xl border border-border bg-card p-6 text-sm text-muted-foreground">
-            We're onboarding sellers in this area.
+            {"We're onboarding sellers in this area."}
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sellers.map((s: any) => (
+            {sellers.map((s) => (
               <Link
                 key={s.id}
                 href={`/store/${s.sellerHandle}`}
@@ -86,7 +120,7 @@ export default async function RegionPage({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((p: any) => (
+            {products.map((p) => (
               <ProductCard
                 key={p.id}
                 p={{

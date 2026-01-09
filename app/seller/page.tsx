@@ -20,7 +20,7 @@ export default async function SellerPage() {
     redirect("/auth/login?callbackUrl=/seller");
   }
 
-  const userId = (session.user as any)?.id;
+  const userId = session.user.id;
 
   if (!userId) {
     redirect("/auth/login?callbackUrl=/seller");

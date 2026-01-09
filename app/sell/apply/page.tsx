@@ -1,21 +1,29 @@
-"use client";
+'use client'
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import {
-  submitSellerApplication,
-  getMySellerApplication,
-} from "@/lib/api";
+import { submitSellerApplication, getMySellerApplication } from "@/lib/api/seller-applications";
 
-export default function ApplyToSellPage() {
+interface SellerApplication {
+  id: string;
+  businessName: string;
+  phone: string;
+  country: string;
+  city: string;
+  storefrontDesc: string;
+  status: string;
+  adminNote?: string;
+  createdAt: string;
+}
+
+export default function SellerApplicationPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [existing, setExisting] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sent, setSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
+  const [sent, setSent] = useState(false);
+  const [existing, setExisting] = useState<SellerApplication | null>(null);
   const [form, setForm] = useState({
     businessName: "",
     phone: "",
@@ -24,16 +32,18 @@ export default function ApplyToSellPage() {
     storefrontDesc: "",
   });
 
+  // Load existing application on mount
   useEffect(() => {
     async function load() {
       if (status === "loading") return;
+      setLoading(true);
 
       if (!session?.user) {
         setLoading(false);
         return;
       }
 
-      const userId = (session.user as any)?.id;
+      const userId = session.user.id;
       if (!userId) {
         setLoading(false);
         return;
@@ -50,7 +60,7 @@ export default function ApplyToSellPage() {
   async function submit(e: React.FormEvent) {
     e.preventDefault();
 
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) return;
 
     setSubmitting(true);
@@ -196,8 +206,7 @@ export default function ApplyToSellPage() {
           {existing.status === "PENDING" && (
             <div className="pt-4 border-t border-border">
               <div className="text-sm text-muted-foreground">
-                Your application is under review. We'll notify you after
-                verification.
+                {"Your application is under review. We'll notify you after verification."}
               </div>
             </div>
           )}
@@ -208,7 +217,7 @@ export default function ApplyToSellPage() {
                 Note from Review Team
               </div>
               <div className="text-sm text-foreground italic">
-                "{existing.adminNote}"
+                {`"${existing.adminNote}"`}
               </div>
             </div>
           )}
@@ -229,92 +238,80 @@ export default function ApplyToSellPage() {
   // Otherwise show the application form
   return (
     <div className="mx-auto max-w-md px-4 py-16">
-      <h1 className="text-2xl font-semibold mb-2 text-foreground">
-        Apply to Sell on SokoNova
-      </h1>
-      <p className="text-muted-foreground text-sm mb-6">
-        Tell us what you sell so we can verify you and unlock the Seller
-        Dashboard for your account.
-      </p>
+      <div className="text-center mb-8">
+        <h1 className="text-2xl font-semibold text-foreground mb-2">
+          Become a Seller
+        </h1>
+        <p className="text-muted-foreground text-sm">
+          Join our marketplace to sell your products
+        </p>
+      </div>
 
-      {sent && (
-        <div className="rounded-xl border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-950 p-3 text-xs text-green-800 dark:text-green-200 mb-4">
-          ✓ Application submitted successfully. We'll review it shortly.
-        </div>
-      )}
-
-      <form onSubmit={submit} className="space-y-4 text-sm">
+      <form onSubmit={submit} className="bg-card border border-border rounded-xl p-6 space-y-4">
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Business / Store Name *
+          <label className="block text-xs text-muted-foreground mb-1">
+            Business Name
           </label>
           <input
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="e.g., Nairobi Crafts Co."
+            type="text"
             value={form.businessName}
-            onChange={(e) =>
-              setForm({ ...form, businessName: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, businessName: e.target.value })}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
             required
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Phone / WhatsApp *
+          <label className="block text-xs text-muted-foreground mb-1">
+            Phone Number
           </label>
           <input
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="+254 712 345 678"
+            type="tel"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
             required
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Country *
+            <label className="block text-xs text-muted-foreground mb-1">
+              Country
             </label>
             <input
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Kenya"
+              type="text"
               value={form.country}
               onChange={(e) => setForm({ ...form, country: e.target.value })}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
               required
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              City *
+            <label className="block text-xs text-muted-foreground mb-1">
+              City
             </label>
             <input
-              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Nairobi"
+              type="text"
               value={form.city}
               onChange={(e) => setForm({ ...form, city: e.target.value })}
+              className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
               required
             />
           </div>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            What do you sell? *
+          <label className="block text-xs text-muted-foreground mb-1">
+            What do you sell?
           </label>
           <textarea
-            className="w-full rounded-xl border border-border bg-background px-3 py-2 h-24 text-foreground focus:outline-none focus:ring-2 focus:ring-primary resize-none"
-            placeholder="Tell us about your products, how you source them, and your average order size..."
             value={form.storefrontDesc}
-            onChange={(e) =>
-              setForm({ ...form, storefrontDesc: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, storefrontDesc: e.target.value })}
+            className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm h-24 resize-none"
+            placeholder="Describe the products or categories you plan to sell"
             required
           />
-          <div className="text-[11px] text-muted-foreground mt-1">
-            Be specific! This helps us verify legitimate sellers.
-          </div>
         </div>
 
         <button
@@ -325,9 +322,8 @@ export default function ApplyToSellPage() {
           {submitting ? "Submitting..." : "Submit Application"}
         </button>
 
-        <div className="text-[11px] text-muted-foreground text-center pt-2">
-          We review all applications to protect buyers and maintain quality
-          standards.
+        <div className="text-[10px] text-muted-foreground text-center">
+          {"Applications are reviewed within 1-2 business days. You'll receive an email when your status changes."}
         </div>
       </form>
     </div>

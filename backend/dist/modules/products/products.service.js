@@ -13,103 +13,124 @@ exports.ProductsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
 let ProductsService = class ProductsService {
+    getByIds(idArray) {
+        throw new Error('Method not implemented.');
+    }
+    list(arg0) {
+        throw new Error('Method not implemented.');
+    }
+    getById(id) {
+        throw new Error('Method not implemented.');
+    }
+    create(body) {
+        return this.createProduct(body);
+    }
+    update(id, body) {
+        throw new Error('Method not implemented.');
+    }
     constructor(prisma) {
         this.prisma = prisma;
     }
-    findAll() {
-        return this.prisma.product.findMany();
-    }
-    findOne(id) {
-        return this.prisma.product.findUnique({ where: { id } });
-    }
-    listAll() {
-        return this.prisma.product.findMany({
-            include: { inventory: true, seller: { select: { id: true, name: true } } },
-            orderBy: { createdAt: 'desc' },
-            take: 100,
-        });
-    }
-    getById(id) {
-        return this.prisma.product.findUnique({
-            where: { id },
-            include: { inventory: true, seller: { select: { id: true, name: true } } },
-        });
-    }
-    async create(dto) {
+    async createProduct(data) {
         const product = await this.prisma.product.create({
             data: {
-                sellerId: dto.sellerId,
-                title: dto.title,
-                description: dto.description,
-                price: dto.price,
-                currency: dto.currency,
-                imageUrl: dto.imageUrl,
-                inventory: { create: { quantity: 100 } },
+                sellerId: data.sellerId,
+                title: data.title,
+                description: data.description,
+                price: data.price,
+                currency: data.currency || 'USD',
+                imageUrl: data.imageUrl,
+                category: data.category,
+            },
+        });
+        await this.prisma.inventory.create({
+            data: {
+                productId: product.id,
+                quantity: 0,
             },
         });
         return product;
     }
-    async sellerList(sellerId) {
-        return this.prisma.product.findMany({
+    async getSellerProducts(sellerId) {
+        const products = await this.prisma.product.findMany({
             where: { sellerId },
             include: {
                 inventory: true,
-                orderItems: {
-                    include: {
-                        order: {
-                            select: {
-                                id: true,
-                                status: true,
-                                createdAt: true,
-                                userId: true,
-                            },
-                        },
+                _count: {
+                    select: {
+                        views: true,
                     },
                 },
             },
-            orderBy: { createdAt: 'desc' },
+            orderBy: {
+                createdAt: 'desc',
+            },
         });
+        return products;
     }
-    async sellerUpdate(sellerId, productId, data) {
-        const existing = await this.prisma.product.findUnique({
-            where: { id: productId },
+    async getProductById(id) {
+        const product = await this.prisma.product.findUnique({
+            where: { id },
+            include: {
+                seller: {
+                    select: {
+                        id: true,
+                        shopName: true,
+                        shopLogoUrl: true,
+                        ratingAvg: true,
+                        ratingCount: true,
+                    },
+                },
+                inventory: true,
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
         });
-        if (!existing) {
-            throw new common_1.NotFoundException('Product not found');
-        }
-        if (existing.sellerId !== sellerId) {
-            throw new common_1.ForbiddenException('Not authorized to update this product');
-        }
-        return this.prisma.product.update({
+        return product;
+    }
+    async updateProduct(productId, data) {
+        const product = await this.prisma.product.update({
             where: { id: productId },
             data,
         });
+        return product;
     }
-    async sellerUpdateInventory(sellerId, productId, quantity) {
-        const existing = await this.prisma.product.findUnique({
-            where: { id: productId },
-            include: { inventory: true },
+    async updateInventory(productId, quantity) {
+        const inventory = await this.prisma.inventory.upsert({
+            where: { productId },
+            update: { quantity },
+            create: {
+                productId,
+                quantity,
+            },
         });
-        if (!existing) {
-            throw new common_1.NotFoundException('Product not found');
-        }
-        if (existing.sellerId !== sellerId) {
-            throw new common_1.ForbiddenException('Not authorized to update inventory');
-        }
-        if (existing.inventory) {
-            return this.prisma.inventory.update({
-                where: { productId: productId },
-                data: { quantity },
-            });
-        }
-        else {
-            return this.prisma.inventory.create({
-                data: {
-                    productId: productId,
-                    quantity,
+        return inventory;
+    }
+    async deleteProduct(productId) {
+        const product = await this.prisma.product.delete({
+            where: { id: productId },
+        });
+        return product;
+    }
+    async recordProductView(userId, productId) {
+        await this.prisma.productView.create({
+            data: {
+                userId,
+                productId,
+            },
+        });
+        const product = await this.prisma.product.update({
+            where: { id: productId },
+            data: {
+                viewCount: {
+                    increment: 1,
                 },
-            });
-        }
+            },
+        });
+        return product;
     }
 };
 exports.ProductsService = ProductsService;

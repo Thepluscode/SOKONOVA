@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { openDispute } from "@/lib/api";
+import { openDispute } from "@/lib/api/disputes";
 import { useSession } from "next-auth/react";
 
 export function DisputeButtonClient({
@@ -17,7 +17,7 @@ export function DisputeButtonClient({
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
 
   async function submit() {
-    const userId = (session?.user as any)?.id;
+    const userId = session?.user?.id;
     if (!userId) {
       setStatus("error");
       return;
@@ -57,7 +57,7 @@ export function DisputeButtonClient({
       ) : (
         <div className="rounded-xl border border-border bg-card p-3 space-y-2">
           <div className="text-[11px] font-semibold text-foreground">
-            Tell us what's wrong
+            {"Tell us what's wrong"}
           </div>
 
           <select

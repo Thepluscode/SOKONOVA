@@ -1,5 +1,4 @@
-
-import { Injectable } from '@nestjs/common'
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common'
 import { PrismaService } from '../prisma.service'
 import { CreateOrderDto } from './dto/create-order.dto'
 
@@ -17,54 +16,197 @@ export class OrdersService {
     })
   }
 
+  async findById(orderId: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                seller: {
+                  select: {
+                    id: true,
+                    name: true,
+                    sellerHandle: true,
+                    shopLogoUrl: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      throw new NotFoundException('Order not found');
+    }
+
+    return order;
+  }
+
+  // Centralized fee calculation
+  private calculateFee(grossAmount: number): { gross: number; fee: number; net: number } {
+    const gross = grossAmount;
+    const fee = gross * 0.10; // 10% marketplace commission
+    const net = gross - fee;
+    return { gross, fee, net };
+  }
+
+  /**
+   * MVP TESTING: Create order directly without cart
+   * Used for E2E testing and manual order creation
+   */
+  async createDirect(
+    userId: string,
+    items: Array<{ productId: string; qty: number; price: number }>,
+    total: number,
+    currency: string,
+  ) {
+    // Calculate total and prepare order items
+    let calculatedTotal = 0;
+    const orderItemsData = [];
+
+    for (const item of items) {
+      const product = await this.prisma.product.findUnique({
+        where: { id: item.productId },
+      });
+
+      if (!product) {
+        throw new NotFoundException(`Product ${item.productId} not found`);
+      }
+
+      const lineTotal = item.price * item.qty;
+      calculatedTotal += lineTotal;
+
+      const { gross, fee, net } = this.calculateFee(lineTotal);
+
+      orderItemsData.push({
+        productId: item.productId,
+        qty: item.qty,
+        price: item.price,
+        sellerId: product.sellerId,
+        grossAmount: gross,
+        feeAmount: fee,
+        netAmount: net,
+        payoutStatus: 'PENDING',
+        currency: currency || 'USD',
+      });
+    }
+
+    // Create order with items
+    const order = await this.prisma.$transaction(async (tx) => {
+      const created = await tx.order.create({
+        data: {
+          userId,
+          total: calculatedTotal,
+          currency,
+          status: 'PENDING',
+        },
+      });
+
+      for (const itemData of orderItemsData) {
+        await tx.orderItem.create({
+          data: {
+            orderId: created.id,
+            ...itemData,
+          },
+        });
+      }
+
+      return created;
+    });
+
+    return order;
+  }
+
   async createFromCart(dto: CreateOrderDto, cartId: string) {
+    // 1. Verify cart ownership
     const cart = await this.prisma.cart.findUnique({
       where: { id: cartId },
       include: { items: { include: { product: true } } },
     })
-    if (!cart || !cart.items.length) {
-      throw new Error('Cart empty or not found')
+    if (!cart) {
+      throw new NotFoundException('Cart not found')
+    }
+    
+    // Check if the cart belongs to the requesting user
+    if (cart.userId !== dto.userId) {
+      throw new ForbiddenException('You do not have permission to access this cart')
     }
 
+    if (!cart.items.length) {
+      throw new Error('Cart is empty')
+    }
+
+    // 2. Calculate total on the server side
+    let calculatedTotal = 0;
+    const orderItemsData = [];
+
+    for (const ci of cart.items) {
+      const unitPrice = Number(ci.product.price); // Decimal -> number
+      const qty = ci.qty;
+      const lineTotal = unitPrice * qty;
+      calculatedTotal += lineTotal;
+
+      // Snapshot seller earnings data at order time
+      const sellerId = ci.product.sellerId;
+      
+      // Calculate earnings using centralized function
+      const { gross, fee, net } = this.calculateFee(lineTotal);
+
+      orderItemsData.push({
+        productId: ci.productId,
+        qty,
+        price: ci.product.price,
+        // Seller earnings tracking
+        sellerId,
+        grossAmount: gross,
+        feeAmount: fee,
+        netAmount: net,
+        payoutStatus: 'PENDING',
+        currency: ci.product.currency || 'USD',
+      });
+    }
+
+    // 3. Verify the client-supplied total matches our calculation
+    const tolerance = 0.01; // Allow for small floating point differences
+    if (Math.abs(dto.total - calculatedTotal) > tolerance) {
+      throw new Error(`Total mismatch: expected ${calculatedTotal}, got ${dto.total}`)
+    }
+
+    // 4. Create order with verified data
     const order = await this.prisma.$transaction(async (tx) => {
       const created = await tx.order.create({
         data: {
           userId: dto.userId,
-          total: dto.total,
+          total: calculatedTotal, // Use our calculated total
           currency: dto.currency,
           status: 'PENDING',
           shippingAdr: dto.shippingAdr,
         },
       })
 
-      for (const ci of cart.items) {
-        // Snapshot seller earnings data at order time
-        const sellerId = ci.product.sellerId
-        const unitPrice = Number(ci.product.price) // Decimal -> number
-        const qty = ci.qty
-
-        // Calculate earnings: gross → fee → net
-        const gross = unitPrice * qty
-        const fee = gross * 0.10 // 10% marketplace commission
-        const net = gross - fee
-
+      // Create order items
+      for (const itemData of orderItemsData) {
         await tx.orderItem.create({
           data: {
             orderId: created.id,
-            productId: ci.productId,
-            qty,
-            price: ci.product.price,
-            // Seller earnings tracking
-            sellerId,
-            grossAmount: gross,
-            feeAmount: fee,
-            netAmount: net,
-            payoutStatus: 'PENDING',
-            currency: ci.product.currency || 'USD',
+            ...itemData,
           },
         })
       }
 
+      // Clear the cart
       await tx.cartItem.deleteMany({ where: { cartId } })
 
       return created

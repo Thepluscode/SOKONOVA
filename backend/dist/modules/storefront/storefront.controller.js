@@ -19,18 +19,96 @@ let StorefrontController = class StorefrontController {
     constructor(sf) {
         this.sf = sf;
     }
-    async getByHandle(handle) {
-        return this.sf.getStorefrontByHandle(handle);
+    getFeaturedSellers(limit) {
+        const limitNum = limit ? parseInt(limit, 10) : 10;
+        return this.sf.getFeaturedSellers(limitNum);
+    }
+    getAllSellers(page, limit) {
+        const pageNum = page ? parseInt(page, 10) : 1;
+        const limitNum = limit ? parseInt(limit, 10) : 20;
+        return this.sf.getAllSellers(pageNum, limitNum);
+    }
+    async getSellerById(id) {
+        const seller = await this.sf.getSellerById(id);
+        if (!seller) {
+            throw new common_1.NotFoundException('Seller not found');
+        }
+        return seller;
+    }
+    async getSellerProducts(handle, page, limit) {
+        const pageNum = page ? parseInt(page, 10) : 1;
+        const limitNum = limit ? parseInt(limit, 10) : 20;
+        const result = await this.sf.getSellerProducts(handle, pageNum, limitNum);
+        if (!result) {
+            throw new common_1.NotFoundException('Seller not found');
+        }
+        return result;
+    }
+    async getSellerReviews(handle, page, limit) {
+        const pageNum = page ? parseInt(page, 10) : 1;
+        const limitNum = limit ? parseInt(limit, 10) : 20;
+        const result = await this.sf.getSellerReviews(handle, pageNum, limitNum);
+        if (!result) {
+            throw new common_1.NotFoundException('Seller not found');
+        }
+        return result;
+    }
+    async getStorefrontByHandle(handle) {
+        const seller = await this.sf.getSellerByHandle(handle);
+        if (!seller) {
+            throw new common_1.NotFoundException('Seller not found');
+        }
+        return seller;
     }
 };
 exports.StorefrontController = StorefrontController;
 __decorate([
-    (0, common_1.Get)('handle/:handle'),
+    (0, common_1.Get)('featured'),
+    __param(0, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], StorefrontController.prototype, "getFeaturedSellers", null);
+__decorate([
+    (0, common_1.Get)('sellers'),
+    __param(0, (0, common_1.Query)('page')),
+    __param(1, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String]),
+    __metadata("design:returntype", void 0)
+], StorefrontController.prototype, "getAllSellers", null);
+__decorate([
+    (0, common_1.Get)('seller/:id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], StorefrontController.prototype, "getSellerById", null);
+__decorate([
+    (0, common_1.Get)(':handle/products'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], StorefrontController.prototype, "getSellerProducts", null);
+__decorate([
+    (0, common_1.Get)(':handle/reviews'),
+    __param(0, (0, common_1.Param)('handle')),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:returntype", Promise)
+], StorefrontController.prototype, "getSellerReviews", null);
+__decorate([
+    (0, common_1.Get)(':handle'),
     __param(0, (0, common_1.Param)('handle')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
-], StorefrontController.prototype, "getByHandle", null);
+], StorefrontController.prototype, "getStorefrontByHandle", null);
 exports.StorefrontController = StorefrontController = __decorate([
     (0, common_1.Controller)('storefront'),
     __metadata("design:paramtypes", [storefront_service_1.StorefrontService])

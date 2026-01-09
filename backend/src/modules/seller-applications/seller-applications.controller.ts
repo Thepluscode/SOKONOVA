@@ -23,6 +23,15 @@ export class SellerApplicationsController {
     return this.svc.apply(body);
   }
 
+  // INSTANT ACTIVATION (MVP Mode)
+  // POST /seller-applications/activate-instant
+  // Auto-approves seller immediately for quick onboarding
+  @Post('activate-instant')
+  async activateInstant(@Body() body: ApplyDto) {
+    // TODO: require body.userId === session.user.id
+    return this.svc.applyAndActivateInstantly(body);
+  }
+
   // BUYER: check my status
   // GET /seller-applications/mine?userId=abc
   @Get('mine')

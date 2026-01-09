@@ -23,8 +23,14 @@ let OrdersController = class OrdersController {
     async listForUser(userId) {
         return this.orders.listForUser(userId);
     }
+    async findById(id) {
+        return this.orders.findById(id);
+    }
     async createFromCart(dto, cartId) {
         return this.orders.createFromCart(dto, cartId);
+    }
+    async createDirect(body) {
+        return this.orders.createDirect(body.userId, body.items, body.total, body.currency);
     }
 };
 exports.OrdersController = OrdersController;
@@ -36,6 +42,13 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "listForUser", null);
 __decorate([
+    (0, common_1.Get)(':id'),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "findById", null);
+__decorate([
     (0, common_1.Post)('create'),
     __param(0, (0, common_1.Body)()),
     __param(1, (0, common_1.Query)('cartId')),
@@ -43,6 +56,13 @@ __decorate([
     __metadata("design:paramtypes", [create_order_dto_1.CreateOrderDto, String]),
     __metadata("design:returntype", Promise)
 ], OrdersController.prototype, "createFromCart", null);
+__decorate([
+    (0, common_1.Post)('create-direct'),
+    __param(0, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], OrdersController.prototype, "createDirect", null);
 exports.OrdersController = OrdersController = __decorate([
     (0, common_1.Controller)('orders'),
     __metadata("design:paramtypes", [orders_service_1.OrdersService])

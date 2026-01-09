@@ -1,0 +1,2 @@
+import{d as t}from"./index-ZA5ZORNU.js";const n={getSummary:async e=>t.get(`/payouts/seller/${e}/summary`),getHistory:async(e,r=20)=>t.get(`/payouts/seller/${e}/history?limit=${r}`),requestPayout:async(e,r,s)=>t.post(`/payouts/seller/${e}/request`,{amount:r,method:s}),getPendingEarnings:async e=>t.get(`/payouts/seller/${e}/pending`)};export{n as p};
+//# sourceMappingURL=payoutsService-DZohuwBZ.js.map

@@ -5,4 +5,8 @@ export declare class ApplyDto {
     country: string;
     city: string;
     storefrontDesc: string;
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
+    bankCode?: string;
 }

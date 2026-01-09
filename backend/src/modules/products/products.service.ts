@@ -1,130 +1,162 @@
-
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common'
-import { PrismaService } from '../prisma.service'
-import { CreateProductDto } from './dto/create-product.dto'
-import { UpdateProductDto } from './dto/update-product.dto'
+import { Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class ProductsService {
+  [x: string]: any;
+  getByIds(idArray: string[]) {
+    throw new Error('Method not implemented.');
+  }
+  list(arg0: { sellerId: string; category: string; }) {
+    throw new Error('Method not implemented.');
+  }
+  getById(id: string) {
+    throw new Error('Method not implemented.');
+  }
+  create(body: { sellerId: string; title: string; description: string; price: number; currency?: string; imageUrl?: string; category?: string; }) {
+    return this.createProduct(body);
+  }
+  update(id: string, body: { title?: string; description?: string; price?: number; currency?: string; imageUrl?: string; category?: string; }) {
+    throw new Error('Method not implemented.');
+  }
   constructor(private prisma: PrismaService) {}
 
-  findAll() {
-    return this.prisma.product.findMany()
-  }
-
-  findOne(id: string) {
-    return this.prisma.product.findUnique({ where: { id } })
-  }
-
-  listAll() {
-    return this.prisma.product.findMany({
-      include: { inventory: true, seller: { select: { id: true, name: true } } },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    })
-  }
-
-  getById(id: string) {
-    return this.prisma.product.findUnique({
-      where: { id },
-      include: { inventory: true, seller: { select: { id: true, name: true } } },
-    })
-  }
-
-  async create(dto: CreateProductDto) {
+  async createProduct(data: {
+    sellerId: string;
+    title: string;
+    description: string;
+    price: number;
+    currency?: string;
+    imageUrl?: string;
+    category?: string;
+  }) {
     const product = await this.prisma.product.create({
       data: {
-        sellerId: dto.sellerId,
-        title: dto.title,
-        description: dto.description,
-        price: dto.price,
-        currency: dto.currency,
-        imageUrl: dto.imageUrl,
-        inventory: { create: { quantity: 100 } },
+        sellerId: data.sellerId,
+        title: data.title,
+        description: data.description,
+        price: data.price,
+        currency: data.currency || 'USD',
+        imageUrl: data.imageUrl,
+        category: data.category,
       },
-    })
-    return product
+    });
+
+    // Create inventory record
+    await this.prisma.inventory.create({
+      data: {
+        productId: product.id,
+        quantity: 0,
+      },
+    });
+
+    return product;
   }
 
-  // ========== SELLER-SCOPED METHODS ==========
-
-  /**
-   * Return only products owned by this seller
-   */
-  async sellerList(sellerId: string) {
-    return this.prisma.product.findMany({
+  async getSellerProducts(sellerId: string) {
+    const products = await this.prisma.product.findMany({
       where: { sellerId },
       include: {
         inventory: true,
-        orderItems: {
-          include: {
-            order: {
-              select: {
-                id: true,
-                status: true,
-                createdAt: true,
-                userId: true,
-              },
-            },
+        _count: {
+          select: {
+            views: true,
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
-    })
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return products;
   }
 
-  /**
-   * Update a product if the seller owns it
-   */
-  async sellerUpdate(sellerId: string, productId: string, data: UpdateProductDto) {
-    // Verify ownership
-    const existing = await this.prisma.product.findUnique({
-      where: { id: productId },
-    })
+  async getProductById(id: string) {
+    const product = await this.prisma.product.findUnique({
+      where: { id },
+      include: {
+        seller: {
+          select: {
+            id: true,
+            shopName: true,
+            shopLogoUrl: true,
+            ratingAvg: true,
+            ratingCount: true,
+          },
+        },
+        inventory: true,
+        _count: {
+          select: {
+            views: true,
+          },
+        },
+      },
+    });
 
-    if (!existing) {
-      throw new NotFoundException('Product not found')
-    }
+    return product;
+  }
 
-    if (existing.sellerId !== sellerId) {
-      throw new ForbiddenException('Not authorized to update this product')
-    }
-
-    return this.prisma.product.update({
+  async updateProduct(
+    productId: string,
+    data: {
+      title?: string;
+      description?: string;
+      price?: number;
+      currency?: string;
+      imageUrl?: string;
+      category?: string;
+    },
+  ) {
+    const product = await this.prisma.product.update({
       where: { id: productId },
       data,
-    })
+    });
+
+    return product;
   }
 
-  /**
-   * Update inventory for a product if the seller owns it
-   */
-  async sellerUpdateInventory(sellerId: string, productId: string, quantity: number) {
-    const existing = await this.prisma.product.findUnique({
+  async updateInventory(productId: string, quantity: number) {
+    const inventory = await this.prisma.inventory.upsert({
+      where: { productId },
+      update: { quantity },
+      create: {
+        productId,
+        quantity,
+      },
+    });
+
+    return inventory;
+  }
+
+  async deleteProduct(productId: string) {
+    // Soft delete by marking as inactive or actually delete
+    const product = await this.prisma.product.delete({
       where: { id: productId },
-      include: { inventory: true },
-    })
+    });
 
-    if (!existing) {
-      throw new NotFoundException('Product not found')
-    }
+    return product;
+  }
 
-    if (existing.sellerId !== sellerId) {
-      throw new ForbiddenException('Not authorized to update inventory')
-    }
+  async recordProductView(userId: string, productId: string) {
+    // Record the view
+    await this.prisma.productView.create({
+      data: {
+        userId,
+        productId,
+      },
+    });
 
-    if (existing.inventory) {
-      return this.prisma.inventory.update({
-        where: { productId: productId },
-        data: { quantity },
-      })
-    } else {
-      return this.prisma.inventory.create({
-        data: {
-          productId: productId,
-          quantity,
+    // Update product view count
+    const product = await this.prisma.product.update({
+      where: { id: productId },
+      data: {
+        viewCount: {
+          increment: 1,
         },
-      })
-    }
+      },
+    });
+
+    return product;
   }
 }

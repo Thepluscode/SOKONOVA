@@ -14,32 +14,22 @@ exports.DisputesService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
 const notifications_service_1 = require("../notifications/notifications.service");
+const common_2 = require("@nestjs/common");
 let DisputesService = DisputesService_1 = class DisputesService {
     constructor(prisma, notifications) {
         this.prisma = prisma;
         this.notifications = notifications;
-        this.logger = new common_1.Logger(DisputesService_1.name);
+        this.logger = new common_2.Logger(DisputesService_1.name);
     }
     async open(dto) {
         const oi = await this.prisma.orderItem.findUnique({
             where: { id: dto.orderItemId },
-            include: {
-                order: true,
-            },
+            include: { order: true },
         });
         if (!oi)
             throw new common_1.NotFoundException('Order item not found');
         if (oi.order.userId !== dto.buyerId) {
-            throw new common_1.ForbiddenException('You do not own this item');
-        }
-        const existingOpen = await this.prisma.dispute.findFirst({
-            where: {
-                orderItemId: dto.orderItemId,
-                status: { in: ['OPEN', 'SELLER_RESPONDED'] },
-            },
-        });
-        if (existingOpen) {
-            throw new common_1.BadRequestException('Dispute already open for this item');
+            throw new common_1.ForbiddenException('Not your order item');
         }
         const dispute = await this.prisma.dispute.create({
             data: {

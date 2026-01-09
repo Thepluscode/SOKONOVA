@@ -1,15 +1,44 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { getCategoryPage } from "@/lib/api";
+import { getCategoryPage } from "@/lib/api/discovery";
 import { ProductCard } from "@/components/ProductCard";
+
+interface Seller {
+  id: string;
+  sellerHandle: string;
+  shopName?: string;
+  shopLogoUrl?: string;
+  city?: string;
+  country?: string;
+  ratingAvg?: number;
+  ratingCount?: number;
+}
+
+interface Product {
+  id: string;
+  title: string;
+  price: number;
+  currency: string;
+  imageUrl?: string;
+  seller?: {
+    shopName?: string;
+    sellerHandle?: string;
+  };
+}
+
+interface CategoryPageData {
+  slug: string;
+  sellers: Seller[];
+  products: Product[];
+}
 
 export default async function CategoryPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const data = await getCategoryPage(params.slug).catch(() => null);
+  const data: CategoryPageData | null = await getCategoryPage(params.slug).catch(() => null);
   if (!data) return notFound();
 
   const { slug, sellers, products } = data;
@@ -42,7 +71,7 @@ export default async function CategoryPage({
           </div>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {sellers.map((s: any) => (
+            {sellers.map((s) => (
               <Link
                 key={s.id}
                 href={`/store/${s.sellerHandle}`}
@@ -93,7 +122,7 @@ export default async function CategoryPage({
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map((p: any) => (
+            {products.map((p) => (
               <ProductCard
                 key={p.id}
                 p={{

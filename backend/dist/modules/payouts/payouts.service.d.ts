@@ -19,9 +19,9 @@ export declare class PayoutsService {
                 imageUrl: string;
             };
             currency: string;
-            orderId: string;
             price: import("@prisma/client/runtime/library").Decimal;
             productId: string;
+            orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
@@ -35,9 +35,9 @@ export declare class PayoutsService {
             title: string;
         };
         currency: string;
-        orderId: string;
         price: import("@prisma/client/runtime/library").Decimal;
         productId: string;
+        orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
         feeAmount: import("@prisma/client/runtime/library").Decimal;

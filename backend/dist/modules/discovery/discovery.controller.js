@@ -15,12 +15,16 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiscoveryController = void 0;
 const common_1 = require("@nestjs/common");
 const discovery_service_1 = require("./discovery.service");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 let DiscoveryController = class DiscoveryController {
     constructor(disc) {
         this.disc = disc;
     }
     async highlights() {
-        return this.disc.getHighlights();
+        return this.disc.getDiscoveryHighlights();
+    }
+    async personalized(userId) {
+        return this.disc.getPersonalizedDiscovery(userId);
     }
     async byCategory(slug) {
         return this.disc.getCategoryPage(slug.toLowerCase());
@@ -36,6 +40,14 @@ __decorate([
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)
 ], DiscoveryController.prototype, "highlights", null);
+__decorate([
+    (0, common_1.Get)('personalized'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", Promise)
+], DiscoveryController.prototype, "personalized", null);
 __decorate([
     (0, common_1.Get)('by-category/:slug'),
     __param(0, (0, common_1.Param)('slug')),

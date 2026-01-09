@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getOpsSummary } from "@/lib/api";
+import { getOpsSummary } from "@/lib/api/analytics";
 
 export default async function OpsDashboardPage() {
   // Auth check: must be ADMIN
@@ -168,8 +168,7 @@ export default async function OpsDashboardPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-semibold">Top Sellers Owed Funds</h2>
         <p className="text-[11px] text-muted-foreground">
-          This is what we owe to sellers for delivered items that haven't
-          been paid out yet.
+          {"This is what we owe to sellers for delivered items that haven't been paid out yet."}
         </p>
         <TableSimple
           headers={[

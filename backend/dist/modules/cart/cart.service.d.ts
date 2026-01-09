@@ -6,15 +6,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                title: string;
                 createdAt: Date;
                 updatedAt: Date;
-                price: import("@prisma/client/runtime/library").Decimal;
-                sellerId: string;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 currency: string;
+                sellerId: string;
+                title: string;
                 description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
                 imageUrl: string | null;
                 category: string | null;
+                viewCount: number;
             };
         } & {
             id: string;
@@ -26,24 +29,28 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         userId: string | null;
+        createdAt: Date;
         updatedAt: Date;
         anonKey: string | null;
+        version: number;
     }>;
     ensureCartForUser(userId?: string, anonKey?: string): Promise<{
         items: ({
             product: {
                 id: string;
-                title: string;
                 createdAt: Date;
                 updatedAt: Date;
-                price: import("@prisma/client/runtime/library").Decimal;
-                sellerId: string;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 currency: string;
+                sellerId: string;
+                title: string;
                 description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
                 imageUrl: string | null;
                 category: string | null;
+                viewCount: number;
             };
         } & {
             id: string;
@@ -55,19 +62,109 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        createdAt: Date;
         userId: string | null;
+        createdAt: Date;
         updatedAt: Date;
         anonKey: string | null;
+        version: number;
     }>;
     addItem(cartId: string, productId: string, qty: number): Promise<{
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
         id: string;
+        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
-        productId: string;
-        qty: number;
-        cartId: string;
+        anonKey: string | null;
+        version: number;
     }>;
-    removeItem(cartId: string, productId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
-    clear(cartId: string): Promise<import(".prisma/client").Prisma.BatchPayload>;
+    removeItem(cartId: string, productId: string): Promise<{
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
+        id: string;
+        userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        anonKey: string | null;
+        version: number;
+    }>;
+    clear(cartId: string): Promise<{
+        items: ({
+            product: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                currency: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            qty: number;
+            cartId: string;
+        })[];
+    } & {
+        id: string;
+        userId: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        anonKey: string | null;
+        version: number;
+    }>;
 }

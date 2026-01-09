@@ -14,51 +14,48 @@ import { ModerateReviewDto } from './dto/moderate-review.dto';
 export class ReviewsService {
   private readonly logger = new Logger(ReviewsService.name);
 
-  constructor(
-    private prisma: PrismaService,
-    private notifications: NotificationsService,
-  ) {}
+  constructor(private prisma: PrismaService) {}
 
-  // 1. Buyer leaves a review for an item they've received
-  async createReview(dto: CreateReviewDto) {
-    // Get order item
-    const oi = await this.prisma.orderItem.findUnique({
-      where: { id: dto.orderItemId },
-      include: {
-        order: true,
-      },
+  async createReview(data: {
+    orderItemId: string;
+    buyerId: string;
+    sellerId?: string;
+    productId?: string;
+    rating: number;
+    comment: string;
+  }) {
+    // Fetch orderItem to get sellerId and productId if not provided
+    const orderItem = await this.prisma.orderItem.findUnique({
+      where: { id: data.orderItemId },
+      include: { product: true },
     });
-    if (!oi) throw new NotFoundException('Order item not found');
 
-    // Buyer must be the owner of the order
-    if (oi.order.userId !== dto.buyerId) {
-      throw new ForbiddenException('Not your order item');
+    if (!orderItem) {
+      throw new NotFoundException('Order item not found');
     }
 
-    // Only allow review if delivered
-    if (oi.fulfillmentStatus !== 'DELIVERED') {
-      throw new BadRequestException('Item not delivered yet');
-    }
-
-    // Disallow duplicate review for same item/buyer
-    const existing = await this.prisma.review.findFirst({
-      where: {
-        orderItemId: dto.orderItemId,
-        buyerId: dto.buyerId,
-      },
-    });
-    if (existing) {
-      throw new BadRequestException('Already reviewed');
-    }
-
-    // Create review with related data for notifications
     const review = await this.prisma.review.create({
       data: {
-        orderItemId: dto.orderItemId,
-        buyerId: dto.buyerId,
-        sellerId: oi.sellerId, // stored on OrderItem
-        rating: dto.rating,
-        comment: dto.comment,
+        orderItemId: data.orderItemId,
+        buyerId: data.buyerId,
+        sellerId: data.sellerId || orderItem.sellerId,
+        productId: data.productId || orderItem.productId,
+        rating: data.rating,
+        comment: data.comment,
+        isVisible: true,
+      },
+    });
+
+    return review;
+  }
+
+  async getSellerReviews(handle: string, limit = 10) {
+    const reviews = await this.prisma.review.findMany({
+      where: {
+        seller: {
+          sellerHandle: handle,
+        },
+        isVisible: true,
       },
       include: {
         orderItem: {
@@ -76,137 +73,277 @@ export class ReviewsService {
           },
         },
       },
-    });
-
-    // Recompute seller rating summary (avg, count)
-    await this.recomputeSellerRating(oi.sellerId);
-
-    // Notify seller: new review received
-    try {
-      await this.notifications.notifyNewReview(
-        oi.sellerId,
-        review.id,
-        review.orderItem.product.title,
-        review.rating,
-        review.buyer.name || 'A customer',
-      );
-    } catch (error) {
-      this.logger.error(`Failed to send review notification: ${error.message}`);
-    }
-
-    return review;
-  }
-
-  // 2. Public storefront reviews
-  //    load by sellerHandle
-  async listForSellerHandle(handle: string, limit = 20) {
-    // get seller by handle
-    const seller = await this.prisma.user.findFirst({
-      where: {
-        sellerHandle: handle,
-        role: { in: ['SELLER', 'ADMIN'] },
-      },
-      select: {
-        id: true,
-        sellerHandle: true,
-        shopName: true,
-        name: true,
-        ratingAvg: true,
-        ratingCount: true,
-      },
-    });
-    if (!seller) throw new NotFoundException('Seller not found');
-
-    const reviews = await this.prisma.review.findMany({
-      where: {
-        sellerId: seller.id,
-        isVisible: true,
-      },
       orderBy: {
         createdAt: 'desc',
       },
       take: limit,
+    });
+
+    return reviews;
+  }
+
+  // Alias for compatibility
+  async listForSellerHandle(handle: string, limit = 10) {
+    return this.getSellerReviews(handle, limit);
+  }
+
+  async hideReview(id: string, body?: ModerateReviewDto) {
+    const review = await this.prisma.review.update({
+      where: { id },
+      data: { isVisible: false },
+    });
+
+    return review;
+  }
+
+  async getProductReviews(productId: string, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: {
+          productId,
+          isVisible: true,
+        },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.review.count({
+        where: {
+          productId,
+          isVisible: true,
+        },
+      }),
+    ]);
+
+    return {
+      reviews,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getProductReviewsSummary(productId: string) {
+    const reviews = await this.prisma.review.findMany({
+      where: {
+        productId,
+        isVisible: true,
+      },
       select: {
-        id: true,
         rating: true,
-        comment: true,
-        createdAt: true,
+      },
+    });
+
+    if (reviews.length === 0) {
+      return {
+        averageRating: 0,
+        totalReviews: 0,
+        ratingDistribution: {
+          1: 0,
+          2: 0,
+          3: 0,
+          4: 0,
+          5: 0,
+        },
+      };
+    }
+
+    const totalReviews = reviews.length;
+    const averageRating =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / totalReviews;
+
+    const ratingDistribution = {
+      1: reviews.filter((r) => r.rating === 1).length,
+      2: reviews.filter((r) => r.rating === 2).length,
+      3: reviews.filter((r) => r.rating === 3).length,
+      4: reviews.filter((r) => r.rating === 4).length,
+      5: reviews.filter((r) => r.rating === 5).length,
+    };
+
+    return {
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalReviews,
+      ratingDistribution,
+    };
+  }
+
+  async updateReview(
+    id: string,
+    buyerId: string,
+    data: { rating?: number; comment?: string },
+  ) {
+    const review = await this.prisma.review.findUnique({
+      where: { id },
+    });
+
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
+
+    if (review.buyerId !== buyerId) {
+      throw new ForbiddenException('You can only update your own reviews');
+    }
+
+    const updated = await this.prisma.review.update({
+      where: { id },
+      data: {
+        rating: data.rating ?? review.rating,
+        comment: data.comment ?? review.comment,
+      },
+      include: {
         buyer: {
           select: {
             id: true,
             name: true,
-            email: true,
+          },
+        },
+        product: {
+          select: {
+            id: true,
+            title: true,
           },
         },
       },
     });
 
-    return {
-      seller: {
-        id: seller.id,
-        handle: seller.sellerHandle,
-        displayName: seller.shopName || seller.name,
-        ratingAvg: seller.ratingAvg || 0,
-        ratingCount: seller.ratingCount || 0,
-      },
-      reviews,
-    };
-  }
-
-  // 3. Admin hide review
-  async hideReview(reviewId: string, dto: ModerateReviewDto) {
-    const admin = await this.prisma.user.findUnique({
-      where: { id: dto.adminId },
-    });
-    if (!admin || admin.role !== 'ADMIN') {
-      throw new ForbiddenException('Not authorized');
-    }
-
-    const rev = await this.prisma.review.findUnique({
-      where: { id: reviewId },
-    });
-    if (!rev) throw new NotFoundException('Review not found');
-
-    // Hide the review
-    const updated = await this.prisma.review.update({
-      where: { id: reviewId },
-      data: {
-        isVisible: false,
-      },
-    });
-
-    // Update rating summary (if you want to exclude hidden reviews)
-    await this.recomputeSellerRating(updated.sellerId);
-
     return updated;
   }
 
-  // Helper: recompute seller.ratingAvg / ratingCount
-  private async recomputeSellerRating(sellerId: string) {
-    // use only visible reviews
-    const agg = await this.prisma.review.groupBy({
-      by: ['sellerId'],
-      where: {
-        sellerId,
-        isVisible: true,
-      },
-      _avg: {
-        rating: true,
-      },
-      _count: {
-        rating: true,
-      },
+  async deleteReview(id: string, buyerId: string) {
+    const review = await this.prisma.review.findUnique({
+      where: { id },
     });
 
-    const avg = agg[0]?._avg.rating ?? 0;
-    const count = agg[0]?._count.rating ?? 0;
+    if (!review) {
+      throw new NotFoundException('Review not found');
+    }
 
-    await this.prisma.user.update({
-      where: { id: sellerId },
-      data: {
-        ratingAvg: avg,
-        ratingCount: count,
-      },
+    if (review.buyerId !== buyerId) {
+      throw new ForbiddenException('You can only delete your own reviews');
+    }
+
+    await this.prisma.review.delete({
+      where: { id },
     });
+
+    return { message: 'Review deleted successfully' };
+  }
+
+  async getUserReviews(userId: string, page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: {
+          buyerId: userId,
+        },
+        include: {
+          product: {
+            select: {
+              id: true,
+              title: true,
+              imageUrl: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              sellerHandle: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.review.count({
+        where: {
+          buyerId: userId,
+        },
+      }),
+    ]);
+
+    return {
+      reviews,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  async getPendingReviews(page = 1, limit = 20) {
+    const skip = (page - 1) * limit;
+
+    const [reviews, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where: {
+          isVisible: false,
+        },
+        include: {
+          buyer: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          seller: {
+            select: {
+              id: true,
+              name: true,
+              sellerHandle: true,
+            },
+          },
+          product: {
+            select: {
+              id: true,
+              title: true,
+              imageUrl: true,
+            },
+          },
+        },
+        skip,
+        take: limit,
+        orderBy: {
+          createdAt: 'desc',
+        },
+      }),
+      this.prisma.review.count({
+        where: {
+          isVisible: false,
+        },
+      }),
+    ]);
+
+    return {
+      reviews,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    };
   }
 }

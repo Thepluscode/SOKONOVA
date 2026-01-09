@@ -20,7 +20,7 @@ Sentry.init({
   enabled: process.env.NODE_ENV === 'production',
 
   // Filter out sensitive data
-  beforeSend(event, hint) {
+  beforeSend(event: any, hint: any) {
     // Don't send authentication tokens
     if (event.request?.headers) {
       delete event.request.headers['Authorization'];

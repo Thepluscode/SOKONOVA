@@ -12,182 +12,496 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.DiscoveryService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
-const FEATURED_CATEGORIES = [
-    { slug: "fashion", label: "Fashion & Style" },
-    { slug: "beauty", label: "Beauty & Personal Care" },
-    { slug: "home", label: "Home & Living" },
-    { slug: "electronics", label: "Electronics & Gadgets" },
-];
-const FEATURED_REGIONS = [
-    { slug: "lagos", label: "Lagos, Nigeria", city: "Lagos" },
-    { slug: "nairobi", label: "Nairobi, Kenya", city: "Nairobi" },
-    { slug: "accra", label: "Accra, Ghana", city: "Accra" },
-];
 let DiscoveryService = class DiscoveryService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getHighlights() {
-        const categoriesWithSellers = await Promise.all(FEATURED_CATEGORIES.map(async (cat) => {
-            const sellers = await this.topSellersForCategory(cat.slug, 4);
-            return {
-                ...cat,
-                sellers,
-            };
-        }));
-        const regionsWithSellers = await Promise.all(FEATURED_REGIONS.map(async (reg) => {
-            const sellers = await this.topSellersForRegion(reg.city, 4);
-            return {
-                ...reg,
-                sellers,
-            };
-        }));
+    async getDiscoveryHighlights() {
+        const trendingProducts = await this.prisma.product.findMany({
+            take: 10,
+            orderBy: {
+                views: {
+                    _count: 'desc',
+                },
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+        });
+        const featuredSellers = await this.prisma.user.findMany({
+            where: {
+                role: 'SELLER',
+                products: {
+                    some: {},
+                },
+            },
+            take: 5,
+            orderBy: {
+                ratingAvg: 'desc',
+            },
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+        });
+        const newArrivals = await this.prisma.product.findMany({
+            take: 10,
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                    },
+                },
+            },
+        });
+        const communityStories = await this.prisma.communityStory.findMany({
+            take: 5,
+            orderBy: {
+                createdAt: 'desc',
+            },
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        shopName: true,
+                    },
+                },
+                product: {
+                    select: {
+                        title: true,
+                        imageUrl: true,
+                    },
+                },
+            },
+        });
         return {
-            categories: categoriesWithSellers,
-            regions: regionsWithSellers,
+            trendingProducts,
+            featuredSellers,
+            newArrivals,
+            communityStories,
         };
+    }
+    async getProductsByCategory(slug) {
+        const products = await this.prisma.product.findMany({
+            where: {
+                category: slug,
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: {
+                views: {
+                    _count: 'desc',
+                },
+            },
+        });
+        return products;
+    }
+    async getProductsByRegion(regionSlug) {
+        const products = await this.prisma.product.findMany({
+            where: {
+                seller: {
+                    country: regionSlug,
+                },
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        country: true,
+                        ratingAvg: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: {
+                views: {
+                    _count: 'desc',
+                },
+            },
+        });
+        return products;
+    }
+    async searchProducts(query) {
+        const products = await this.prisma.product.findMany({
+            where: {
+                OR: [
+                    {
+                        title: {
+                            contains: query,
+                            mode: 'insensitive',
+                        },
+                    },
+                    {
+                        description: {
+                            contains: query,
+                            mode: 'insensitive',
+                        },
+                    },
+                    {
+                        category: {
+                            contains: query,
+                            mode: 'insensitive',
+                        },
+                    },
+                ],
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: {
+                views: {
+                    _count: 'desc',
+                },
+            },
+        });
+        return products;
     }
     async getCategoryPage(slug) {
-        const sellers = await this.topSellersForCategory(slug, 12);
-        const products = await this.prisma.product.findMany({
-            where: { category: slug },
-            orderBy: { createdAt: 'desc' },
-            take: 24,
-            select: {
-                id: true,
-                title: true,
-                price: true,
-                currency: true,
-                imageUrl: true,
-                seller: {
-                    select: {
-                        sellerHandle: true,
-                        shopName: true,
-                        city: true,
-                        country: true,
-                        ratingAvg: true,
-                        ratingCount: true,
-                    },
-                },
-            },
-        });
-        return {
-            slug,
-            sellers,
-            products,
-        };
-    }
-    async getRegionPage(regionSlug) {
-        const regionDef = FEATURED_REGIONS.find((r) => r.slug.toLowerCase() === regionSlug.toLowerCase());
-        if (!regionDef) {
-            return {
-                region: {
-                    slug: regionSlug,
-                    label: regionSlug,
-                },
-                sellers: [],
-                products: [],
-            };
-        }
-        const city = regionDef.city;
-        const sellers = await this.topSellersForRegion(city, 12);
-        const products = await this.prisma.product.findMany({
+        const topSellers = await this.prisma.user.findMany({
             where: {
-                seller: {
-                    city: city,
-                },
-            },
-            orderBy: { createdAt: 'desc' },
-            take: 24,
-            select: {
-                id: true,
-                title: true,
-                price: true,
-                currency: true,
-                imageUrl: true,
-                category: true,
-                seller: {
-                    select: {
-                        sellerHandle: true,
-                        shopName: true,
-                        city: true,
-                        country: true,
-                        ratingAvg: true,
-                        ratingCount: true,
+                role: 'SELLER',
+                products: {
+                    some: {
+                        category: slug,
                     },
                 },
-            },
-        });
-        return {
-            region: regionDef,
-            sellers,
-            products,
-        };
-    }
-    async topSellersForCategory(categorySlug, limit) {
-        const rows = await this.prisma.product.findMany({
-            where: { category: categorySlug },
-            select: {
-                sellerId: true,
-                seller: {
-                    select: {
-                        id: true,
-                        sellerHandle: true,
-                        shopName: true,
-                        shopLogoUrl: true,
-                        city: true,
-                        country: true,
-                        ratingAvg: true,
-                        ratingCount: true,
-                    },
-                },
-            },
-            take: 200,
-        });
-        const bySeller = {};
-        for (const row of rows) {
-            if (!bySeller[row.sellerId]) {
-                bySeller[row.sellerId] = row.seller;
-            }
-        }
-        const sellers = Object.values(bySeller)
-            .sort((a, b) => {
-            var _a, _b, _c, _d;
-            const ar = (_a = a.ratingAvg) !== null && _a !== void 0 ? _a : 0;
-            const br = (_b = b.ratingAvg) !== null && _b !== void 0 ? _b : 0;
-            if (br !== ar)
-                return br - ar;
-            const ac = (_c = a.ratingCount) !== null && _c !== void 0 ? _c : 0;
-            const bc = (_d = b.ratingCount) !== null && _d !== void 0 ? _d : 0;
-            return bc - ac;
-        })
-            .slice(0, limit);
-        return sellers;
-    }
-    async topSellersForRegion(city, limit) {
-        const sellers = await this.prisma.user.findMany({
-            where: {
-                role: { in: ['SELLER', 'ADMIN'] },
-                city: city,
-            },
-            select: {
-                id: true,
-                sellerHandle: true,
-                shopName: true,
-                shopLogoUrl: true,
-                city: true,
-                country: true,
-                ratingAvg: true,
-                ratingCount: true,
             },
             orderBy: [
                 { ratingAvg: 'desc' },
                 { ratingCount: 'desc' },
-                { createdAt: 'asc' },
             ],
-            take: limit,
+            include: {
+                _count: {
+                    select: {
+                        products: {
+                            where: {
+                                category: slug,
+                            },
+                        },
+                    },
+                },
+            },
+            take: 12,
         });
-        return sellers;
+        const products = await this.prisma.product.findMany({
+            where: {
+                category: slug,
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                        ratingCount: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            take: 24,
+        });
+        return {
+            sellers: topSellers,
+            products,
+        };
+    }
+    async getRegionPage(regionSlug) {
+        const topSellers = await this.prisma.user.findMany({
+            where: {
+                role: 'SELLER',
+                country: regionSlug,
+                products: {
+                    some: {},
+                },
+            },
+            orderBy: [
+                { ratingAvg: 'desc' },
+                { ratingCount: 'desc' },
+            ],
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+            take: 12,
+        });
+        const products = await this.prisma.product.findMany({
+            where: {
+                seller: {
+                    country: regionSlug,
+                },
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                        ratingCount: true,
+                        country: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: 'desc',
+            },
+            take: 24,
+        });
+        return {
+            sellers: topSellers,
+            products,
+        };
+    }
+    async getPersonalizedDiscovery(userId) {
+        const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                city: true,
+                country: true,
+            },
+        });
+        if (!user) {
+            throw new Error('User not found');
+        }
+        const userProductViews = await this.prisma.productView.findMany({
+            where: { userId },
+            orderBy: { timestamp: 'desc' },
+            take: 20,
+        });
+        const viewedProductIds = userProductViews.map(view => view.productId);
+        const viewedProducts = await this.prisma.product.findMany({
+            where: { id: { in: viewedProductIds } },
+            select: { category: true },
+        });
+        const categoryCount = {};
+        viewedProducts.forEach(product => {
+            if (product.category) {
+                categoryCount[product.category] = (categoryCount[product.category] || 0) + 1;
+            }
+        });
+        const topCategories = Object.entries(categoryCount)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 3)
+            .map(([category]) => category);
+        const recommendedForYou = await Promise.all(topCategories.map(async (category) => {
+            const products = await this.prisma.product.findMany({
+                where: {
+                    category,
+                    id: { notIn: viewedProductIds },
+                },
+                include: {
+                    seller: {
+                        select: {
+                            shopName: true,
+                            ratingAvg: true,
+                            ratingCount: true,
+                        },
+                    },
+                    _count: {
+                        select: {
+                            views: true,
+                        },
+                    },
+                },
+                orderBy: [
+                    { seller: { ratingAvg: 'desc' } },
+                    { seller: { ratingCount: 'desc' } },
+                    { views: { _count: 'desc' } },
+                ],
+                take: 10,
+            });
+            return { category, products };
+        }));
+        const recentCityViews = await this.prisma.productView.findMany({
+            where: {
+                product: {
+                    seller: {
+                        city: user.city,
+                    },
+                },
+            },
+            orderBy: { timestamp: 'desc' },
+            take: 50,
+        });
+        const cityViewedProductIds = recentCityViews.map(view => view.productId);
+        const cityViewedProducts = await this.prisma.product.findMany({
+            where: { id: { in: cityViewedProductIds } },
+            select: { category: true },
+        });
+        const cityCategoryCount = {};
+        cityViewedProducts.forEach(product => {
+            if (product.category) {
+                cityCategoryCount[product.category] = (cityCategoryCount[product.category] || 0) + 1;
+            }
+        });
+        const trendingInYourCity = {
+            city: user.city,
+            categories: Object.entries(cityCategoryCount)
+                .sort(([, a], [, b]) => b - a)
+                .slice(0, 5)
+                .map(([category]) => category),
+        };
+        const becauseYouViewed = await this.getCollaborativeRecommendations(userId, viewedProductIds);
+        const popularInYourArea = await this.prisma.user.findMany({
+            where: {
+                role: 'SELLER',
+                city: user.city,
+                products: {
+                    some: {},
+                },
+            },
+            orderBy: [
+                { ratingAvg: 'desc' },
+                { ratingCount: 'desc' },
+            ],
+            include: {
+                _count: {
+                    select: {
+                        products: true,
+                    },
+                },
+            },
+            take: 10,
+        });
+        return {
+            recommendedForYou,
+            trendingInYourCity,
+            becauseYouViewed,
+            popularInYourArea,
+        };
+    }
+    async getCollaborativeRecommendations(userId, viewedProductIds) {
+        const similarUserViews = await this.prisma.productView.findMany({
+            where: {
+                productId: { in: viewedProductIds },
+                userId: { not: userId },
+            },
+        });
+        const userSimilarity = {};
+        similarUserViews.forEach(view => {
+            userSimilarity[view.userId] = (userSimilarity[view.userId] || 0) + 1;
+        });
+        const similarUsers = Object.entries(userSimilarity)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 5)
+            .map(([userId]) => userId);
+        if (similarUsers.length === 0) {
+            return this.getTrendingProducts(10);
+        }
+        const similarUserProductViews = await this.prisma.productView.findMany({
+            where: {
+                userId: { in: similarUsers },
+                productId: { notIn: viewedProductIds },
+            },
+        });
+        const productCount = {};
+        similarUserProductViews.forEach(view => {
+            productCount[view.productId] = (productCount[view.productId] || 0) + 1;
+        });
+        const recommendedProductIds = Object.entries(productCount)
+            .sort(([, a], [, b]) => b - a)
+            .slice(0, 10)
+            .map(([productId]) => productId);
+        const products = await this.prisma.product.findMany({
+            where: { id: { in: recommendedProductIds } },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                        ratingCount: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+            orderBy: [
+                { seller: { ratingAvg: 'desc' } },
+                { seller: { ratingCount: 'desc' } },
+                { views: { _count: 'desc' } },
+            ],
+        });
+        return products;
+    }
+    async getTrendingProducts(limit) {
+        return this.prisma.product.findMany({
+            take: limit,
+            orderBy: {
+                views: {
+                    _count: 'desc',
+                },
+            },
+            include: {
+                seller: {
+                    select: {
+                        shopName: true,
+                        ratingAvg: true,
+                        ratingCount: true,
+                    },
+                },
+                _count: {
+                    select: {
+                        views: true,
+                    },
+                },
+            },
+        });
     }
 };
 exports.DiscoveryService = DiscoveryService;

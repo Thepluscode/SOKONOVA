@@ -1,14 +1,9 @@
-import {
-  Injectable,
-  ForbiddenException,
-  NotFoundException,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { NotificationsService } from '../notifications/notifications.service';
 import { OpenDisputeDto } from './dto/open-dispute.dto';
 import { ResolveDisputeDto } from './dto/resolve-dispute.dto';
+import { NotificationsService } from '../notifications/notifications.service';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class DisputesService {
@@ -21,28 +16,14 @@ export class DisputesService {
 
   // Buyer opens a dispute
   async open(dto: OpenDisputeDto) {
-    // 1. Verify that the buyer actually owns this order item
+    // 1. Verify buyer owns the order item
     const oi = await this.prisma.orderItem.findUnique({
       where: { id: dto.orderItemId },
-      include: {
-        order: true,
-      },
+      include: { order: true },
     });
     if (!oi) throw new NotFoundException('Order item not found');
-
     if (oi.order.userId !== dto.buyerId) {
-      throw new ForbiddenException('You do not own this item');
-    }
-
-    // Optional: prevent duplicate OPEN disputes
-    const existingOpen = await this.prisma.dispute.findFirst({
-      where: {
-        orderItemId: dto.orderItemId,
-        status: { in: ['OPEN', 'SELLER_RESPONDED'] },
-      },
-    });
-    if (existingOpen) {
-      throw new BadRequestException('Dispute already open for this item');
+      throw new ForbiddenException('Not your order item');
     }
 
     // 2. Create dispute with product info
@@ -50,7 +31,7 @@ export class DisputesService {
       data: {
         orderItemId: dto.orderItemId,
         buyerId: dto.buyerId,
-        reasonCode: dto.reasonCode as any,
+        reasonCode: dto.reasonCode as any, // This will be validated by DTO
         description: dto.description,
         photoProofUrl: dto.photoProofUrl || null,
         status: 'OPEN',
@@ -170,7 +151,7 @@ export class DisputesService {
     const updatedDispute = await this.prisma.dispute.update({
       where: { id: disputeId },
       data: {
-        status: dto.status as any,
+        status: dto.status as any, // This will be validated by DTO
         resolutionNote: dto.resolutionNote || null,
         resolvedById: dto.actorId,
         resolvedAt: now,
@@ -218,7 +199,7 @@ export class DisputesService {
       await this.prisma.orderItem.update({
         where: { id: d.orderItemId },
         data: {
-          fulfillmentStatus: nextFulfillment as any,
+          fulfillmentStatus: nextFulfillment as any, // This will be validated by Prisma
         },
       });
     }

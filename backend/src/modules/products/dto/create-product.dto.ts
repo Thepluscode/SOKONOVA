@@ -1,4 +1,3 @@
-
 import { IsString, IsNumber, IsOptional } from 'class-validator'
 
 export class CreateProductDto {
@@ -16,6 +15,10 @@ export class CreateProductDto {
 
   @IsString()
   currency: string
+
+  @IsOptional()
+  @IsString()
+  category?: string
 
   @IsOptional()
   @IsString()

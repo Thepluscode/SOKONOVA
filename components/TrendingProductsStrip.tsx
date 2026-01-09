@@ -24,12 +24,14 @@ export function TrendingProductsStrip({
   autoScroll = false,
   autoScrollInterval = 6000,
   showIndicators = true,
+  renderSkeleton = false,
 }: {
   products: Product[];
   title?: string;
   autoScroll?: boolean;
   autoScrollInterval?: number;
   showIndicators?: boolean;
+  renderSkeleton?: boolean;
 }) {
   const { add } = useCart();
   const scrollerRef = useRef<HTMLDivElement>(null);
@@ -161,33 +163,48 @@ export function TrendingProductsStrip({
             role="listitem"
           >
             <div className="group w-[200px] rounded-2xl border border-border bg-card overflow-hidden hover:shadow-card active:scale-[.99] transition-all">
-              <Link href={`/products/${p.id}`}>
-                <div className="relative aspect-square bg-muted overflow-hidden">
-                  <Image
-                    src={p.image}
-                    alt={p.name}
-                    fill
-                    sizes="200px"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
-                    placeholder="blur"
-                    blurDataURL={shimmerBase64}
-                  />
-                </div>
-                <div className="p-3">
-                  <div className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors mb-1">
-                    {p.name}
+              {renderSkeleton ? (
+                <div className="aspect-square bg-muted animate-pulse" />
+              ) : (
+                <Link href={`/products/${p.id}`}>
+                  <div className="relative aspect-square bg-muted overflow-hidden">
+                    <Image
+                      src={p.image}
+                      alt={p.name}
+                      fill
+                      sizes="200px"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      placeholder="blur"
+                      blurDataURL={shimmerBase64}
+                    />
                   </div>
-                  <div className="text-sm font-semibold">${p.price.toFixed(2)}</div>
-                </div>
-              </Link>
-              <div className="px-3 pb-3">
-                <button
-                  onClick={() => add(p.id, 1)}
-                  className="w-full text-xs font-medium bg-primary text-primary-foreground py-1.5 rounded-lg hover:opacity-90 active:scale-[.99] focus-visible:ring-2 focus-visible:ring-primary/40 transition-all"
-                >
-                  Add to Cart
-                </button>
+                </Link>
+              )}
+              <div className="p-3">
+                {renderSkeleton ? (
+                  <>
+                    <div className="h-4 bg-muted rounded animate-pulse mb-2" />
+                    <div className="h-3 bg-muted rounded w-1/2 animate-pulse" />
+                  </>
+                ) : (
+                  <>
+                    <div className="text-sm font-medium line-clamp-2 group-hover:text-primary transition-colors mb-1">
+                      {p.name}
+                    </div>
+                    <div className="text-sm font-semibold">${p.price.toFixed(2)}</div>
+                  </>
+                )}
               </div>
+              {!renderSkeleton && (
+                <div className="px-3 pb-3">
+                  <button
+                    onClick={() => add(p.id, 1)}
+                    className="w-full text-xs font-medium bg-primary text-primary-foreground py-1.5 rounded-lg hover:opacity-90 active:scale-[.99] focus-visible:ring-2 focus-visible:ring-primary/40 transition-all"
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              )}
             </div>
           </motion.div>
         ))}

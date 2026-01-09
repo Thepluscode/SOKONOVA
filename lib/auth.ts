@@ -1,13 +1,19 @@
-
 import type { NextAuthOptions } from 'next-auth'
 import CognitoProvider from 'next-auth/providers/cognito'
 import Credentials from 'next-auth/providers/credentials'
+import { Role } from '@/types/role'
 
 // Demo in-memory users for Credentials fallback (dev only)
-const demoUsers = [
-  { id: 'u-1', name: 'Buyer Bee', email: 'buyer@sokonova.dev', role: 'buyer', password: 'buyer123' },
-  { id: 'u-2', name: 'Seller Sage', email: 'seller@sokonova.dev', role: 'seller', password: 'seller123' },
-  { id: 'u-3', name: 'Admin Ace',  email: 'admin@sokonova.dev', role: 'admin',  password: 'admin123' },
+const demoUsers: Array<{ 
+  id: string; 
+  name: string; 
+  email: string; 
+  role: Role; 
+  password: string 
+}> = [
+  { id: 'u-1', name: 'Buyer Bee', email: 'buyer@sokonova.dev', role: 'BUYER', password: 'buyer123' },
+  { id: 'u-2', name: 'Seller Sage', email: 'seller@sokonova.dev', role: 'SELLER', password: 'seller123' },
+  { id: 'u-3', name: 'Admin Ace',  email: 'admin@sokonova.dev', role: 'ADMIN',  password: 'admin123' },
 ]
 
 export const authOptions: NextAuthOptions = {
@@ -34,17 +40,19 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
-  session: { strategy: 'jwt' },
+  session: { strategy: 'jwt' }, // Changed from 'database' to 'jwt' to avoid database dependency
   callbacks: {
-    async jwt({ token, user }) {
-      if (user && (user as any).role) token.role = (user as any).role
-      return token
-    },
     async session({ session, token }) {
       if (token?.sub) session.user.id = token.sub
-      if (token?.role) (session.user as any).role = token.role
+      if (token?.role) session.user.role = token.role as Role
       return session
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.role = user.role
+      }
+      return token
+    }
   },
   pages: {
     signIn: '/auth/signin'

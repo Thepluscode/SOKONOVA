@@ -35,7 +35,6 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                     notifyPush: true,
                     quietHoursStart: true,
                     quietHoursEnd: true,
-                    pushSubscription: true,
                 },
             });
             if (!user) {
@@ -48,7 +47,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                     type,
                     title,
                     body,
-                    data: data || undefined,
+                    message: body,
                 },
             });
             this.logger.log(`Created notification ${notification.id} for user ${userId}: ${title}`);
@@ -58,24 +57,28 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                 user.notifyEmail &&
                 user.email &&
                 !inQuietHours) {
-                promises.push(this.email.send(user.email, title, body, data));
+                promises.push(this.sendWithTimeout(this.email.send(user.email, title, body, data), 5000));
             }
             if (channels.includes('sms') &&
                 user.notifySms &&
                 user.phone &&
                 !inQuietHours) {
-                promises.push(this.sms.send(user.phone, body));
+                promises.push(this.sendWithTimeout(this.sms.send(user.phone, body), 5000));
             }
             if (channels.includes('whatsapp') &&
                 user.notifySms &&
                 user.phone &&
                 !inQuietHours) {
-                promises.push(this.sms.sendWhatsApp(user.phone, body));
+                promises.push(this.sendWithTimeout(this.sms.sendWhatsApp(user.phone, body), 5000));
             }
             if (promises.length > 0) {
-                Promise.all(promises).catch((err) => {
-                    this.logger.error(`Failed to send external notifications: ${err.message}`);
-                });
+                try {
+                    await Promise.all(promises);
+                }
+                catch (error) {
+                    this.logger.error(`Failed to send one or more external notifications: ${error.message}`, error.stack);
+                    throw new Error(`Notification delivery failed: ${error.message}`);
+                }
             }
             return notification;
         }
@@ -83,6 +86,12 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             this.logger.error(`Failed to create notification: ${error.message}`, error.stack);
             throw error;
         }
+    }
+    async sendWithTimeout(promise, timeoutMs) {
+        return Promise.race([
+            promise,
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Notification send timeout')), timeoutMs)),
+        ]);
     }
     async list(userId, limit = 20, unreadOnly = false) {
         return this.prisma.notification.findMany({
@@ -165,6 +174,25 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
     }
     async notifyNewReview(sellerId, reviewId, productTitle, rating, buyerName) {
         return this.create(sellerId, 'NEW_REVIEW', 'New Review', `${buyerName} left a ${rating}★ review on "${productTitle}".`, { reviewId }, ['inapp']);
+    }
+    async notifyException(buyerId, orderItemId, priority, message) {
+        const priorityLabels = {
+            high_priority: 'High Priority',
+            medium_priority: 'Medium Priority',
+            low_priority: 'Low Priority',
+        };
+        return this.create(buyerId, 'EXCEPTION_ALERT', `Order Exception - ${priorityLabels[priority]}`, message, { orderItemId, priority }, ['inapp', 'email']);
+    }
+    async notifySellerException(sellerId, orderItemId, actionRequired, message) {
+        const actionLabels = {
+            urgent_action_required: 'Urgent Action Required',
+            attention_required: 'Attention Required',
+            review_required: 'Review Required',
+        };
+        return this.create(sellerId, 'SELLER_EXCEPTION', `Fulfillment Exception - ${actionLabels[actionRequired]}`, message, { orderItemId, actionRequired }, ['inapp', 'email']);
+    }
+    async notifyMicroFulfillmentOptIn(sellerId, partnerId, message) {
+        return this.create(sellerId, 'MICRO_FULFILLMENT_OPT_IN', 'Micro-Fulfillment Service Activated', message, { partnerId }, ['inapp', 'email']);
     }
     isInQuietHours(timezone, quietHoursStart, quietHoursEnd) {
         if (quietHoursStart === null || quietHoursEnd === null) {

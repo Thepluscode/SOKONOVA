@@ -1,19 +1,18 @@
 "use client";
 
 import { useState } from "react";
-import { submitReview } from "@/lib/api";
+import { submitReview } from "@/lib/api/reviews";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 
 export function ReviewFormClient({
   orderItemId,
-  canReview,
+  canReview = true,
 }: {
   orderItemId: string;
-  canReview: boolean; // true if fulfillmentStatus === DELIVERED
+  canReview?: boolean;
 }) {
   const { data: session } = useSession();
-
   const [rating, setRating] = useState(5);
   const [comment, setComment] = useState("");
   const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
@@ -24,34 +23,29 @@ export function ReviewFormClient({
 
   if (status === "sent") {
     return (
-      <div className="text-[11px] text-green-600 dark:text-green-400 font-medium">
-        ✓ Thanks for your review!
+      <div className="text-green-600 dark:text-green-400 text-[11px] font-medium">
+        ✓ Review submitted. Thank you!
       </div>
     );
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card p-3 text-[11px] space-y-2">
-      <div className="font-semibold text-[11px]">Rate this item</div>
-
-      <div className="flex items-center gap-2">
-        <label>Rating</label>
-        <select
-          className="rounded-lg border border-border bg-background px-2 py-1 text-[11px]"
-          value={rating}
-          onChange={(e) => setRating(Number(e.target.value))}
-        >
-          {[5, 4, 3, 2, 1].map((r) => (
-            <option key={r} value={r}>
-              {r} ★
-            </option>
-          ))}
-        </select>
+    <div className="space-y-2">
+      <div className="flex gap-1">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button
+            key={star}
+            className="text-lg"
+            onClick={() => setRating(star)}
+          >
+            {star <= rating ? "★" : "☆"}
+          </button>
+        ))}
       </div>
 
       <textarea
-        className="w-full rounded-lg border border-border bg-background px-2 py-1 h-16 text-[11px]"
-        placeholder="How was the quality, delivery, packaging?"
+        className="w-full rounded-lg border border-border bg-background px-2 py-1 h-16 text-[11px] text-foreground resize-none"
+        placeholder="Share your experience with this item..."
         value={comment}
         onChange={(e) => setComment(e.target.value)}
       />
@@ -59,7 +53,7 @@ export function ReviewFormClient({
       <Button
         className="text-[11px] h-auto py-1 px-2"
         onClick={async () => {
-          const userId = (session?.user as any)?.id;
+          const userId = session?.user?.id;
           if (!userId) {
             setStatus("error");
             return;

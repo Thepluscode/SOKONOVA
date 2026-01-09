@@ -1,0 +1,84 @@
+# SOKONOVA Backend Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sokonova-backend
+  namespace: sokonova
+  labels:
+    app: sokonova-backend
+    tier: backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sokonova-backend
+  template:
+    metadata:
+      labels:
+        app: sokonova-backend
+        tier: backend
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "4000"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+        - name: backend
+          image: your-registry/sokonova-backend:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 4000
+              name: http
+          envFrom:
+            - configMapRef:
+                name: sokonova-config
+            - secretRef:
+                name: sokonova-secrets
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          livenessProbe:
+            httpGet:
+              path: /health/live
+              port: 4000
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /health/ready
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health/live
+              port: 4000
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 30
+---
+# Backend Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: sokonova-backend
+  namespace: sokonova
+  labels:
+    app: sokonova-backend
+spec:
+  type: ClusterIP
+  ports:
+    - port: 4000
+      targetPort: 4000
+      protocol: TCP
+      name: http
+  selector:
+    app: sokonova-backend

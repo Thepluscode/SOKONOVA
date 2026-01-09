@@ -1,244 +1,216 @@
-"use client";
+'use client'
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import {
-  getAdminPendingApplications,
-  adminApproveApplication,
-  adminRejectApplication,
-} from "@/lib/api";
+import { useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { Button } from '../../../components/ui/Button'
+import { Card, CardContent, CardHeader, CardTitle } from '../../../components/ui/Card'
+import { Skeleton } from '../../../components/ui/Skeleton'
+
+// Extend the Session interface
+declare module "next-auth" {
+  interface Session {
+    user: {
+      id: string
+      name?: string | null
+      email?: string | null
+      image?: string | null
+      role?: 'BUYER' | 'SELLER' | 'ADMIN'
+    }
+  }
+}
+
+interface Application {
+  id: string
+  businessName: string
+  phone: string
+  country: string
+  city: string
+  storefrontDesc: string
+  status: string
+  user: {
+    id: string
+    name: string
+    email: string
+  }
+}
 
 export default function AdminApplicationsPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [applications, setApplications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [processing, setProcessing] = useState<string | null>(null);
-
-  const userId = (session?.user as any)?.id;
-  const userRole = (session?.user as any)?.role;
+  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [applications, setApplications] = useState<Application[]>([])
+  const [loading, setLoading] = useState(true)
+  const userId = session?.user?.id
+  const userRole = session?.user?.role
 
   useEffect(() => {
-    async function load() {
-      if (status === "loading") return;
+    if (status === 'loading') return
 
-      if (!session?.user) {
-        router.push("/auth/login?callbackUrl=/admin/applications");
-        return;
-      }
+    if (!session?.user) {
+      router.push('/auth/signin')
+      return
+    }
 
-      // Check if user is admin
-      if (userRole !== "ADMIN") {
-        router.push("/");
-        return;
-      }
+    if (userRole !== "ADMIN") {
+      router.push('/')
+      return
+    }
 
-      if (!userId) {
-        setLoading(false);
-        return;
-      }
-
+    const fetchApplications = async () => {
       try {
-        const apps = await getAdminPendingApplications(userId);
-        setApplications(apps || []);
-      } catch (error) {
-        console.error("Error loading applications:", error);
+        const res = await fetch(`/api/admin/applications?adminId=${userId}`)
+        if (!res.ok) throw new Error('Failed to fetch applications')
+        const data = await res.json()
+        setApplications(data)
+      } catch (err) {
+        console.error('Failed to fetch applications:', err)
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
     }
 
-    load();
-  }, [session?.user, status, userId, userRole, router]);
+    fetchApplications()
+  }, [session?.user, status, userId, userRole, router])
 
-  async function handleApprove(appId: string) {
-    if (!userId) return;
-
-    const note = prompt(
-      "Optional note for the applicant (e.g., 'Welcome to SokoNova!'):"
-    );
-
-    setProcessing(appId);
+  const handleApprove = async (appId: string) => {
     try {
-      await adminApproveApplication(appId, userId, note || undefined);
-      // Remove from list
-      setApplications((prev) => prev.filter((app) => app.id !== appId));
-      alert("Application approved! User promoted to SELLER.");
-    } catch (error) {
-      console.error("Error approving application:", error);
-      alert("Failed to approve application");
-    } finally {
-      setProcessing(null);
+      const res = await fetch(`/api/admin/applications/${appId}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId: userId })
+      })
+      if (!res.ok) throw new Error('Failed to approve application')
+      // Refresh the list
+      setApplications(applications.map(app => 
+        app.id === appId ? { ...app, status: 'APPROVED' } : app
+      ))
+    } catch (err) {
+      console.error('Failed to approve application:', err)
     }
   }
 
-  async function handleReject(appId: string) {
-    if (!userId) return;
-
-    const note = prompt(
-      "Optional note for the applicant (explain why rejected):"
-    );
-
-    const confirmed = confirm(
-      "Are you sure you want to reject this application?"
-    );
-    if (!confirmed) return;
-
-    setProcessing(appId);
+  const handleReject = async (appId: string) => {
     try {
-      await adminRejectApplication(appId, userId, note || undefined);
-      // Remove from list
-      setApplications((prev) => prev.filter((app) => app.id !== appId));
-      alert("Application rejected.");
-    } catch (error) {
-      console.error("Error rejecting application:", error);
-      alert("Failed to reject application");
-    } finally {
-      setProcessing(null);
+      const res = await fetch(`/api/admin/applications/${appId}/reject`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ adminId: userId })
+      })
+      if (!res.ok) throw new Error('Failed to reject application')
+      // Refresh the list
+      setApplications(applications.map(app => 
+        app.id === appId ? { ...app, status: 'REJECTED' } : app
+      ))
+    } catch (err) {
+      console.error('Failed to reject application:', err)
     }
   }
 
-  if (loading) {
+  if (status === 'loading') {
     return (
-      <div className="mx-auto max-w-4xl px-4 py-16 text-center">
-        <div className="text-muted-foreground">Loading applications…</div>
+      <div className="container mx-auto py-8">
+        <div className="mb-6">
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
-          Seller Applications
-        </h1>
-        <p className="text-muted-foreground">
-          Review and approve new seller applications
-        </p>
+    <div className="container mx-auto py-8">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold">Seller Applications</h1>
+        <p className="text-muted-foreground">Review and approve pending seller applications</p>
       </div>
 
-      {applications.length === 0 ? (
-        <div className="text-center py-16">
-          <div className="text-5xl mb-4">✓</div>
-          <div className="text-lg font-medium text-foreground mb-2">
-            All caught up!
-          </div>
-          <div className="text-sm text-muted-foreground">
-            No pending applications at the moment.
-          </div>
+      {loading ? (
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(3)].map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-4 w-full mb-2" />
+                <Skeleton className="h-4 w-3/4 mb-4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-20" />
+                  <Skeleton className="h-8 w-20" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
+      ) : applications.length === 0 ? (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-muted-foreground">No pending applications</p>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {applications.map((app) => (
-            <div
-              key={app.id}
-              className="bg-card border border-border rounded-xl p-6 space-y-4"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between">
-                <div>
-                  <h2 className="text-xl font-semibold text-foreground">
-                    {app.businessName}
-                  </h2>
-                  <div className="text-sm text-muted-foreground mt-1">
-                    Applied{" "}
-                    {new Date(app.createdAt).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
+            <Card key={app.id}>
+              <CardHeader>
+                <CardTitle>{app.businessName}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2 text-sm">
+                  <p><span className="font-medium">Applicant:</span> {app.user.name}</p>
+                  <p><span className="font-medium">Email:</span> {app.user.email}</p>
+                  <p><span className="font-medium">Phone:</span> {app.phone}</p>
+                  <p><span className="font-medium">Location:</span> {app.city}, {app.country}</p>
+                  <p><span className="font-medium">Description:</span> {app.storefrontDesc}</p>
+                  <p><span className="font-medium">Status:</span> 
+                    <span className={`ml-2 px-2 py-1 rounded-full text-xs ${
+                      app.status === 'APPROVED' ? 'bg-green-100 text-green-800' :
+                      app.status === 'REJECTED' ? 'bg-red-100 text-red-800' :
+                      'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {app.status}
+                    </span>
+                  </p>
+                </div>
+                {app.status === 'PENDING' && (
+                  <div className="flex gap-2 mt-4">
+                    <Button 
+                      size="sm" 
+                      onClick={() => handleApprove(app.id)}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Approve
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={() => handleReject(app.id)}
+                    >
+                      Reject
+                    </Button>
                   </div>
-                </div>
-                <div className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 rounded-full text-xs font-medium">
-                  PENDING
-                </div>
-              </div>
-
-              {/* User Info */}
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">
-                      Applicant Email
-                    </div>
-                    <div className="font-medium text-foreground">
-                      {app.user?.email || "N/A"}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-xs text-muted-foreground mb-1">
-                      Applicant Name
-                    </div>
-                    <div className="font-medium text-foreground">
-                      {app.user?.name || "Not provided"}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Business Details */}
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Location
-                  </div>
-                  <div className="text-foreground">
-                    {app.city}, {app.country}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xs text-muted-foreground mb-1">
-                    Phone / WhatsApp
-                  </div>
-                  <div className="text-foreground">{app.phone}</div>
-                </div>
-              </div>
-
-              {/* Storefront Description */}
-              <div>
-                <div className="text-xs text-muted-foreground mb-2">
-                  What They Sell
-                </div>
-                <div className="text-sm text-foreground bg-muted/30 rounded-lg p-3 border border-border">
-                  {app.storefrontDesc}
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3 pt-4 border-t border-border">
-                <button
-                  onClick={() => handleApprove(app.id)}
-                  disabled={processing === app.id}
-                  className="flex-1 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {processing === app.id ? "Processing..." : "✓ Approve"}
-                </button>
-                <button
-                  onClick={() => handleReject(app.id)}
-                  disabled={processing === app.id}
-                  className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                >
-                  {processing === app.id ? "Processing..." : "✕ Reject"}
-                </button>
-              </div>
-
-              {/* User ID for reference */}
-              <div className="text-[10px] text-muted-foreground">
-                User ID: {app.userId} | App ID: {app.id}
-              </div>
-            </div>
+                )}
+              </CardContent>
+            </Card>
           ))}
         </div>
       )}
-
-      {/* Stats Summary */}
-      {applications.length > 0 && (
-        <div className="mt-8 p-4 bg-muted/50 rounded-xl text-center text-sm text-muted-foreground">
-          {applications.length} application
-          {applications.length === 1 ? "" : "s"} pending review
-        </div>
-      )}
     </div>
-  );
+  )
 }

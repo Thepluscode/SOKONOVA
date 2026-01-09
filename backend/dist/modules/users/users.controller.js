@@ -14,34 +14,144 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UsersController = void 0;
 const common_1 = require("@nestjs/common");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const client_1 = require("@prisma/client");
 const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
     constructor(users) {
         this.users = users;
     }
-    async getUser(id) {
-        return this.users.findById(id);
+    getCurrentUser(userId) {
+        return this.users.findOneById(userId);
     }
-    async updateStorefront(id, body) {
-        return this.users.updateStorefrontProfile(id, body);
+    updateCurrentUser(userId, body) {
+        return this.users.updateUserProfile(userId, body);
+    }
+    changePassword(userId, body) {
+        return { message: 'Password change endpoint - implementation pending' };
+    }
+    getCurrentUserOrders(userId) {
+        return this.users.getBuyerProfile(userId).then(user => (user === null || user === void 0 ? void 0 : user.orders) || []);
+    }
+    getCurrentUserWishlist(userId) {
+        return { message: 'Wishlist endpoint - use /wishlist/user/:userId directly' };
+    }
+    getCurrentUserReviews(userId) {
+        return { message: 'Reviews endpoint - use /reviews/user/:userId directly' };
+    }
+    findOne(id) {
+        return this.users.findOneById(id);
+    }
+    getNotificationPreferences(id) {
+        return this.users.findOneById(id);
+    }
+    updateProfile(id, body) {
+        return this.users.updateUserProfile(id, body);
+    }
+    updateStorefrontProfile(id, body) {
+        return this.users.updateSellerProfile(id, body);
+    }
+    updateNotificationPreferences(id, body) {
+        return this.users.updateNotificationPreferences(id, body);
     }
 };
 exports.UsersController = UsersController;
 __decorate([
+    (0, common_1.Get)('me'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCurrentUser", null);
+__decorate([
+    (0, common_1.Patch)('me'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateCurrentUser", null);
+__decorate([
+    (0, common_1.Post)('me/password'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "changePassword", null);
+__decorate([
+    (0, common_1.Get)('me/orders'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCurrentUserOrders", null);
+__decorate([
+    (0, common_1.Get)('me/wishlist'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCurrentUserWishlist", null);
+__decorate([
+    (0, common_1.Get)('me/reviews'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Query)('userId')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getCurrentUserReviews", null);
+__decorate([
     (0, common_1.Get)(':id'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "getUser", null);
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "findOne", null);
 __decorate([
-    (0, common_1.Patch)(':id/storefront'),
+    (0, common_1.Get)(':id/notification-preferences'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "getNotificationPreferences", null);
+__decorate([
+    (0, common_1.Patch)(':id/profile'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
-    __metadata("design:returntype", Promise)
-], UsersController.prototype, "updateStorefront", null);
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateProfile", null);
+__decorate([
+    (0, common_1.Patch)(':id/storefront'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateStorefrontProfile", null);
+__decorate([
+    (0, common_1.Patch)(':id/notification-preferences'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    __param(0, (0, common_1.Param)('id')),
+    __param(1, (0, common_1.Body)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:returntype", void 0)
+], UsersController.prototype, "updateNotificationPreferences", null);
 exports.UsersController = UsersController = __decorate([
     (0, common_1.Controller)('users'),
     __metadata("design:paramtypes", [users_service_1.UsersService])
