@@ -1,7 +1,7 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
 import { PrismaService } from './prisma.service';
-import { RedisService } from './redis.service';
+// import { RedisService } from './redis.service'; // Temporarily disabled for MVP
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { CartModule } from './cart/cart.module';
@@ -64,7 +64,7 @@ import { SentryExceptionFilter } from '../common/filters/sentry-exception.filter
     TeamsModule,
     AuditLogsModule,
   ],
-  providers: [PrismaService, RedisService],
-  exports: [PrismaService, RedisService],
+  providers: [PrismaService], // RedisService temporarily removed for MVP
+  exports: [PrismaService], // RedisService temporarily removed for MVP
 })
 export class AppModule { }
