@@ -56,7 +56,7 @@ const CurrencySwitcher: React.FC = () => {
     <div className="relative" ref={dropdownRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
+        className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors whitespace-nowrap cursor-pointer"
       >
         <span className="text-base">{selectedCurrency.symbol}</span>
         <span>{selectedCurrency.code}</span>
@@ -64,28 +64,27 @@ const CurrencySwitcher: React.FC = () => {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-          <div className="px-4 py-2 border-b border-gray-100">
-            <p className="text-xs font-semibold text-gray-500 uppercase">Select Currency</p>
+        <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 py-2 z-50">
+          <div className="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Select Currency</p>
           </div>
           <div className="max-h-80 overflow-y-auto">
             {currencies.map((currency) => (
               <button
                 key={currency.code}
                 onClick={() => handleCurrencyChange(currency)}
-                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors cursor-pointer ${
-                  selectedCurrency.code === currency.code ? 'bg-teal-50 text-teal-700' : 'text-gray-700'
-                }`}
+                className={`w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors cursor-pointer ${selectedCurrency.code === currency.code ? 'bg-teal-50 dark:bg-teal-900/30 text-teal-700 dark:text-teal-400' : 'text-gray-700 dark:text-gray-300'
+                  }`}
               >
                 <div className="flex items-center gap-3">
                   <span className="text-lg font-medium w-8">{currency.symbol}</span>
                   <div className="text-left">
                     <div className="font-medium">{currency.code}</div>
-                    <div className="text-xs text-gray-500">{currency.name}</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">{currency.name}</div>
                   </div>
                 </div>
                 {selectedCurrency.code === currency.code && (
-                  <i className="ri-check-line text-teal-600"></i>
+                  <i className="ri-check-line text-teal-600 dark:text-teal-400"></i>
                 )}
               </button>
             ))}
@@ -101,7 +100,7 @@ export default CurrencySwitcher;
 export const convertPrice = (price: number, fromCurrency = 'USD'): string => {
   const saved = localStorage.getItem('selectedCurrency');
   const currency = currencies.find(c => c.code === saved) || currencies[0];
-  
+
   const convertedPrice = price * currency.rate;
   return `${currency.symbol}${convertedPrice.toFixed(2)}`;
 };
