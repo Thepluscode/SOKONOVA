@@ -16,6 +16,16 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Accept build-time environment variables
+ARG VITE_API_URL
+ARG VITE_PUBLIC_SUPABASE_URL
+ARG VITE_PUBLIC_SUPABASE_ANON_KEY
+
+# Set environment variables for Vite build
+ENV VITE_API_URL=$VITE_API_URL
+ENV VITE_PUBLIC_SUPABASE_URL=$VITE_PUBLIC_SUPABASE_URL
+ENV VITE_PUBLIC_SUPABASE_ANON_KEY=$VITE_PUBLIC_SUPABASE_ANON_KEY
+
 # Build for production
 RUN npm run build
 
