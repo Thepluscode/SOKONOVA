@@ -6,7 +6,8 @@ import { RedisService } from '../modules/redis.service';
 export class HealthController {
   constructor(
     private prisma: PrismaService,
-    private redis: RedisService,
+    // Redis temporarily disabled for MVP deployment
+    // private redis: RedisService,
   ) { }
 
   @Get()
@@ -37,22 +38,22 @@ export class HealthController {
       };
     }
 
-    // Check Redis connection
-    try {
-      const redisStart = Date.now();
-      await this.redis.getClient().ping();
-      const redisLatency = Date.now() - redisStart;
-      result.checks.redis = {
-        status: 'healthy',
-        latency: `${redisLatency}ms`,
-      };
-    } catch (error) {
-      result.status = 'degraded';
-      result.checks.redis = {
-        status: 'unhealthy',
-        error: error.message,
-      };
-    }
+    // Check Redis connection (temporarily disabled for MVP)
+    // try {
+    //   const redisStart = Date.now();
+    //   await this.redis.getClient().ping();
+    //   const redisLatency = Date.now() - redisStart;
+    //   result.checks.redis = {
+    //     status: 'healthy',
+    //     latency: `${redisLatency}ms`,
+    //   };
+    // } catch (error) {
+    //   result.status = 'degraded';
+    //   result.checks.redis = {
+    //     status: 'unhealthy',
+    //     error: error.message,
+    //   };
+    // }
 
     return result;
   }
