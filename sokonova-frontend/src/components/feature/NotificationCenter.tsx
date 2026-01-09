@@ -18,53 +18,8 @@ interface NotificationCenterProps {
 }
 
 export default function NotificationCenter({ onClose, onUpdateCount }: NotificationCenterProps) {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      type: 'order',
-      title: 'Order Shipped',
-      message: 'Your order #12345 has been shipped and is on its way!',
-      time: '5 minutes ago',
-      read: false,
-      link: '/buyer-orders',
-    },
-    {
-      id: '2',
-      type: 'price_drop',
-      title: 'Price Drop Alert',
-      message: 'Wireless Headphones dropped to $79.99 (20% off)',
-      time: '1 hour ago',
-      read: false,
-      link: '/products/1',
-      image: 'https://readdy.ai/api/search-image?query=modern%20wireless%20headphones%20with%20sleek%20black%20design%20on%20white%20background%20product%20photography&width=80&height=80&seq=notif1&orientation=squarish',
-    },
-    {
-      id: '3',
-      type: 'stock',
-      title: 'Back in Stock',
-      message: 'Smart Watch Pro is now available!',
-      time: '3 hours ago',
-      read: false,
-      link: '/products/2',
-      image: 'https://readdy.ai/api/search-image?query=elegant%20smart%20watch%20with%20black%20band%20on%20white%20background%20product%20photography&width=80&height=80&seq=notif2&orientation=squarish',
-    },
-    {
-      id: '4',
-      type: 'promotion',
-      title: 'Flash Sale Starting',
-      message: 'Up to 50% off on Electronics - Starts in 30 minutes',
-      time: '2 hours ago',
-      read: true,
-    },
-    {
-      id: '5',
-      type: 'system',
-      title: 'Account Security',
-      message: 'New login detected from Chrome on Windows',
-      time: '1 day ago',
-      read: true,
-    },
-  ]);
+  // TODO: Fetch real notifications from backend API
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     const unreadCount = notifications.filter(n => !n.read).length;

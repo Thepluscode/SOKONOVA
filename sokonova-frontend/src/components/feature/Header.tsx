@@ -113,12 +113,6 @@ export default function Header() {
                   >
                     <i className="ri-camera-line text-lg"></i>
                   </button>
-                  <button
-                    onClick={() => setShowAdvancedSearch(true)}
-                    className="px-3 py-1 text-sm text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 rounded-md font-medium cursor-pointer whitespace-nowrap"
-                  >
-                    Advanced
-                  </button>
                 </div>
               </div>
             </div>

@@ -10,32 +10,8 @@ interface Notification {
 }
 
 export default function SocialProof() {
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      userName: 'Sarah M.',
-      userLocation: 'Lagos, Nigeria',
-      productName: 'Premium Wireless Headphones',
-      action: 'purchased',
-      timeAgo: '2 minutes ago',
-    },
-    {
-      id: '2',
-      userName: 'John D.',
-      userLocation: 'Nairobi, Kenya',
-      productName: 'Smart Watch Pro',
-      action: 'reviewed',
-      timeAgo: '5 minutes ago',
-    },
-    {
-      id: '3',
-      userName: 'Emily R.',
-      userLocation: 'Accra, Ghana',
-      productName: 'Designer Handbag',
-      action: 'purchased',
-      timeAgo: '8 minutes ago',
-    },
-  ]);
+  // TODO: Fetch real purchase notifications from backend API
+  const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
