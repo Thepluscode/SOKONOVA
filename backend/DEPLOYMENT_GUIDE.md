@@ -28,11 +28,12 @@ railway init
 ### Step 4: Add PostgreSQL Database
 ```bash
 railway add --database postgresql
+railway add --database redis
 ```
 
 ### Step 5: Link Environment Variables
 ```bash
-# Railway will auto-generate DATABASE_URL
+# Railway will auto-generate DATABASE_URL and REDIS_URL
 # You need to add your Stripe keys:
 
 railway variables set STRIPE_SECRET_KEY=sk_test_YOUR_SECRET_KEY
@@ -77,7 +78,11 @@ railway domain add
 1. Click "New" → "Database" → "PostgreSQL"
 2. Wait ~30 seconds for provisioning
 
-### Step 3: Deploy from GitHub
+80: ### Step 3: Add Redis
+81: 1. Click "New" → "Database" → "Redis"
+82: 2. Wait ~30 seconds for provisioning
+
+### Step 4: Deploy from GitHub
 1. Click "New" → "GitHub Repo"
 2. Select your sokonova repository
 3. Select `/backend` as root directory
@@ -92,7 +97,7 @@ NODE_ENV=production
 PORT=4000
 ```
 
-DATABASE_URL is automatically set by Railway.
+DATABASE_URL and REDIS_URL are automatically set by Railway.
 
 ### Step 5: Deploy
 1. Click "Deploy"
