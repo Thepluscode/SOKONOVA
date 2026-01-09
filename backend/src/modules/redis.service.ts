@@ -18,15 +18,16 @@ export class RedisService {
 
     // Log masked URL for debugging
     const sanitizedUrl = url.replace(/(:[^:@]*@)/, ':***@');
-    this.logger.log(`Initializing Redis client with URL: ${sanitizedUrl}`);
+    this.logger.log(`[Redis] Initializing client with URL: ${sanitizedUrl}`);
+    this.logger.log(`[Redis] Using provided REDIS_URL: ${!!redisUrl}`);
 
     this.client = new Redis(url, {
       maxRetriesPerRequest: 3,
       retryStrategy: (times) => {
-        const delay = Math.min(times * 50, 2000);
+        const delay = Math.min(times * 1000, 3000);
+        this.logger.log(`[Redis] Retrying connection... Attempt ${times}. Delay: ${delay}ms`);
         return delay;
       },
-      // Prevent crash on connection error
       reconnectOnError: (err) => {
         const targetError = 'READONLY';
         if (err.message.includes(targetError)) {
@@ -37,12 +38,18 @@ export class RedisService {
     });
 
     this.client.on('error', (err) => {
-      this.logger.error(`Redis connection error: ${err.message}`);
-      // Cleanly handle error to prevent unhandled rejection crashes
+      this.logger.error(`[Redis] Connection error: ${err.message}`);
+      if (err.stack) {
+        this.logger.error(err.stack);
+      }
     });
 
     this.client.on('connect', () => {
-      this.logger.log('Successfully connected to Redis');
+      this.logger.log('[Redis] Successfully connected');
+    });
+
+    this.client.on('ready', () => {
+      this.logger.log('[Redis] Client is ready');
     });
   }
 
