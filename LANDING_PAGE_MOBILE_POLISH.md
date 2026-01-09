@@ -567,5 +567,4 @@ The SokoNova landing page now provides a **premium mobile experience** with:
 
 **Created:** October 30, 2025
 **Version:** 2.1.0 (Mobile Polish)
-**Author:** Claude Code Assistant
 **Review Status:** Ready for Production ✅
