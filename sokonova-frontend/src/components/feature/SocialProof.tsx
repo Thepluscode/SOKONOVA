@@ -30,6 +30,11 @@ export default function SocialProof() {
 
   const currentNotification = notifications[currentIndex];
 
+  // Don't render if no notifications
+  if (notifications.length === 0) {
+    return null;
+  }
+
   const getActionText = (action: string) => {
     switch (action) {
       case 'purchased':
