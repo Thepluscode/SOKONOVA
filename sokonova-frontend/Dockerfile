@@ -35,8 +35,8 @@ FROM nginx:alpine AS runner
 # Copy built assets
 COPY --from=builder /app/out /usr/share/nginx/html
 
-# Copy custom nginx config for SPA routing
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copy custom nginx config template
+COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
 # Copy startup script
 COPY start.sh /start.sh
