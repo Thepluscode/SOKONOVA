@@ -233,7 +233,7 @@ export default function Header() {
               <div className="relative hidden lg:block">
                 {/* ... existing user menu code ... */}
                 <a
-                  href="/auth/signin"
+                  href="/login"
                   className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
                 >
                   <i className="ri-login-box-line"></i>
