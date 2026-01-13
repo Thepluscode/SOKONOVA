@@ -34,7 +34,7 @@ export const discoveryService = {
    */
   search: async (params: DiscoverySearchParams): Promise<DiscoverySearchResponse> => {
     const query = buildQuery(params as Record<string, string | number | boolean | undefined>);
-    return api.get<DiscoverySearchResponse>(`/discovery/search${query}`);
+    return api.get<DiscoverySearchResponse>(`/discovery/products-search${query}`);
   },
 };
 
