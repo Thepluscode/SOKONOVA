@@ -1,6 +1,6 @@
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { APP_FILTER } from '@nestjs/core';
-import { PrismaService } from './prisma.service';
+import { PrismaModule } from './prisma.module';
 // import { RedisService } from './redis.service'; // Temporarily disabled for MVP
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
@@ -34,7 +34,9 @@ import { SentryExceptionFilter } from '../common/filters/sentry-exception.filter
 
 @Module({
   imports: [
-    // Observability (first for metrics collection)
+    // Data Layer (must be first - @Global() makes PrismaService available everywhere)
+    PrismaModule,
+    // Observability
     HealthModule,
     MetricsModule,
     // Core Modules
@@ -64,7 +66,5 @@ import { SentryExceptionFilter } from '../common/filters/sentry-exception.filter
     TeamsModule,
     AuditLogsModule,
   ],
-  providers: [PrismaService], // RedisService temporarily removed for MVP
-  exports: [PrismaService], // RedisService temporarily removed for MVP
 })
 export class AppModule { }
