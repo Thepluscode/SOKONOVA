@@ -82,7 +82,7 @@ export function SubscriptionPlans({ plans, currentSubscription, userId }: Subscr
         window.location.reload();
       }, 2000);
     } catch (err) {
-      setError("Failed to subscribe. Please try again.");
+      setError("Could not subscribe. Please try again.");
       console.error("Subscription error:", err);
     } finally {
       setIsSubmitting(false);
@@ -101,7 +101,7 @@ export function SubscriptionPlans({ plans, currentSubscription, userId }: Subscr
       // Refresh the page to show updated subscription status
       window.location.reload();
     } catch (err) {
-      setError("Failed to cancel subscription. Please try again.");
+      setError("Could not cancel subscription. Please try again.");
       console.error("Cancellation error:", err);
     }
   };

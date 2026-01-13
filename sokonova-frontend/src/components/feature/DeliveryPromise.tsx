@@ -31,7 +31,7 @@ export function DeliveryPromise({ productId, location }: { productId: string; lo
       const data = await getDeliveryPromise(productId, location);
       setDeliveryPromise(data);
     } catch (err) {
-      setError('Failed to load delivery promise information');
+      setError('Could not load delivery promise information.');
       console.error('Error loading delivery promise:', err);
     } finally {
       setLoading(false);

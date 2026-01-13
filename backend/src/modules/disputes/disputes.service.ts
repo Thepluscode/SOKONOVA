@@ -65,6 +65,7 @@ export class DisputesService {
         dto.orderItemId,
         dispute.orderItem.product.title,
         dto.reasonCode,
+        oi.order.id,
       );
     } catch (error) {
       this.logger.error(`Failed to send dispute opened notification: ${error.message}`);
@@ -120,6 +121,31 @@ export class DisputesService {
     });
   }
 
+  // Admin view all disputes
+  async listAll() {
+    return this.prisma.dispute.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        buyer: {
+          select: { id: true, name: true, email: true },
+        },
+        orderItem: {
+          include: {
+            order: {
+              select: { id: true, total: true, currency: true },
+            },
+            product: {
+              select: {
+                title: true,
+                seller: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
   // Seller/Admin resolves dispute
   async resolve(disputeId: string, dto: ResolveDisputeDto) {
     // Load dispute and ownership chain
@@ -162,6 +188,11 @@ export class DisputesService {
             id: true,
           },
         },
+        orderItem: {
+          select: {
+            orderId: true,
+          },
+        },
       },
     });
 
@@ -172,6 +203,7 @@ export class DisputesService {
         disputeId,
         dto.status,
         dto.resolutionNote,
+        updatedDispute.orderItem?.orderId,
       );
     } catch (error) {
       this.logger.error(`Failed to send dispute resolved notification: ${error.message}`);

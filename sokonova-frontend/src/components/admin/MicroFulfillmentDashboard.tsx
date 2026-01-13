@@ -89,7 +89,7 @@ export function MicroFulfillmentDashboard({ sellerId }: { sellerId: string }) {
         setSelectedPartner(partnersData[0].id);
       }
     } catch (err) {
-      setError('Failed to load micro-fulfillment data');
+      setError('Could not load micro-fulfillment data.');
       console.error('Error loading micro-fulfillment data:', err);
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ export function MicroFulfillmentDashboard({ sellerId }: { sellerId: string }) {
       // Refresh data after opt-in
       await loadMicroFulfillmentData();
     } catch (err) {
-      setError('Failed to opt in to micro-fulfillment service');
+      setError('Could not opt in to micro-fulfillment service.');
       console.error('Error opting in:', err);
     } finally {
       setOptingIn(false);
@@ -135,7 +135,7 @@ export function MicroFulfillmentDashboard({ sellerId }: { sellerId: string }) {
   }
 
   if (!metrics) {
-    return <div>No data available</div>;
+    return <div>No data available.</div>;
   }
 
   return (

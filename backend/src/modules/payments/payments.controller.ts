@@ -171,51 +171,66 @@ export class PaymentsController {
         throw new UnauthorizedException('Invalid webhook signature');
       }
 
-      // For Stripe, we would normally use:
-      // const event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret);
-      // But since we're not importing stripe SDK here, we'll do basic verification
-
-      // Basic HMAC verification (in production, use Stripe SDK)
-      const payload = JSON.stringify(req.body);
-      const expectedSignature = crypto
-        .createHmac('sha256', webhookSecret)
-        .update(payload)
-        .digest('hex');
+      const rawBody = (req as any).rawBody;
+      if (!rawBody) {
+        throw new BadRequestException('Missing raw body for Stripe webhook');
+      }
 
       // Stripe signature format: t=timestamp,v1=signature
       const sigParts = signature.split(',');
-      const v1Sig = sigParts.find((s) => s.startsWith('v1='))?.substring(3);
+      const timestamp = sigParts.find((s) => s.startsWith('t='))?.substring(2);
+      const v1Signatures = sigParts
+        .filter((s) => s.startsWith('v1='))
+        .map((s) => s.substring(3));
 
-      if (!v1Sig) {
+      if (!timestamp || v1Signatures.length === 0) {
         throw new UnauthorizedException('Invalid Stripe signature format');
       }
 
-      // Note: In production, also check timestamp to prevent replay attacks
-      // For now, just verify signature
-      const matches = crypto.timingSafeEqual(
-        Buffer.from(expectedSignature),
-        Buffer.from(v1Sig),
+      const signedPayload = `${timestamp}.${rawBody}`;
+      const expectedSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(signedPayload)
+        .digest('hex');
+
+      const signatureMatches = v1Signatures.some((sig) =>
+        crypto.timingSafeEqual(
+          Buffer.from(expectedSignature),
+          Buffer.from(sig),
+        ),
       );
 
-      if (!matches) {
+      if (!signatureMatches) {
         throw new UnauthorizedException('Signature verification failed');
+      }
+
+      const timestampAge = Math.abs(Date.now() / 1000 - Number(timestamp));
+      if (Number.isNaN(timestampAge) || timestampAge > 300) {
+        throw new UnauthorizedException('Stripe signature timestamp is too old');
       }
 
       // 2. Check event type
       const { type, data } = req.body;
-      if (type !== 'payment_intent.succeeded') {
-        return res.send('ignored');
+      const paymentIntent = data?.object;
+      if (!paymentIntent?.id) {
+        throw new BadRequestException('Missing payment intent data');
       }
 
-      // 3. Extract payment details
-      const paymentIntent = data.object;
       const externalRef = paymentIntent.id;
       const metadata = paymentIntent.metadata || {};
       const orderId = metadata.orderId;
 
-      // 4. Mark payment success
-      await this.payments.markPaymentSuccessByRef(externalRef, orderId);
-      return res.send('ok');
+      if (type === 'payment_intent.succeeded') {
+        await this.payments.markPaymentSuccessByRef(externalRef, orderId);
+        return res.send('ok');
+      }
+
+      if (type === 'payment_intent.payment_failed' || type === 'payment_intent.canceled') {
+        await this.payments.markPaymentFailedByRef(externalRef);
+        return res.send('failed recorded');
+      }
+
+      return res.send('ignored');
     } catch (error) {
       console.error('Stripe webhook error:', error);
       return res.status(400).send('webhook error');

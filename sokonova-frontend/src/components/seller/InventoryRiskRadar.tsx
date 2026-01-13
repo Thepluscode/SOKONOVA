@@ -127,7 +127,7 @@ export function InventoryRiskRadar({ sellerId }: { sellerId: string }) {
   }
 
   if (!riskMetrics) {
-    return <div>Failed to load inventory risk data</div>;
+    return <div>Could not load inventory risk data.</div>;
   }
 
   // Data for charts

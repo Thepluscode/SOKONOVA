@@ -76,7 +76,7 @@ export function ChatAssistant({ userId, productId, productName }: ChatAssistantP
         setRelatedProducts(response.relatedProducts);
       }
     } catch (err) {
-      setError("Failed to get answer. Please try again.");
+      setError("Could not get an answer. Please try again.");
       console.error("Chat error:", err);
       
       // Add error message to chat

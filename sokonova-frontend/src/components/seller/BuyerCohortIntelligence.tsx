@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/contexts/ToastContext';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell
@@ -38,6 +39,7 @@ export function BuyerCohortIntelligence({ sellerId }: { sellerId: string }) {
   const [maxUses, setMaxUses] = useState<number>(100);
   const [loading, setLoading] = useState<boolean>(true);
   const [creatingCampaign, setCreatingCampaign] = useState<boolean>(false);
+  const { showToast } = useToast();
 
   useEffect(() => {
     loadCohortData();
@@ -82,10 +84,16 @@ export function BuyerCohortIntelligence({ sellerId }: { sellerId: string }) {
         maxUses,
       });
       
-      alert(`Discount campaign created successfully! Campaign ID: ${result.id}`);
+      showToast({
+        message: `Discount campaign created. ID: ${result.id}`,
+        type: 'success',
+      });
     } catch (error) {
       console.error('Failed to create discount campaign:', error);
-      alert('Failed to create discount campaign');
+      showToast({
+        message: 'Could not create discount campaign. Please try again.',
+        type: 'error',
+      });
     } finally {
       setCreatingCampaign(false);
     }

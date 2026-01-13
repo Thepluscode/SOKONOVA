@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role } from '@prisma/client';
 import { UsersService } from './users.service';
 
@@ -23,25 +24,23 @@ export class UsersController {
   // /me endpoints - for current authenticated user
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  getCurrentUser(@Query('userId') userId: string) {
-    // TODO: Extract userId from JWT token instead of query param
+  getCurrentUser(@CurrentUser('id') userId: string) {
     return this.users.findOneById(userId);
   }
 
   @Patch('me')
   @UseGuards(JwtAuthGuard)
   updateCurrentUser(
-    @Query('userId') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() body: { name?: string; city?: string; country?: string; phone?: string; bio?: string },
   ) {
-    // TODO: Extract userId from JWT token instead of query param
     return this.users.updateUserProfile(userId, body);
   }
 
   @Post('me/password')
   @UseGuards(JwtAuthGuard)
   changePassword(
-    @Query('userId') userId: string,
+    @CurrentUser('id') userId: string,
     @Body() body: { currentPassword: string; newPassword: string },
   ) {
     // TODO: Extract userId from JWT token and implement password change
@@ -51,25 +50,19 @@ export class UsersController {
 
   @Get('me/orders')
   @UseGuards(JwtAuthGuard)
-  getCurrentUserOrders(@Query('userId') userId: string) {
-    // TODO: Extract userId from JWT token
-    // This delegates to the orders service
+  getCurrentUserOrders(@CurrentUser('id') userId: string) {
     return this.users.getBuyerProfile(userId).then(user => user?.orders || []);
   }
 
   @Get('me/wishlist')
   @UseGuards(JwtAuthGuard)
-  getCurrentUserWishlist(@Query('userId') userId: string) {
-    // TODO: Extract userId from JWT token
-    // This should delegate to the wishlist service
+  getCurrentUserWishlist(@CurrentUser('id') userId: string) {
     return { message: 'Wishlist endpoint - use /wishlist/user/:userId directly' };
   }
 
   @Get('me/reviews')
   @UseGuards(JwtAuthGuard)
-  getCurrentUserReviews(@Query('userId') userId: string) {
-    // TODO: Extract userId from JWT token
-    // This should delegate to the reviews service
+  getCurrentUserReviews(@CurrentUser('id') userId: string) {
     return { message: 'Reviews endpoint - use /reviews/user/:userId directly' };
   }
 

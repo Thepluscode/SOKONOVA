@@ -17,6 +17,7 @@ interface Notification {
   read: boolean;
   icon: string;
   iconColor: string;
+  orderId?: string;
 }
 
 export default function NotificationsPage() {
@@ -35,18 +36,19 @@ export default function NotificationsPage() {
 
       setLoading(true);
       try {
-        const apiNotifications = await notificationsService.list(user.id);
+        const apiNotifications = await notificationsService.list();
 
         // Transform API response
         setNotifications(apiNotifications.map((n: any) => ({
           id: n.id,
-          type: n.channel?.toLowerCase() || 'system',
+          type: getCategoryForType(n.type),
           title: n.title || 'Notification',
           message: n.body || n.message || '',
           time: formatTimeAgo(n.createdAt),
           read: n.readAt !== null,
-          icon: getIconForType(n.channel),
-          iconColor: getColorForType(n.channel),
+          icon: getIconForType(n.type),
+          iconColor: getColorForType(n.type),
+          orderId: n.data?.orderId,
         })));
       } catch (err) {
         console.error('Failed to fetch notifications:', err);
@@ -65,22 +67,38 @@ export default function NotificationsPage() {
     return `${Math.floor(seconds / 86400)} days ago`;
   }
 
-  function getIconForType(type: string): string {
-    switch (type?.toLowerCase()) {
-      case 'orders': return 'ri-truck-line';
-      case 'promotions': return 'ri-fire-line';
-      case 'system': return 'ri-shield-check-line';
-      default: return 'ri-notification-line';
+  function getCategoryForType(type: string): NotificationType {
+    const normalized = type?.toLowerCase() || '';
+    if (normalized.startsWith('order_') || normalized === 'new_review') {
+      return 'orders';
     }
+    if (normalized.startsWith('payout') || normalized.startsWith('dispute')) {
+      return 'system';
+    }
+    if (normalized.includes('promotion')) {
+      return 'promotions';
+    }
+    return 'system';
+  }
+
+  function getIconForType(type: string): string {
+    const normalized = type?.toLowerCase() || '';
+    if (normalized.startsWith('order_')) return 'ri-truck-line';
+    if (normalized.startsWith('payout')) return 'ri-money-dollar-circle-line';
+    if (normalized.startsWith('dispute')) return 'ri-error-warning-line';
+    if (normalized === 'new_review') return 'ri-star-line';
+    if (normalized.includes('promotion')) return 'ri-fire-line';
+    return 'ri-notification-line';
   }
 
   function getColorForType(type: string): string {
-    switch (type?.toLowerCase()) {
-      case 'orders': return 'text-emerald-600';
-      case 'promotions': return 'text-orange-600';
-      case 'system': return 'text-blue-600';
-      default: return 'text-gray-600';
-    }
+    const normalized = type?.toLowerCase() || '';
+    if (normalized.startsWith('order_')) return 'text-emerald-600';
+    if (normalized.startsWith('payout')) return 'text-green-600';
+    if (normalized.startsWith('dispute')) return 'text-red-600';
+    if (normalized === 'new_review') return 'text-amber-600';
+    if (normalized.includes('promotion')) return 'text-orange-600';
+    return 'text-blue-600';
   }
 
   const filterCounts = {
@@ -96,7 +114,7 @@ export default function NotificationsPage() {
 
   const markAsRead = async (id: string) => {
     try {
-      await notificationsService.markRead(id, user?.id || '');
+      await notificationsService.markRead(id);
       setNotifications(notifications.map(n =>
         n.id === id ? { ...n, read: true } : n
       ));
@@ -106,9 +124,8 @@ export default function NotificationsPage() {
   };
 
   const markAllAsRead = async () => {
-    if (!user?.id) return;
     try {
-      await notificationsService.markAllRead(user.id);
+      await notificationsService.markAllRead();
       setNotifications(notifications.map(n => ({ ...n, read: true })));
     } catch (err) {
       console.error('Failed to mark all as read:', err);
@@ -117,7 +134,7 @@ export default function NotificationsPage() {
 
   const deleteNotification = async (id: string) => {
     try {
-      await notificationsService.delete(id, user?.id || '');
+      await notificationsService.delete(id);
       setNotifications(notifications.filter(n => n.id !== id));
     } catch (err) {
       console.error('Failed to delete notification:', err);
@@ -181,7 +198,7 @@ export default function NotificationsPage() {
           {filteredNotifications.length === 0 ? (
             <div className="bg-white rounded-xl shadow-sm p-12 text-center">
               <i className="ri-notification-off-line text-6xl text-gray-300 mb-4"></i>
-              <p className="text-gray-500">No notifications in this category</p>
+              <p className="text-gray-500">No notifications in this category.</p>
             </div>
           ) : (
             filteredNotifications.map((notification) => (
@@ -203,6 +220,14 @@ export default function NotificationsPage() {
                     <p className="text-sm text-gray-600 mb-3">{notification.message}</p>
 
                     <div className="flex items-center gap-4">
+                      {notification.orderId && (
+                        <Link
+                          to={`/orders/${notification.orderId}/tracking`}
+                          className="text-xs text-emerald-600 hover:text-emerald-700 font-medium whitespace-nowrap"
+                        >
+                          View order
+                        </Link>
+                      )}
                       {!notification.read && (
                         <button
                           onClick={() => markAsRead(notification.id)}

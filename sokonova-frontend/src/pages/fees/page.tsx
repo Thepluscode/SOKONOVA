@@ -107,7 +107,7 @@ export default function FeesPage() {
             Simple, Transparent Pricing
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Choose the plan that fits your business. No hidden fees, no surprises. 
+            Choose the plan that fits your business. No hidden fees, no surprises.
             Scale as you grow with flexible pricing designed for African entrepreneurs.
           </p>
           

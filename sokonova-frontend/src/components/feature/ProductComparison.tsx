@@ -48,8 +48,8 @@ const ProductComparison: React.FC = () => {
         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
           <i className="ri-scales-line text-4xl text-gray-400"></i>
         </div>
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">No products to compare</h3>
-        <p className="text-gray-600 mb-6">Add products to compare their features and prices</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">No products to compare.</h3>
+        <p className="text-gray-600 mb-6">Add products to compare their features and prices.</p>
         <Link
           to="/products"
           className="inline-flex items-center gap-2 px-6 py-3 bg-teal-600 text-white font-medium rounded-lg hover:bg-teal-700 transition-colors whitespace-nowrap"

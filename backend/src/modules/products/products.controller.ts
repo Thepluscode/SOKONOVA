@@ -7,9 +7,15 @@ import {
   Body,
   Query,
   UseGuards,
+  ForbiddenException,
+  NotFoundException,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
+import { Role } from '@prisma/client';
 
 @Controller('products')
 export class ProductsController {
@@ -42,9 +48,9 @@ export class ProductsController {
 
   // SELLER: create product
   // POST /products
-  // TODO: Re-enable @UseGuards(JwtAuthGuard) after MVP testing
   @Post()
-  // @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
   async create(
     @Body()
     body: {
@@ -56,14 +62,19 @@ export class ProductsController {
       imageUrl?: string;
       category?: string;
     },
+    @CurrentUser() user: { id: string; role: Role },
   ) {
-    return this.products.create(body);
+    const sellerId =
+      user.role === Role.ADMIN && body.sellerId ? body.sellerId : user.id;
+
+    return this.products.create({ ...body, sellerId });
   }
 
   // SELLER: update product
   // PATCH /products/:id
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
   async update(
     @Param('id') id: string,
     @Body()
@@ -75,18 +86,37 @@ export class ProductsController {
       imageUrl?: string;
       category?: string;
     },
+    @CurrentUser() user: { id: string; role: Role },
   ) {
+    const product = await this.products.getById(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    if (user.role !== Role.ADMIN && product.sellerId !== user.id) {
+      throw new ForbiddenException('You can only update your own products');
+    }
+
     return this.products.update(id, body);
   }
 
   // SELLER: update inventory
   // PATCH /products/:id/inventory
   @Patch(':id/inventory')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
   async updateInventory(
     @Param('id') id: string,
     @Body() body: { quantity: number },
+    @CurrentUser() user: { id: string; role: Role },
   ) {
+    const product = await this.products.getById(id);
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    if (user.role !== Role.ADMIN && product.sellerId !== user.id) {
+      throw new ForbiddenException('You can only update your own products');
+    }
+
     return this.products.updateInventory(id, body.quantity);
   }
 }

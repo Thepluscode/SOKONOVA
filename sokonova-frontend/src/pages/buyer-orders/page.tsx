@@ -48,7 +48,7 @@ export default function BuyerOrdersPage() {
       setError(null);
 
       try {
-        const apiOrders = await ordersService.listForUser(user.id);
+        const apiOrders = await ordersService.listMine();
 
         // Transform API orders to display format
         const displayOrders: Order[] = await Promise.all(
@@ -90,7 +90,7 @@ export default function BuyerOrdersPage() {
         setOrders(displayOrders);
       } catch (err) {
         console.error('Failed to fetch orders:', err);
-        setError('Failed to load orders. Please try again.');
+        setError('Could not load orders. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -139,6 +139,11 @@ export default function BuyerOrdersPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <h1 className="text-3xl font-bold text-gray-900 mb-8">My Orders</h1>
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         {/* Tabs */}
         <div className="bg-white rounded-lg border border-gray-200 mb-6">
@@ -171,7 +176,7 @@ export default function BuyerOrdersPage() {
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <i className="ri-shopping-bag-line text-4xl text-gray-400"></i>
               </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No orders found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No orders found.</h3>
               <p className="text-gray-600 mb-6">You haven't placed any orders yet</p>
               <Link to="/products">
                 <Button className="whitespace-nowrap">

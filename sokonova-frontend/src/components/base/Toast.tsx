@@ -6,10 +6,12 @@ interface ToastProps {
   message: string;
   type?: ToastType;
   duration?: number;
+  actionLabel?: string;
+  onAction?: () => void;
   onClose: () => void;
 }
 
-export default function Toast({ message, type = 'info', duration = 5000, onClose }: ToastProps) {
+export default function Toast({ message, type = 'info', duration = 5000, actionLabel, onAction, onClose }: ToastProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
@@ -72,6 +74,15 @@ export default function Toast({ message, type = 'info', duration = 5000, onClose
         <i className={`${getIcon()} text-xl ${getIconColor()} flex-shrink-0 mt-0.5`}></i>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium leading-relaxed">{message}</p>
+          {actionLabel && onAction && (
+            <button
+              type="button"
+              onClick={onAction}
+              className="mt-2 text-xs font-semibold text-emerald-700 hover:text-emerald-800"
+            >
+              {actionLabel}
+            </button>
+          )}
         </div>
         <button
           onClick={onClose}

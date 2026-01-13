@@ -86,7 +86,7 @@ export function ProfitabilityConsole({ sellerId }: { sellerId: string }) {
   }
 
   if (!profitabilityData) {
-    return <div>Failed to load profitability data</div>;
+    return <div>Could not load profitability data.</div>;
   }
 
   // Data for charts

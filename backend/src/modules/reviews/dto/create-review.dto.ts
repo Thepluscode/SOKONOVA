@@ -1,8 +1,9 @@
-import { IsInt, Min, Max, IsString } from 'class-validator';
+import { IsInt, Min, Max, IsOptional, IsString } from 'class-validator';
 
 export class CreateReviewDto {
+  @IsOptional()
   @IsString()
-  buyerId: string; // must match session.user.id in production
+  buyerId?: string; // must match session.user.id in production
 
   @IsString()
   orderItemId: string;

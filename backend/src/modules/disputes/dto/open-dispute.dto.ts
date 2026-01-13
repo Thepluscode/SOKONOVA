@@ -1,8 +1,9 @@
 import { IsString, IsOptional } from 'class-validator';
 
 export class OpenDisputeDto {
+  @IsOptional()
   @IsString()
-  buyerId: string; // enforce buyerId === session.user.id in real app
+  buyerId?: string; // enforce buyerId === session.user.id in real app
 
   @IsString()
   orderItemId: string;

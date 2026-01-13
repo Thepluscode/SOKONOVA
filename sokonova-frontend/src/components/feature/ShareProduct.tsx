@@ -41,7 +41,7 @@ export function ShareProduct({ userId, productId, productName, productImage }: S
         setSuccess(false);
       }, 2000);
     } catch (err) {
-      setError("Failed to share your story. Please try again.");
+      setError("Could not share your story. Please try again.");
       console.error("Share error:", err);
     } finally {
       setIsSubmitting(false);

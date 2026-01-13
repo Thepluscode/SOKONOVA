@@ -4,6 +4,7 @@ import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import WishlistShare from '../../components/feature/WishlistShare';
 import SkeletonLoader from '../../components/base/SkeletonLoader';
+import { useToast } from '../../contexts/ToastContext';
 import { wishlistService, productsService, cartService } from '../../lib/services';
 import { useAuth } from '../../lib/auth';
 import type { Product } from '../../lib/types';
@@ -26,6 +27,7 @@ export default function WishlistPage() {
   const [loading, setLoading] = useState(true);
   const [addingToCart, setAddingToCart] = useState<string | null>(null);
   const [showShareModal, setShowShareModal] = useState(false);
+  const { showToast } = useToast();
 
   // Fetch wishlist items
   useEffect(() => {
@@ -114,9 +116,10 @@ export default function WishlistPage() {
         }
         localStorage.setItem('cart', JSON.stringify(cart));
       }
-      alert('Added to cart!');
+      showToast({ message: 'Added to cart.', type: 'success' });
     } catch (err) {
       console.error('Failed to add to cart:', err);
+      showToast({ message: 'Could not add to cart. Please try again.', type: 'error' });
     } finally {
       setAddingToCart(null);
     }

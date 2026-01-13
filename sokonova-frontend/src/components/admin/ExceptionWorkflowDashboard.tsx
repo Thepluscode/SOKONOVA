@@ -102,7 +102,7 @@ export function ExceptionWorkflowDashboard({ sellerId }: { sellerId: string }) {
       ];
       setExceptions(mockExceptions);
     } catch (err) {
-      setError('Failed to load exception data');
+      setError('Could not load exception data.');
       console.error('Error loading exception data:', err);
     } finally {
       setLoading(false);
@@ -146,7 +146,7 @@ export function ExceptionWorkflowDashboard({ sellerId }: { sellerId: string }) {
       case 'review_required':
         return 'Review Status';
       default:
-        return 'No Action Required';
+        return 'No action required';
     }
   };
 
@@ -185,7 +185,7 @@ export function ExceptionWorkflowDashboard({ sellerId }: { sellerId: string }) {
         {exceptions.length === 0 ? (
           <div className="text-center py-8">
             <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-4" />
-            <p className="text-muted-foreground">No active exceptions</p>
+            <p className="text-muted-foreground">No active exceptions.</p>
           </div>
         ) : (
           <Table>
@@ -211,7 +211,7 @@ export function ExceptionWorkflowDashboard({ sellerId }: { sellerId: string }) {
                     <div className="flex items-center gap-2">
                       {getExceptionIcon(exception.exceptionType)}
                       <span className="capitalize">
-                        {exception.exceptionType?.replace('_', ' ') || 'No Exception'}
+                        {exception.exceptionType?.replace('_', ' ') || 'No exception'}
                       </span>
                     </div>
                   </TableCell>

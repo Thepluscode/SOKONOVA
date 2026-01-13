@@ -25,21 +25,21 @@ export default function GuestCheckout({ onContinue }: GuestCheckoutProps) {
     const newErrors: Partial<GuestInfo> = {};
 
     if (!guestInfo.email) {
-      newErrors.email = 'Email is required';
+      newErrors.email = 'Email address is required.';
     } else if (!/\S+@\S+\.\S+/.test(guestInfo.email)) {
-      newErrors.email = 'Email is invalid';
+      newErrors.email = 'Email address is invalid.';
     }
 
     if (!guestInfo.firstName) {
-      newErrors.firstName = 'First name is required';
+      newErrors.firstName = 'First name is required.';
     }
 
     if (!guestInfo.lastName) {
-      newErrors.lastName = 'Last name is required';
+      newErrors.lastName = 'Last name is required.';
     }
 
     if (!guestInfo.phone) {
-      newErrors.phone = 'Phone number is required';
+      newErrors.phone = 'Phone number is required.';
     }
 
     setErrors(newErrors);
@@ -61,7 +61,7 @@ export default function GuestCheckout({ onContinue }: GuestCheckoutProps) {
         </div>
         <div>
           <h2 className="text-xl font-bold text-gray-900">Guest Checkout</h2>
-          <p className="text-sm text-gray-600">No account needed - checkout quickly</p>
+          <p className="text-sm text-gray-600">No account needed - checkout quickly.</p>
         </div>
       </div>
 

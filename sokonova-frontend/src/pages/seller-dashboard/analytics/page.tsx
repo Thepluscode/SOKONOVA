@@ -123,7 +123,7 @@ export default function SellerAnalytics() {
         });
       } catch (err) {
         console.error('Failed to fetch analytics:', err);
-        setError('Failed to load analytics. Please try again.');
+        setError('Could not load analytics. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -327,7 +327,7 @@ export default function SellerAnalytics() {
             </div>
             <div className="p-6">
               {topProducts.length === 0 ? (
-                <p className="text-gray-500 text-center py-4">No products yet</p>
+                <p className="text-gray-500 text-center py-4">No products yet.</p>
               ) : (
                 <div className="space-y-4">
                   {topProducts.map((product, index) => (

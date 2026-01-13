@@ -4,11 +4,13 @@ import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
 import Input from '../../../components/base/Input';
+import { useToast } from '../../../contexts/ToastContext';
 
 export default function AddProduct() {
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     // Basic Information
     productName: '',
@@ -127,7 +129,10 @@ export default function AddProduct() {
     localStorage.setItem('products', JSON.stringify(existingProducts));
     
     // Show success message
-    alert(`Product ${formData.status === 'active' ? 'published' : 'saved as draft'} successfully!`);
+    showToast({
+      message: `Product ${formData.status === 'active' ? 'published' : 'saved as draft'}.`,
+      type: 'success',
+    });
     
     // Reset form
     setFormData({
@@ -241,7 +246,7 @@ export default function AddProduct() {
                       ) : (
                         <div className="text-center">
                           <i className="ri-image-line text-4xl text-gray-400 mb-2"></i>
-                          <p className="text-sm text-gray-500">No image selected</p>
+                          <p className="text-sm text-gray-500">No image selected.</p>
                         </div>
                       )}
                     </div>

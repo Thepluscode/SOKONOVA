@@ -47,6 +47,7 @@ export default function SellerPayouts() {
   const [showMethodModal, setShowMethodModal] = useState(false);
   const [payoutAmount, setPayoutAmount] = useState('');
   const [selectedMethod, setSelectedMethod] = useState('');
+  const [payoutFormError, setPayoutFormError] = useState('');
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -95,8 +96,8 @@ export default function SellerPayouts() {
       try {
         // Fetch summary and history in parallel
         const [summary, history] = await Promise.all([
-          payoutsService.getSummary(user.id).catch(() => null),
-          payoutsService.getHistory(user.id).catch(() => []),
+          payoutsService.getSummary().catch(() => null),
+          payoutsService.getHistory().catch(() => []),
         ]);
 
         // Update stats from API or use defaults
@@ -125,7 +126,7 @@ export default function SellerPayouts() {
 
         // Try to get earnings from orders
         try {
-          const orders = await ordersService.listForUser(user.id);
+          const orders = await ordersService.listForSeller();
           if (orders && orders.length > 0) {
             setEarnings(orders.map((order: any) => ({
               orderId: order.id,
@@ -142,7 +143,7 @@ export default function SellerPayouts() {
         }
       } catch (err) {
         console.error('Failed to fetch payout data:', err);
-        setError('Failed to load payout data. Please try again.');
+        setError('Could not load payout data. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -186,15 +187,15 @@ export default function SellerPayouts() {
   const handleRequestPayout = () => {
     const amount = parseFloat(payoutAmount);
     if (amount < payoutStats.minimumPayout) {
-      alert(`Minimum payout amount is $${payoutStats.minimumPayout}`);
+      setPayoutFormError(`Minimum payout amount is $${payoutStats.minimumPayout}`);
       return;
     }
     if (amount > payoutStats.availableBalance) {
-      alert('Insufficient balance');
+      setPayoutFormError('Insufficient balance.');
       return;
     }
     if (!selectedMethod) {
-      alert('Please select a payout method');
+      setPayoutFormError('Please select a payout method.');
       return;
     }
 
@@ -202,6 +203,12 @@ export default function SellerPayouts() {
     setShowPayoutModal(false);
     setPayoutAmount('');
     setSelectedMethod('');
+    setPayoutFormError('');
+  };
+
+  const openPayoutModal = () => {
+    setPayoutFormError('');
+    setShowPayoutModal(true);
   };
 
   const handleExportCSV = () => {
@@ -231,7 +238,7 @@ export default function SellerPayouts() {
                 <i className="ri-download-line mr-2"></i>
                 Export CSV
               </Button>
-              <Button onClick={() => setShowPayoutModal(true)}>
+              <Button onClick={openPayoutModal}>
                 <i className="ri-wallet-3-line mr-2"></i>
                 Request Payout
               </Button>
@@ -564,7 +571,10 @@ export default function SellerPayouts() {
                   type="number"
                   placeholder={`Minimum $${payoutStats.minimumPayout}`}
                   value={payoutAmount}
-                  onChange={(e) => setPayoutAmount(e.target.value)}
+                  onChange={(e) => {
+                    setPayoutAmount(e.target.value);
+                    setPayoutFormError('');
+                  }}
                   min={payoutStats.minimumPayout}
                   max={payoutStats.availableBalance}
                 />
@@ -579,7 +589,10 @@ export default function SellerPayouts() {
                 </label>
                 <select
                   value={selectedMethod}
-                  onChange={(e) => setSelectedMethod(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedMethod(e.target.value);
+                    setPayoutFormError('');
+                  }}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
                 >
                   <option value="">Select method</option>
@@ -609,6 +622,12 @@ export default function SellerPayouts() {
                       ${(parseFloat(payoutAmount) * (1 - payoutStats.commissionRate / 100)).toFixed(2)}
                     </span>
                   </div>
+                </div>
+              )}
+
+              {payoutFormError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                  {payoutFormError}
                 </div>
               )}
 

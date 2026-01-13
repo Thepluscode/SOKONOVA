@@ -104,7 +104,7 @@ export default function Discover() {
           ) : products.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <i className="ri-box-3-line text-4xl text-gray-300 mb-4"></i>
-              <p className="text-gray-600">No products found</p>
+              <p className="text-gray-600">No products found.</p>
             </div>
           ) : (
             products.map((product, index) => (

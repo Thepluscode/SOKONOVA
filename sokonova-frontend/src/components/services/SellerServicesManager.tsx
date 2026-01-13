@@ -117,7 +117,7 @@ export function SellerServicesManager({ sellerId, initialServices, initialOrders
         deliveryTime: 3,
       });
     } catch (err) {
-      setError("Failed to save service. Please try again.");
+      setError("Could not save service. Please try again.");
       console.error("Service error:", err);
     } finally {
       setIsSubmitting(false);
@@ -135,7 +135,7 @@ export function SellerServicesManager({ sellerId, initialServices, initialOrders
         s.id === id ? { ...s, active: false } : s
       ));
     } catch (err) {
-      setError("Failed to deactivate service. Please try again.");
+      setError("Could not deactivate service. Please try again.");
       console.error("Delete error:", err);
     }
   };
@@ -160,7 +160,7 @@ export function SellerServicesManager({ sellerId, initialServices, initialOrders
         order.id === orderId ? { ...order, status } : order
       ));
     } catch (err) {
-      setError("Failed to update order status. Please try again.");
+      setError("Could not update order status. Please try again.");
       console.error("Order status error:", err);
     }
   };

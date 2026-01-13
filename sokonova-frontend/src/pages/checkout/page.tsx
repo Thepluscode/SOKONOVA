@@ -73,7 +73,7 @@ export default function Checkout() {
         }
       } catch (err) {
         console.error('Failed to fetch cart:', err);
-        setError('Failed to load cart. Please try again.');
+        setError('Could not load cart. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -107,7 +107,6 @@ export default function Checkout() {
     try {
       // Step 1: Create order from cart
       const order = await ordersService.create({
-        userId: user?.id || 'guest',
         shippingAdr: `${formData.address}, ${formData.city}, ${formData.state} ${formData.zipCode}`,
         buyerName: `${formData.firstName} ${formData.lastName}`,
         buyerPhone: formData.phone,
@@ -127,7 +126,7 @@ export default function Checkout() {
       }
     } catch (err: any) {
       console.error('Checkout failed:', err);
-      setError(err.message || 'Failed to process order. Please try again.');
+      setError(err.message || 'Could not process order. Please try again.');
       setProcessing(false);
     }
   };
@@ -147,8 +146,13 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {error && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <SkeletonLoader type="card" />
             </div>

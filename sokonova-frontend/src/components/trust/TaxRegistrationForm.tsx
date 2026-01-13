@@ -21,7 +21,7 @@ export function TaxRegistrationForm({ sellerId, onRegistrationSuccess }: TaxRegi
     e.preventDefault();
     
     if (!taxId.trim() || !country.trim()) {
-      setError("Please fill in all required fields");
+      setError("Please fill in all required fields.");
       return;
     }
     
@@ -33,7 +33,7 @@ export function TaxRegistrationForm({ sellerId, onRegistrationSuccess }: TaxRegi
       setSuccess(true);
       onRegistrationSuccess();
     } catch (err) {
-      setError("Failed to submit tax registration. Please try again.");
+      setError("Could not submit tax registration. Please try again.");
       console.error("Tax registration error:", err);
     } finally {
       setIsSubmitting(false);

@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
+import { useToast } from '../../../contexts/ToastContext';
 
 export default function AdminPaymentSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
+  const { showToast } = useToast();
   
   const [paymentMethods, setPaymentMethods] = useState({
     stripe: {
@@ -40,7 +42,10 @@ export default function AdminPaymentSettingsPage() {
     // Simulate API test
     await new Promise(resolve => setTimeout(resolve, 2000));
     setTesting(false);
-    alert('Payment gateway connection successful!');
+    showToast({
+      message: 'Payment gateway connection successful.',
+      type: 'success',
+    });
   };
 
   const toggleMethod = (method: keyof typeof paymentMethods) => {

@@ -199,6 +199,14 @@ curl -X POST https://your-app.railway.app/payments/intent \
 
 ## Troubleshooting
 
+### Troubleshooting: Backend 404 / "Application Not Found"
+If your backend suddenly returns 404 (Application not found) after a repo push:
+1.  Go to the **Backend Service** in Railway.
+2.  Click **Settings**.
+3.  Scroll down to **Actions**.
+4.  Click **Redeploy**.
+5.  If that fails, check the "Build Logs" to see if it's picking up the wrong directory. Ensure "Root Directory" is set to `/backend` in the settings if it's not effectively doing so.ls
+
 ### Build Fails
 - Check Railway logs: `railway logs`
 - Ensure all dependencies in package.json

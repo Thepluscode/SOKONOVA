@@ -1,7 +1,21 @@
-import { Body, Controller, Get, Post, Query, Res } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  ForbiddenException,
+  Get,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { PayoutsService } from './payouts.service';
 import { Response } from 'express';
 import { MarkPaidDto } from './dto/mark-paid.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 /**
  * PayoutsController
@@ -42,8 +56,18 @@ export class PayoutsController {
    * }
    */
   @Get('seller/pending')
-  async sellerPending(@Query('sellerId') sellerId: string) {
-    return this.payouts.getPendingForSeller(sellerId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async sellerPending(
+    @Query('sellerId') sellerId: string | undefined,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    if (sellerId && sellerId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Not allowed to access other sellers');
+    }
+    return this.payouts.getPendingForSeller(
+      user.role === Role.ADMIN && sellerId ? sellerId : user.id,
+    );
   }
 
   /**
@@ -56,8 +80,18 @@ export class PayoutsController {
    * TODO: Add auth guard to ensure seller owns the data
    */
   @Get('seller/all')
-  async sellerAll(@Query('sellerId') sellerId: string) {
-    return this.payouts.getAllForSeller(sellerId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async sellerAll(
+    @Query('sellerId') sellerId: string | undefined,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    if (sellerId && sellerId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Not allowed to access other sellers');
+    }
+    return this.payouts.getAllForSeller(
+      user.role === Role.ADMIN && sellerId ? sellerId : user.id,
+    );
   }
 
   /**
@@ -73,16 +107,24 @@ export class PayoutsController {
    * TODO: Add auth guard
    */
   @Get('seller/csv')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
   async sellerCsv(
-    @Query('sellerId') sellerId: string,
+    @Query('sellerId') sellerId: string | undefined,
     @Res() res: Response,
+    @CurrentUser() user: { id: string; role: Role },
   ) {
-    const csv = await this.payouts.getCsvForSeller(sellerId);
+    if (sellerId && sellerId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Not allowed to access other sellers');
+    }
+    const targetSellerId =
+      user.role === Role.ADMIN && sellerId ? sellerId : user.id;
+    const csv = await this.payouts.getCsvForSeller(targetSellerId);
 
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader(
       'Content-Disposition',
-      `attachment; filename="payouts-${sellerId}.csv"`,
+      `attachment; filename="payouts-${targetSellerId}.csv"`,
     );
     res.send(csv);
   }
@@ -109,6 +151,8 @@ export class PayoutsController {
    * @Roles('ADMIN')
    */
   @Post('admin/mark-paid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   async markPaid(@Body() dto: MarkPaidDto) {
     return this.payouts.markPaidOut(dto.orderItemIds, dto.batchId);
   }
@@ -139,6 +183,8 @@ export class PayoutsController {
    * TODO: Add admin auth guard
    */
   @Get('admin/summary')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
   async adminSummary() {
     return this.payouts.getAdminSummary();
   }

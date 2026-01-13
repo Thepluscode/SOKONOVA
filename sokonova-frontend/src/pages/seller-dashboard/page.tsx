@@ -39,13 +39,13 @@ export default function SellerDashboard() {
         const [profitability, sellerProducts, payoutSummary] = await Promise.all([
           analyticsService.getSellerProfitability(user.id).catch(() => null),
           productsService.list({ sellerId: user.id }).catch(() => []),
-          payoutsService.getSummary(user.id).catch(() => ({ pending: 0, available: 0, totalPaidOut: 0 })),
+          payoutsService.getSummary().catch(() => ({ pending: 0, available: 0, totalPaidOut: 0 })),
         ]);
 
         // Try to get recent orders
         let orders: any[] = [];
         try {
-          orders = await ordersService.getByUserId(user.id, 5);
+          orders = await ordersService.listForSeller();
         } catch {
           orders = [];
         }
@@ -81,7 +81,7 @@ export default function SellerDashboard() {
         })));
       } catch (err) {
         console.error('Failed to fetch dashboard data:', err);
-        setError('Failed to load dashboard. Please try again.');
+        setError('Could not load dashboard. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -219,7 +219,7 @@ export default function SellerDashboard() {
           {recentOrders.length === 0 ? (
             <div className="text-center py-8">
               <i className="ri-shopping-bag-line text-4xl text-gray-300 mb-2"></i>
-              <p className="text-gray-600">No orders yet</p>
+              <p className="text-gray-600">No orders yet.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

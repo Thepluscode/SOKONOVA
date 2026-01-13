@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useToast } from '../../contexts/ToastContext';
 
 interface BundleProduct {
   id: string;
@@ -15,6 +16,7 @@ export default function ProductBundles({ currentProductId }: ProductBundlesProps
   const [selectedProducts, setSelectedProducts] = useState<string[]>([currentProductId]);
   const [bundleProducts, setBundleProducts] = useState<BundleProduct[]>([]);
   const [currentProduct, setCurrentProduct] = useState<BundleProduct | null>(null);
+  const { showToast } = useToast();
 
   useEffect(() => {
     // Mock current product data
@@ -78,7 +80,10 @@ export default function ProductBundles({ currentProductId }: ProductBundlesProps
     const selectedItems = allProducts.filter(p => selectedProducts.includes(p.id));
     console.log('Adding bundle to cart:', selectedItems);
     // TODO: Implement cart functionality
-    alert(`Added ${selectedItems.length} items to cart!`);
+    showToast({
+      message: `Added ${selectedItems.length} items to cart.`,
+      type: 'success',
+    });
   };
 
   return (

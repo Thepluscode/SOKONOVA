@@ -68,8 +68,8 @@ export const fulfillmentService = {
      * Get order tracking status
      * GET /fulfillment/tracking/:orderId
      */
-    getOrderTracking: async (orderId: string, userId: string): Promise<unknown> => {
-        return api.get(`/fulfillment/tracking/${orderId}?userId=${userId}`);
+    getOrderTracking: async (orderId: string): Promise<unknown> => {
+        return api.get(`/fulfillment/tracking/${orderId}`);
     },
 
     // ========== Seller Endpoints ==========
@@ -78,16 +78,16 @@ export const fulfillmentService = {
      * Get seller's open fulfillment queue
      * GET /fulfillment/seller/open
      */
-    getSellerOpenFulfillment: async (sellerId: string): Promise<unknown[]> => {
-        return api.get<unknown[]>(`/fulfillment/seller/open?sellerId=${sellerId}`);
+    getSellerOpenFulfillment: async (): Promise<unknown[]> => {
+        return api.get<unknown[]>(`/fulfillment/seller/open`);
     },
 
     /**
      * Get seller fulfillment stats
      * GET /fulfillment/seller/stats
      */
-    getSellerStats: async (sellerId: string): Promise<FulfillmentStats> => {
-        return api.get<FulfillmentStats>(`/fulfillment/seller/stats?sellerId=${sellerId}`);
+    getSellerStats: async (): Promise<FulfillmentStats> => {
+        return api.get<FulfillmentStats>(`/fulfillment/seller/stats`);
     },
 
     /**
@@ -96,10 +96,9 @@ export const fulfillmentService = {
      */
     markShipped: async (
         orderItemId: string,
-        sellerId: string,
         data: { carrier?: string; trackingCode?: string; note?: string }
     ): Promise<unknown> => {
-        return api.patch(`/fulfillment/seller/ship/${orderItemId}?sellerId=${sellerId}`, data);
+        return api.patch(`/fulfillment/seller/ship/${orderItemId}`, data);
     },
 
     /**
@@ -108,10 +107,9 @@ export const fulfillmentService = {
      */
     markDelivered: async (
         orderItemId: string,
-        sellerId: string,
         data: { proofUrl?: string; note?: string }
     ): Promise<unknown> => {
-        return api.patch(`/fulfillment/seller/deliver/${orderItemId}?sellerId=${sellerId}`, data);
+        return api.patch(`/fulfillment/seller/deliver/${orderItemId}`, data);
     },
 
     /**
@@ -120,10 +118,9 @@ export const fulfillmentService = {
      */
     markIssue: async (
         orderItemId: string,
-        sellerId: string,
         note: string
     ): Promise<unknown> => {
-        return api.patch(`/fulfillment/seller/issue/${orderItemId}?sellerId=${sellerId}`, { note });
+        return api.patch(`/fulfillment/seller/issue/${orderItemId}`, { note });
     },
 
     /**

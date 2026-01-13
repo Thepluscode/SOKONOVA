@@ -111,7 +111,7 @@ export function SponsoredPlacementsManager({ sellerId, initialPlacements }: Spon
       setIsDialogOpen(false);
       setEditingPlacement(null);
     } catch (err) {
-      setError("Failed to save sponsored placement. Please try again.");
+      setError("Could not save sponsored placement. Please try again.");
       console.error("Sponsored placement error:", err);
     } finally {
       setIsSubmitting(false);
@@ -127,7 +127,7 @@ export function SponsoredPlacementsManager({ sellerId, initialPlacements }: Spon
       await deleteSponsoredPlacement(id);
       setPlacements(placements.filter(p => p.id !== id));
     } catch (err) {
-      setError("Failed to delete sponsored placement. Please try again.");
+      setError("Could not delete sponsored placement. Please try again.");
       console.error("Delete error:", err);
     }
   };

@@ -48,12 +48,9 @@ export const reviewsService = {
      * POST /reviews
      */
     create: async (data: {
-        productId: string;
-        orderId: string;
+        orderItemId: string;
         rating: number;
-        title?: string;
-        content: string;
-        images?: string[];
+        comment: string;
     }): Promise<Review> => {
         return api.post<Review>('/reviews', data);
     },
@@ -64,9 +61,7 @@ export const reviewsService = {
      */
     update: async (id: string, data: Partial<{
         rating: number;
-        title: string;
-        content: string;
-        images: string[];
+        comment: string;
     }>): Promise<Review> => {
         return api.patch<Review>(`/reviews/${id}`, data);
     },

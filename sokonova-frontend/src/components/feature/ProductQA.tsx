@@ -107,7 +107,7 @@ export default function ProductQA() {
         {filteredQuestions.length === 0 ? (
           <div className="text-center py-12">
             <i className="ri-question-line text-6xl text-gray-300 mb-4"></i>
-            <p className="text-gray-600 mb-4">No questions found</p>
+            <p className="text-gray-600 mb-4">No questions found.</p>
             <button
               onClick={() => setIsAskModalOpen(true)}
               className="text-emerald-600 hover:text-emerald-700 font-medium cursor-pointer whitespace-nowrap"

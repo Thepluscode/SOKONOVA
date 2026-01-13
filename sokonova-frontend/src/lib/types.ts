@@ -163,6 +163,7 @@ export interface Notification {
   title: string;
   body: string;
   message: string;
+  data?: Record<string, any>;
   type: string;
   isRead: boolean;
   readAt?: string;
@@ -255,7 +256,7 @@ export interface JwtPayload {
 // ============================================
 
 export interface CreateOrderDto {
-  userId: string;
+  userId?: string;
   shippingAdr?: string;
   buyerName?: string;
   buyerPhone?: string;

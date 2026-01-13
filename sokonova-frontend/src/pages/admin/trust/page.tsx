@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
+import { disputesService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 export default function AdminTrustPage() {
+  useRequireAuth('ADMIN');
   const [activeTab, setActiveTab] = useState<'reports' | 'disputes' | 'verification'>('reports');
+  const [disputes, setDisputes] = useState<any[]>([]);
+  const [loadingDisputes, setLoadingDisputes] = useState(true);
+  const [disputesError, setDisputesError] = useState<string | null>(null);
 
   const reports = [
     {
@@ -39,28 +45,20 @@ export default function AdminTrustPage() {
     }
   ];
 
-  const disputes = [
-    {
-      id: 1,
-      orderId: 'ORD-2024-001',
-      buyer: 'Kwame Mensah',
-      seller: 'Tech Hub Store',
-      amount: '$456.00',
-      reason: 'Item not as described',
-      date: '2024-01-15',
-      status: 'open'
-    },
-    {
-      id: 2,
-      orderId: 'ORD-2024-002',
-      buyer: 'Thabo Ndlovu',
-      seller: 'Fashion Outlet',
-      amount: '$234.50',
-      reason: 'Item not received',
-      date: '2024-01-14',
-      status: 'resolved'
+  const mapDisputeStatus = (status: string) => {
+    switch (status) {
+      case 'OPEN':
+        return 'open';
+      case 'SELLER_RESPONDED':
+        return 'pending';
+      case 'RESOLVED_BUYER_COMPENSATED':
+      case 'RESOLVED_REDELIVERED':
+      case 'REJECTED':
+        return 'resolved';
+      default:
+        return 'pending';
     }
-  ];
+  };
 
   const verifications = [
     {
@@ -120,6 +118,42 @@ export default function AdminTrustPage() {
     }
   };
 
+  useEffect(() => {
+    async function fetchDisputes() {
+      setLoadingDisputes(true);
+      setDisputesError(null);
+
+      try {
+        const response = await disputesService.listAll();
+        const mapped = response.map((dispute: any) => ({
+          id: dispute.id,
+          orderId: dispute.orderItem?.orderId || 'Unknown',
+          buyer: dispute.buyer?.name || dispute.buyer?.email || 'Buyer',
+          seller: dispute.orderItem?.product?.seller?.name || 'Seller',
+          amount: dispute.orderItem?.grossAmount
+            ? `$${Number(dispute.orderItem.grossAmount).toFixed(2)}`
+            : '—',
+          reason: dispute.reasonCode?.replace(/_/g, ' ').toLowerCase() || 'Issue reported',
+          date: new Date(dispute.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+          status: mapDisputeStatus(dispute.status),
+        }));
+
+        setDisputes(mapped);
+      } catch (error) {
+        console.error('Failed to load disputes:', error);
+        setDisputesError('Could not load disputes.');
+      } finally {
+        setLoadingDisputes(false);
+      }
+    }
+
+    fetchDisputes();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
@@ -152,7 +186,9 @@ export default function AdminTrustPage() {
               <span className="text-xs font-medium text-orange-600">+3</span>
             </div>
             <p className="text-sm font-medium text-gray-600 mb-1">Open Disputes</p>
-            <p className="text-2xl font-bold text-gray-900">12</p>
+            <p className="text-2xl font-bold text-gray-900">
+              {disputes.filter((dispute) => dispute.status === 'open').length}
+            </p>
           </div>
 
           <div className="bg-white rounded-lg border border-gray-200 p-6 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
@@ -273,7 +309,13 @@ export default function AdminTrustPage() {
 
             {activeTab === 'disputes' && (
               <div className="space-y-4">
-                {disputes.map((dispute, index) => (
+                {loadingDisputes && (
+                  <div className="text-sm text-gray-600">Loading disputes...</div>
+                )}
+                {disputesError && (
+                  <div className="text-sm text-red-600">{disputesError}</div>
+                )}
+                {!loadingDisputes && !disputesError && disputes.map((dispute, index) => (
                   <div
                     key={dispute.id}
                     className="border border-gray-200 rounded-lg p-6 hover-lift animate-fade-in-up"
@@ -321,6 +363,9 @@ export default function AdminTrustPage() {
                     </div>
                   </div>
                 ))}
+                {!loadingDisputes && !disputesError && disputes.length === 0 && (
+                  <div className="text-sm text-gray-600">No disputes found.</div>
+                )}
               </div>
             )}
 

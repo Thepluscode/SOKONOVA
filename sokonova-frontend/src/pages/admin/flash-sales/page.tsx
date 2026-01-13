@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface FlashSale {
   id: string;
@@ -17,6 +18,7 @@ interface FlashSale {
 export default function FlashSalesPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'scheduled' | 'ended'>('active');
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     startDate: '',
@@ -90,7 +92,10 @@ export default function FlashSalesPage() {
       products: [],
     });
     setShowCreateModal(false);
-    alert('Flash sale created successfully!');
+    showToast({
+      message: 'Flash sale created.',
+      type: 'success',
+    });
   };
 
   const filteredSales = flashSales.filter(sale => sale.status === activeTab);

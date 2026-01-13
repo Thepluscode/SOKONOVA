@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
+import { disputesService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 export default function SellerTrustPage() {
+  useRequireAuth('SELLER');
   const [activeTab, setActiveTab] = useState<'overview' | 'disputes' | 'kyc'>('overview');
+  const [loadingDisputes, setLoadingDisputes] = useState(true);
+  const [disputesError, setDisputesError] = useState<string | null>(null);
+  const [disputes, setDisputes] = useState<any[]>([]);
 
   const trustScore = {
     overall: 87,
@@ -25,11 +31,6 @@ export default function SellerTrustPage() {
     { label: 'On-Time Delivery', value: '94%', icon: 'ri-truck-line', color: 'blue' }
   ];
 
-  const disputes = [
-    { id: 1, orderId: 'ORD-12345', customer: 'John Doe', issue: 'Product not as described', status: 'open', date: '2 days ago', amount: '$45.00' },
-    { id: 2, orderId: 'ORD-12346', customer: 'Jane Smith', issue: 'Late delivery', status: 'resolved', date: '1 week ago', amount: '$78.00' },
-    { id: 3, orderId: 'ORD-12347', customer: 'Mike Johnson', issue: 'Damaged item', status: 'pending', date: '3 days ago', amount: '$120.00' }
-  ];
 
   const kycStatus = {
     verified: true,
@@ -52,6 +53,56 @@ export default function SellerTrustPage() {
     if (score >= 60) return 'bg-yellow-600';
     return 'bg-red-600';
   };
+
+  const mapDisputeStatus = (status: string) => {
+    switch (status) {
+      case 'OPEN':
+        return 'open';
+      case 'SELLER_RESPONDED':
+        return 'pending';
+      case 'RESOLVED_BUYER_COMPENSATED':
+      case 'RESOLVED_REDELIVERED':
+      case 'REJECTED':
+        return 'resolved';
+      default:
+        return 'pending';
+    }
+  };
+
+  useEffect(() => {
+    async function fetchDisputes() {
+      setLoadingDisputes(true);
+      setDisputesError(null);
+
+      try {
+        const response = await disputesService.listForSeller();
+        const mapped = response.map((dispute: any) => ({
+          id: dispute.id,
+          orderId: dispute.orderItem?.orderId || 'Unknown',
+          customer: dispute.buyer?.name || dispute.buyer?.email || 'Buyer',
+          issue: dispute.reasonCode?.replace(/_/g, ' ').toLowerCase() || 'Issue reported',
+          status: mapDisputeStatus(dispute.status),
+          date: new Date(dispute.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+          }),
+          amount: dispute.orderItem?.grossAmount
+            ? `$${Number(dispute.orderItem.grossAmount).toFixed(2)}`
+            : '—',
+        }));
+
+        setDisputes(mapped);
+      } catch (error) {
+        console.error('Failed to load disputes:', error);
+        setDisputesError('Could not load disputes.');
+      } finally {
+        setLoadingDisputes(false);
+      }
+    }
+
+    fetchDisputes();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -142,7 +193,9 @@ export default function SellerTrustPage() {
                 }`}
               >
                 Disputes
-                <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">1</span>
+                <span className="ml-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                  {disputes.filter((dispute) => dispute.status === 'open').length}
+                </span>
               </button>
               <button
                 onClick={() => setActiveTab('kyc')}
@@ -219,51 +272,61 @@ export default function SellerTrustPage() {
                   </Button>
                 </div>
 
-                <div className="space-y-4">
-                  {disputes.map((dispute) => (
-                    <div key={dispute.id} className="p-4 border border-gray-200 rounded-lg hover:border-emerald-600 transition-colors">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
-                        <div>
-                          <div className="flex items-center space-x-3 mb-2">
-                            <h4 className="font-semibold text-gray-900">Order {dispute.orderId}</h4>
-                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                              dispute.status === 'open' ? 'bg-red-100 text-red-700' :
-                              dispute.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-green-100 text-green-700'
-                            }`}>
-                              {dispute.status}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">Customer: {dispute.customer}</p>
-                          <p className="text-sm text-gray-600">Issue: {dispute.issue}</p>
-                        </div>
-                        <div className="text-right mt-3 sm:mt-0">
-                          <p className="text-lg font-bold text-gray-900">{dispute.amount}</p>
-                          <p className="text-sm text-gray-500">{dispute.date}</p>
-                        </div>
-                      </div>
-                      {dispute.status === 'open' && (
-                        <div className="flex items-center space-x-3 pt-3 border-t border-gray-200">
-                          <Button size="sm" className="whitespace-nowrap">
-                            <i className="ri-message-line mr-2"></i>
-                            Respond
-                          </Button>
-                          <Button size="sm" variant="outline" className="whitespace-nowrap">
-                            <i className="ri-refund-line mr-2"></i>
-                            Offer Refund
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
+                {loadingDisputes && (
+                  <div className="text-sm text-gray-600">Loading disputes...</div>
+                )}
 
-                {disputes.length === 0 && (
+                {disputesError && (
+                  <div className="text-sm text-red-600">{disputesError}</div>
+                )}
+
+                {!loadingDisputes && !disputesError && (
+                  <div className="space-y-4">
+                    {disputes.map((dispute) => (
+                      <div key={dispute.id} className="p-4 border border-gray-200 rounded-lg hover:border-emerald-600 transition-colors">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-3">
+                          <div>
+                            <div className="flex items-center space-x-3 mb-2">
+                              <h4 className="font-semibold text-gray-900">Order {dispute.orderId}</h4>
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                                dispute.status === 'open' ? 'bg-red-100 text-red-700' :
+                                dispute.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-green-100 text-green-700'
+                              }`}>
+                                {dispute.status}
+                              </span>
+                            </div>
+                            <p className="text-sm text-gray-600">Customer: {dispute.customer}</p>
+                            <p className="text-sm text-gray-600">Issue: {dispute.issue}</p>
+                          </div>
+                          <div className="text-right mt-3 sm:mt-0">
+                            <p className="text-lg font-bold text-gray-900">{dispute.amount}</p>
+                            <p className="text-sm text-gray-500">{dispute.date}</p>
+                          </div>
+                        </div>
+                        {dispute.status === 'open' && (
+                          <div className="flex items-center space-x-3 pt-3 border-t border-gray-200">
+                            <Button size="sm" className="whitespace-nowrap">
+                              <i className="ri-message-line mr-2"></i>
+                              Respond
+                            </Button>
+                            <Button size="sm" variant="outline" className="whitespace-nowrap">
+                              <i className="ri-refund-line mr-2"></i>
+                              Offer Refund
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {!loadingDisputes && !disputesError && disputes.length === 0 && (
                   <div className="text-center py-12">
                     <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                       <i className="ri-checkbox-circle-line text-4xl text-green-600"></i>
                     </div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Active Disputes</h3>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No active disputes.</h3>
                     <p className="text-gray-600">Great job! Keep up the excellent customer service.</p>
                   </div>
                 )}

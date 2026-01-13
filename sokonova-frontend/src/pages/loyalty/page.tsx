@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function Loyalty() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showSettings, setShowSettings] = useState(false);
+  const { showToast } = useToast();
   const [settings, setSettings] = useState({
     pointsPerDollar: 1,
     bronzeMin: 0,
@@ -29,7 +31,10 @@ export default function Loyalty() {
   const handleSaveSettings = () => {
     localStorage.setItem('loyaltySettings', JSON.stringify(settings));
     setShowSettings(false);
-    alert('Loyalty program settings saved successfully!');
+    showToast({
+      message: 'Loyalty settings saved.',
+      type: 'success',
+    });
   };
 
   const rewards = [

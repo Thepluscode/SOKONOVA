@@ -64,7 +64,7 @@ export default function SellerApprovalPage() {
         setRejectedSellers(rejected);
       } catch (err) {
         console.error('Failed to fetch applications:', err);
-        setError('Failed to load seller applications.');
+        setError('Could not load seller applications.');
       } finally {
         setLoading(false);
       }
@@ -102,7 +102,7 @@ export default function SellerApprovalPage() {
       setSelectedSeller(null);
     } catch (err) {
       console.error('Failed to approve:', err);
-      setError('Failed to approve seller. Please try again.');
+      setError('Could not approve seller. Please try again.');
     } finally {
       setProcessing(false);
     }
@@ -127,7 +127,7 @@ export default function SellerApprovalPage() {
       setSelectedSeller(null);
     } catch (err) {
       console.error('Failed to reject:', err);
-      setError('Failed to reject seller. Please try again.');
+      setError('Could not reject seller. Please try again.');
     } finally {
       setProcessing(false);
     }

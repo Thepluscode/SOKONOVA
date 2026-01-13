@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '../../contexts/ToastContext';
 
 interface Product {
   id: string;
@@ -22,6 +23,7 @@ interface ProductQuickViewProps {
 export default function ProductQuickView({ product, isOpen, onClose }: ProductQuickViewProps) {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { showToast } = useToast();
 
   if (!isOpen) return null;
 
@@ -29,7 +31,10 @@ export default function ProductQuickView({ product, isOpen, onClose }: ProductQu
 
   const handleAddToCart = () => {
     // Add to cart logic
-    alert(`Added ${quantity} ${product.name} to cart`);
+    showToast({
+      message: `Added ${quantity} ${product.name} to cart.`,
+      type: 'success',
+    });
     onClose();
   };
 

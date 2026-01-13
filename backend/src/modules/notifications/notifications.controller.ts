@@ -1,24 +1,23 @@
-import { Controller, Get, Post, Param, Query, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Param, Query, UseGuards } from '@nestjs/common';
 import { NotificationsService } from './notifications.service';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('notifications')
 export class NotificationsController {
   constructor(private notificationsService: NotificationsService) {}
 
   /**
-   * GET /notifications?userId=abc&limit=20&unreadOnly=true
-   * List notifications for a user
+   * GET /notifications?limit=20&unreadOnly=true
+   * List notifications for the current user
    */
+  @UseGuards(JwtAuthGuard)
   @Get()
   async list(
-    @Query('userId') userId: string,
+    @CurrentUser('id') userId: string,
     @Query('limit') limit?: string,
     @Query('unreadOnly') unreadOnly?: string,
   ) {
-    if (!userId) {
-      throw new BadRequestException('userId query param is required');
-    }
-
     const parsedLimit = limit ? parseInt(limit, 10) : 20;
     const parsedUnreadOnly = unreadOnly === 'true';
 
@@ -26,15 +25,12 @@ export class NotificationsController {
   }
 
   /**
-   * GET /notifications/unread-count?userId=abc
-   * Get unread notification count
+   * GET /notifications/unread-count
+   * Get unread notification count for the current user
    */
+  @UseGuards(JwtAuthGuard)
   @Get('unread-count')
-  async unreadCount(@Query('userId') userId: string) {
-    if (!userId) {
-      throw new BadRequestException('userId query param is required');
-    }
-
+  async unreadCount(@CurrentUser('id') userId: string) {
     const count = await this.notificationsService.getUnreadCount(userId);
     return { count };
   }
@@ -43,15 +39,12 @@ export class NotificationsController {
    * POST /notifications/:id/read
    * Mark a notification as read
    */
+  @UseGuards(JwtAuthGuard)
   @Post(':id/read')
   async markRead(
     @Param('id') id: string,
-    @Body('userId') userId: string,
+    @CurrentUser('id') userId: string,
   ) {
-    if (!userId) {
-      throw new BadRequestException('userId is required in request body');
-    }
-
     await this.notificationsService.markRead(userId, id);
     return { success: true };
   }
@@ -60,12 +53,9 @@ export class NotificationsController {
    * POST /notifications/mark-all-read
    * Mark all notifications as read for a user
    */
+  @UseGuards(JwtAuthGuard)
   @Post('mark-all-read')
-  async markAllRead(@Body('userId') userId: string) {
-    if (!userId) {
-      throw new BadRequestException('userId is required in request body');
-    }
-
+  async markAllRead(@CurrentUser('id') userId: string) {
     await this.notificationsService.markAllRead(userId);
     return { success: true };
   }
@@ -74,15 +64,12 @@ export class NotificationsController {
    * POST /notifications/:id/delete
    * Delete a notification
    */
+  @UseGuards(JwtAuthGuard)
   @Post(':id/delete')
   async delete(
     @Param('id') id: string,
-    @Body('userId') userId: string,
+    @CurrentUser('id') userId: string,
   ) {
-    if (!userId) {
-      throw new BadRequestException('userId is required in request body');
-    }
-
     await this.notificationsService.delete(userId, id);
     return { success: true };
   }

@@ -14,7 +14,10 @@ import { ModerateReviewDto } from './dto/moderate-review.dto';
 export class ReviewsService {
   private readonly logger = new Logger(ReviewsService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private notifications: NotificationsService,
+  ) {}
 
   async createReview(data: {
     orderItemId: string;
@@ -45,6 +48,22 @@ export class ReviewsService {
         isVisible: true,
       },
     });
+
+    const sellerId = data.sellerId || orderItem.sellerId;
+    const productTitle = orderItem.product?.title || 'Product';
+
+    if (sellerId) {
+      try {
+        await this.notifications.notifyNewReview(
+          sellerId,
+          review.id,
+          productTitle,
+          data.rating,
+        );
+      } catch (error) {
+        this.logger.error(`Failed to send review notification: ${error.message}`);
+      }
+    }
 
     return review;
   }

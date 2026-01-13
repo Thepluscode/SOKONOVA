@@ -1,8 +1,9 @@
 import { IsString, IsOptional } from 'class-validator';
 
 export class ApplyDto {
+  @IsOptional()
   @IsString()
-  userId: string;
+  userId?: string;
 
   @IsString()
   businessName: string;

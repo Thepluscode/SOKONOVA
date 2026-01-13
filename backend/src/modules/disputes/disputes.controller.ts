@@ -6,10 +6,17 @@ import {
   Patch,
   Post,
   Query,
+  UseGuards,
+  ForbiddenException,
 } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { DisputesService } from './disputes.service';
 import { OpenDisputeDto } from './dto/open-dispute.dto';
 import { ResolveDisputeDto } from './dto/resolve-dispute.dto';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('disputes')
 export class DisputesController {
@@ -17,28 +24,54 @@ export class DisputesController {
 
   // BUYER: open a dispute
   @Post('open')
-  async open(@Body() body: OpenDisputeDto) {
-    // TODO: enforce body.buyerId === session.user.id
-    return this.disputes.open(body);
+  @UseGuards(JwtAuthGuard)
+  async open(
+    @Body() body: OpenDisputeDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.disputes.open({ ...body, buyerId: user.id });
   }
 
   // BUYER: list my disputes
   @Get('mine')
-  async mine(@Query('buyerId') buyerId: string) {
-    // TODO: enforce buyerId === session.user.id
-    return this.disputes.listMine(buyerId);
+  @UseGuards(JwtAuthGuard)
+  async mine(@CurrentUser() user: { id: string }) {
+    return this.disputes.listMine(user.id);
   }
 
   // SELLER/ADMIN: see issue queue for this seller
   @Get('seller')
-  async seller(@Query('sellerId') sellerId: string) {
-    // TODO: enforce sellerId === session.user.id OR admin
-    return this.disputes.listForSeller(sellerId);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async seller(
+    @Query('sellerId') sellerId: string | undefined,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    if (sellerId && sellerId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Not allowed to access other sellers');
+    }
+    return this.disputes.listForSeller(
+      user.role === Role.ADMIN && sellerId ? sellerId : user.id,
+    );
   }
 
   // SELLER/ADMIN: resolve dispute
   @Patch(':id/resolve')
-  async resolve(@Param('id') disputeId: string, @Body() body: ResolveDisputeDto) {
-    return this.disputes.resolve(disputeId, body);
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async resolve(
+    @Param('id') disputeId: string,
+    @Body() body: ResolveDisputeDto,
+    @CurrentUser() user: { id: string },
+  ) {
+    return this.disputes.resolve(disputeId, { ...body, actorId: user.id });
+  }
+
+  // ADMIN: list all disputes
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async admin() {
+    return this.disputes.listAll();
   }
 }

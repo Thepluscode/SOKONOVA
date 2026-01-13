@@ -21,7 +21,7 @@ export default function SubscriptionsPage() {
         'Basic seller profile'
       ],
       limitations: [
-        'No featured listings',
+        'No featured listings.',
         'Limited customization',
         'Standard support only'
       ],

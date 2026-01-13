@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-interface FilterOptions {
+export interface FilterOptions {
   priceRange: [number, number];
   categories: string[];
   brands: string[];

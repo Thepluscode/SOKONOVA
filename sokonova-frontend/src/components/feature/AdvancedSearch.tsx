@@ -6,12 +6,12 @@ interface AdvancedSearchProps {
 }
 
 export interface SearchFilters {
-  query: string;
+  q: string;
   category: string;
   minPrice: string;
   maxPrice: string;
   condition: string;
-  location: string;
+  country: string;
   sortBy: string;
   inStock: boolean;
   freeShipping: boolean;
@@ -19,12 +19,12 @@ export interface SearchFilters {
 
 export default function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProps) {
   const [filters, setFilters] = useState<SearchFilters>({
-    query: '',
+    q: '',
     category: '',
     minPrice: '',
     maxPrice: '',
     condition: '',
-    location: '',
+    country: '',
     sortBy: 'relevance',
     inStock: false,
     freeShipping: false
@@ -38,12 +38,12 @@ export default function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProp
 
   const handleReset = () => {
     setFilters({
-      query: '',
+      q: '',
       category: '',
       minPrice: '',
       maxPrice: '',
       condition: '',
-      location: '',
+      country: '',
       sortBy: 'relevance',
       inStock: false,
       freeShipping: false
@@ -71,8 +71,8 @@ export default function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProp
             </label>
             <input
               type="text"
-              value={filters.query}
-              onChange={(e) => setFilters({ ...filters, query: e.target.value })}
+              value={filters.q}
+              onChange={(e) => setFilters({ ...filters, q: e.target.value })}
               placeholder="What are you looking for?"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
@@ -151,13 +151,13 @@ export default function AdvancedSearch({ onSearch, onClose }: AdvancedSearchProp
           {/* Location */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Location
+              Country or Region
             </label>
             <input
               type="text"
-              value={filters.location}
-              onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-              placeholder="City, State, or Country"
+              value={filters.country}
+              onChange={(e) => setFilters({ ...filters, country: e.target.value })}
+              placeholder="Country"
               className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             />
           </div>

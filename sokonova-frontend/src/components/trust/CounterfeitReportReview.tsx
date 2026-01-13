@@ -40,7 +40,7 @@ export function CounterfeitReportReview({ report, onStatusChange }: CounterfeitR
       const results = await getProductCounterfeitScan(report.product.id);
       setScanResults(results);
     } catch (err) {
-      setError("Failed to scan product for counterfeit detection");
+      setError("Could not scan product for counterfeit detection.");
       console.error("Scan error:", err);
     } finally {
       setIsScanning(false);

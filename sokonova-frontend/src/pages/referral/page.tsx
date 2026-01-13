@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
+import { useToast } from '../../contexts/ToastContext';
 
 interface Referral {
   id: string;
@@ -16,6 +17,7 @@ export default function Referral() {
   const [isActive, setIsActive] = useState(true);
   const [rewardAmount, setRewardAmount] = useState(25);
   const [referralBonus, setReferralBonus] = useState(15);
+  const { showToast } = useToast();
   const referralCode = 'SOKONOVA2024';
   const referralLink = `https://sokonova.com/ref/${referralCode}`;
 
@@ -31,7 +33,10 @@ export default function Referral() {
       rewardAmount,
       referralBonus,
     }));
-    alert('Referral program settings saved successfully!');
+    showToast({
+      message: 'Referral settings saved.',
+      type: 'success',
+    });
   };
 
   const shareOnSocial = (platform: string) => {

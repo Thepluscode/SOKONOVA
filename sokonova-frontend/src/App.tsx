@@ -8,6 +8,7 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./lib/auth";
 import BuyerOnboarding from "./components/feature/BuyerOnboarding";
 import BottomNav from "./components/feature/BottomNav";
+import { ToastProvider } from "./contexts/ToastContext";
 
 function AppContent() {
   const { needsOnboarding, completeOnboarding } = useAuth();
@@ -37,9 +38,11 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <I18nextProvider i18n={i18n}>
-          <BrowserRouter basename={__BASE_PATH__}>
-            <AppContent />
-          </BrowserRouter>
+          <ToastProvider>
+            <BrowserRouter basename={__BASE_PATH__}>
+              <AppContent />
+            </BrowserRouter>
+          </ToastProvider>
         </I18nextProvider>
       </AuthProvider>
     </ThemeProvider>

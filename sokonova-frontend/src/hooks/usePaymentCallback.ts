@@ -37,20 +37,20 @@ export function usePaymentCallback() {
                     if (result.status === 'success') {
                         setPaymentStatus({
                             status: 'success',
-                            message: 'Payment successful!',
+                            message: 'Payment successful.',
                             orderId: result.orderId,
                             transactionId: reference,
                         });
                     } else {
                         setPaymentStatus({
                             status: 'failed',
-                            message: result.message || 'Payment verification failed',
+                            message: result.message || 'Payment verification failed.',
                         });
                     }
                 } catch (err) {
                     setPaymentStatus({
                         status: 'failed',
-                        message: 'Failed to verify payment',
+                        message: 'Could not verify payment.',
                     });
                 }
                 return;
@@ -63,20 +63,20 @@ export function usePaymentCallback() {
                     if (status === 'successful' && result.status === 'success') {
                         setPaymentStatus({
                             status: 'success',
-                            message: 'Payment successful!',
+                            message: 'Payment successful.',
                             orderId: result.orderId,
                             transactionId: transactionId as string,
                         });
                     } else {
                         setPaymentStatus({
                             status: 'failed',
-                            message: result.message || 'Payment verification failed',
+                            message: result.message || 'Payment verification failed.',
                         });
                     }
                 } catch (err) {
                     setPaymentStatus({
                         status: 'failed',
-                        message: 'Failed to verify payment',
+                        message: 'Could not verify payment.',
                     });
                 }
                 return;
@@ -90,20 +90,20 @@ export function usePaymentCallback() {
                     if (result.status === 'success') {
                         setPaymentStatus({
                             status: 'success',
-                            message: 'Payment successful!',
+                            message: 'Payment successful.',
                             orderId: result.orderId,
                             transactionId: sessionId,
                         });
                     } else {
                         setPaymentStatus({
                             status: 'failed',
-                            message: result.message || 'Payment verification failed',
+                            message: result.message || 'Payment verification failed.',
                         });
                     }
                 } catch (err) {
                     setPaymentStatus({
                         status: 'failed',
-                        message: 'Failed to verify payment',
+                        message: 'Could not verify payment.',
                     });
                 }
                 return;
@@ -122,7 +122,7 @@ export function usePaymentCallback() {
             // No valid parameters
             setPaymentStatus({
                 status: 'failed',
-                message: 'Invalid payment callback',
+                message: 'Invalid payment callback.',
             });
         }
 

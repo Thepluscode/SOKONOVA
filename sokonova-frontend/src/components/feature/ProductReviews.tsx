@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useToast } from '../../contexts/ToastContext';
 
 interface Review {
   id: string;
@@ -62,6 +63,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     rating: 5,
     comment: '',
   });
+  const { showToast } = useToast();
 
   const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length;
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
@@ -72,7 +74,10 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   const handleSubmitReview = () => {
     // Submit review logic
-    alert('Review submitted successfully!');
+    showToast({
+      message: 'Review submitted.',
+      type: 'success',
+    });
     setShowReviewModal(false);
     setNewReview({ rating: 5, comment: '' });
   };

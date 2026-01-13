@@ -14,7 +14,13 @@ async function bootstrap() {
     app.use(morgan('dev'));
     app.use(cookieParser());
     app.enableCors({
-        origin: [/localhost:3000$/, /localhost:54112$/, /localhost:\d+$/],
+        origin: [
+            /localhost:3000$/,
+            /localhost:54112$/,
+            /localhost:\d+$/,
+            'https://sokonova-frontend-production.up.railway.app',
+            /\.up\.railway\.app$/
+        ],
         credentials: true,
     });
     app.useGlobalPipes(new common_1.ValidationPipe({ whitelist: true, transform: true }));

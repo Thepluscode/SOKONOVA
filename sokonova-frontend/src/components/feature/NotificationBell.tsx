@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "react-router-dom";
 import { Bell } from "lucide-react";
-import { getUnreadCount } from "@/lib/api/notifications";
+import { notificationsService } from "../../lib/services";
+import { useAuth } from "../../lib/auth";
 
 /**
  * NotificationBell Component
@@ -19,7 +20,8 @@ import { getUnreadCount } from "@/lib/api/notifications";
  *
  * @param userId - The current user's ID
  */
-export function NotificationBell({ userId }: { userId: string }) {
+export function NotificationBell() {
+  const { user } = useAuth();
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -28,9 +30,13 @@ export function NotificationBell({ userId }: { userId: string }) {
 
     async function loadUnreadCount() {
       try {
-        const data = await getUnreadCount(userId);
+        if (!user?.id) {
+          if (active) setCount(0);
+          return;
+        }
+        const data = await notificationsService.getUnreadCount();
         if (!active) return;
-        setCount(data);
+        setCount(data.count || 0);
       } catch (error) {
         console.error("Failed to fetch unread count:", error);
       } finally {
@@ -50,11 +56,11 @@ export function NotificationBell({ userId }: { userId: string }) {
       active = false;
       clearInterval(interval);
     };
-  }, [userId]);
+  }, [user?.id]);
 
   return (
     <Link
-      href="/account/notifications"
+      to="/account/notifications"
       className="relative inline-flex items-center justify-center p-2 rounded-xl border border-border hover:bg-card transition-colors"
       aria-label={`Notifications${count > 0 ? ` (${count} unread)` : ""}`}
     >

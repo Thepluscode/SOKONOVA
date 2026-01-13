@@ -1,14 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
-import AdvancedFilters from '../../components/feature/AdvancedFilters';
+import AdvancedFilters, { type FilterOptions } from '../../components/feature/AdvancedFilters';
 import InfiniteScroll from '../../components/feature/InfiniteScroll';
 import FlashSaleCountdown from '../../components/feature/FlashSaleCountdown';
 import ProductQuickView from '../../components/feature/ProductQuickView';
 import SkeletonLoader from '../../components/base/SkeletonLoader';
 import SocialProof from '../../components/feature/SocialProof';
-import { productsService, cartService } from '../../lib/services';
+import { discoveryService, cartService } from '../../lib/services';
 import type { Product } from '../../lib/types';
 import { useAuth } from '../../lib/auth';
 
@@ -38,11 +38,20 @@ export default function ProductsPage() {
   const [error, setError] = useState<string | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [sortBy, setSortBy] = useState('featured');
+  const [sortBy, setSortBy] = useState('trending');
   const [cartNotification, setCartNotification] = useState<{ show: boolean, product: string }>({ show: false, product: '' });
   const [cartId, setCartId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<FilterOptions | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
 
   const { user } = useAuth();
+
+  const parseNumberParam = (value: string): number | undefined => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : undefined;
+  };
 
   // Initialize cart
   useEffect(() => {
@@ -57,35 +66,140 @@ export default function ProductsPage() {
     initCart();
   }, [user?.id]);
 
+  const queryFilters = useMemo(() => {
+    const q = searchParams.get('q') || '';
+    const category = searchParams.get('category') || '';
+    const minPrice = searchParams.get('minPrice') || '';
+    const maxPrice = searchParams.get('maxPrice') || '';
+    const country = searchParams.get('country') || '';
+    const inStock = searchParams.get('inStock') === 'true';
+    const sort = searchParams.get('sort') || '';
+
+    return { q, category, minPrice, maxPrice, country, inStock, sort };
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (queryFilters.sort) {
+      setSortBy(queryFilters.sort);
+    }
+  }, [queryFilters.sort]);
+
   // Fetch products from API
   useEffect(() => {
     async function fetchProducts() {
       setLoading(true);
       setError(null);
+      setPage(1);
       try {
-        const category = searchParams.get('category') || undefined;
-        const apiProducts = await productsService.list({ category });
-        const transformed = apiProducts.map(transformProduct);
+        const categoryFromFilters =
+          filters?.categories.length ? filters.categories[0] : undefined;
+        const minPriceValue =
+          filters?.priceRange && filters.priceRange[0] > 0
+            ? filters.priceRange[0]
+            : undefined;
+        const maxPriceValue =
+          filters?.priceRange && filters.priceRange[1] < 1000
+            ? filters.priceRange[1]
+            : undefined;
+        const ratingValue = filters?.rating && filters.rating > 0 ? filters.rating : undefined;
+        const inStockValue = filters?.inStock ?? queryFilters.inStock;
+
+        const response = await discoveryService.search({
+          q: queryFilters.q || undefined,
+          category: queryFilters.category || categoryFromFilters || undefined,
+          minPrice:
+            queryFilters.minPrice !== ''
+              ? parseNumberParam(queryFilters.minPrice)
+              : minPriceValue,
+          maxPrice:
+            queryFilters.maxPrice !== ''
+              ? parseNumberParam(queryFilters.maxPrice)
+              : maxPriceValue,
+          rating: ratingValue,
+          inStock: inStockValue,
+          country: queryFilters.country || undefined,
+          sort: (queryFilters.sort || sortBy) as
+            | 'trending'
+            | 'newest'
+            | 'price_asc'
+            | 'price_desc'
+            | 'rating'
+            | 'popular',
+          page: 1,
+          limit: 18,
+        });
+
+        const transformed = response.items.map(transformProduct);
         setProducts(transformed);
+        setTotalCount(response.pagination.total);
+        setHasMore(response.pagination.page < response.pagination.totalPages);
       } catch (err) {
         console.error('Failed to fetch products:', err);
-        setError('Failed to load products. Please try again.');
+        setError('Could not load products. Please try again.');
         // Fallback to empty array
         setProducts([]);
+        setHasMore(false);
+        setTotalCount(0);
       } finally {
         setLoading(false);
       }
     }
     fetchProducts();
-  }, [searchParams]);
+  }, [filters, sortBy, queryFilters]);
 
   const loadMore = async () => {
-    // For now, API doesn't support pagination - this would need backend support
-    // Keeping the structure for future implementation
+    if (loadingMore || !hasMore) return;
     setLoadingMore(true);
-    setTimeout(() => {
+    try {
+      const nextPage = page + 1;
+      const categoryFromFilters =
+        filters?.categories.length ? filters.categories[0] : undefined;
+      const minPriceValue =
+        filters?.priceRange && filters.priceRange[0] > 0
+          ? filters.priceRange[0]
+          : undefined;
+      const maxPriceValue =
+        filters?.priceRange && filters.priceRange[1] < 1000
+          ? filters.priceRange[1]
+          : undefined;
+      const ratingValue = filters?.rating && filters.rating > 0 ? filters.rating : undefined;
+      const inStockValue = filters?.inStock ?? queryFilters.inStock;
+
+      const response = await discoveryService.search({
+        q: queryFilters.q || undefined,
+        category: queryFilters.category || categoryFromFilters || undefined,
+        minPrice:
+          queryFilters.minPrice !== ''
+            ? parseNumberParam(queryFilters.minPrice)
+            : minPriceValue,
+        maxPrice:
+          queryFilters.maxPrice !== ''
+            ? parseNumberParam(queryFilters.maxPrice)
+            : maxPriceValue,
+        rating: ratingValue,
+        inStock: inStockValue,
+        country: queryFilters.country || undefined,
+        sort: (queryFilters.sort || sortBy) as
+          | 'trending'
+          | 'newest'
+          | 'price_asc'
+          | 'price_desc'
+          | 'rating'
+          | 'popular',
+        page: nextPage,
+        limit: 18,
+      });
+
+      const transformed = response.items.map(transformProduct);
+      setProducts((prev) => [...prev, ...transformed]);
+      setPage(nextPage);
+      setHasMore(response.pagination.page < response.pagination.totalPages);
+      setTotalCount(response.pagination.total);
+    } catch (err) {
+      console.error('Failed to load more products:', err);
+    } finally {
       setLoadingMore(false);
-    }, 500);
+    }
   };
 
   const handleQuickView = (product: any) => {
@@ -182,7 +296,7 @@ export default function ProductsPage() {
           {/* Filters Sidebar */}
           <aside className="lg:w-64 flex-shrink-0">
             <div className="sticky top-24 animate-slide-in-left">
-              <AdvancedFilters />
+              <AdvancedFilters onFilterChange={setFilters} />
             </div>
           </aside>
 
@@ -193,7 +307,8 @@ export default function ProductsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-600">
-                    Showing <span className="font-semibold text-gray-900">{products.length}</span> products
+                    Showing <span className="font-semibold text-gray-900">{products.length}</span> of{' '}
+                    <span className="font-semibold text-gray-900">{totalCount}</span> products
                   </span>
                 </div>
 
@@ -226,11 +341,12 @@ export default function ProductsPage() {
                     onChange={(e) => setSortBy(e.target.value)}
                     className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 cursor-pointer"
                   >
-                    <option value="featured">Featured</option>
-                    <option value="price-low">Price: Low to High</option>
-                    <option value="price-high">Price: High to Low</option>
+                    <option value="trending">Trending</option>
+                    <option value="price_asc">Price: Low to High</option>
+                    <option value="price_desc">Price: High to Low</option>
                     <option value="rating">Highest Rated</option>
                     <option value="newest">Newest</option>
+                    <option value="popular">Most Popular</option>
                   </select>
                 </div>
               </div>
@@ -267,13 +383,13 @@ export default function ProductsPage() {
             ) : products.length === 0 ? (
               <div className="text-center py-16">
                 <i className="ri-shopping-bag-line text-6xl text-gray-300 mb-4"></i>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found</h3>
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">No products found.</h3>
                 <p className="text-gray-600">Try adjusting your filters or check back later.</p>
               </div>
             ) : (
               <InfiniteScroll
                 onLoadMore={loadMore}
-                hasMore={false} // Disable infinite scroll until API supports pagination
+                hasMore={hasMore}
                 isLoading={loadingMore}
                 threshold={400}
               >

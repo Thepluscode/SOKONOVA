@@ -4,6 +4,7 @@ import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { Role } from '@prisma/client';
+import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('fulfillment')
 export class FulfillmentController {
@@ -48,7 +49,7 @@ export class FulfillmentController {
   @UseGuards(JwtAuthGuard)
   async getOrderTracking(
     @Param('orderId') orderId: string,
-    @Query('userId') userId: string,
+    @CurrentUser('id') userId: string,
   ) {
     return this.fulfillmentService.getOrderTracking(orderId, userId);
   }
@@ -57,7 +58,7 @@ export class FulfillmentController {
   @Get('seller/open')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SELLER)
-  async getSellerOpenFulfillment(@Query('sellerId') sellerId: string) {
+  async getSellerOpenFulfillment(@CurrentUser('id') sellerId: string) {
     return this.fulfillmentService.getSellerOpenFulfillment(sellerId);
   }
 
@@ -65,7 +66,7 @@ export class FulfillmentController {
   @Get('seller/stats')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SELLER)
-  async getSellerStats(@Query('sellerId') sellerId: string) {
+  async getSellerStats(@CurrentUser('id') sellerId: string) {
     return this.fulfillmentService.getSellerStats(sellerId);
   }
 
@@ -75,7 +76,7 @@ export class FulfillmentController {
   @Roles(Role.SELLER)
   async markShipped(
     @Param('orderItemId') orderItemId: string,
-    @Query('sellerId') sellerId: string,
+    @CurrentUser('id') sellerId: string,
     @Body() data: { carrier?: string; trackingCode?: string; note?: string },
   ) {
     return this.fulfillmentService.markShipped(
@@ -93,7 +94,7 @@ export class FulfillmentController {
   @Roles(Role.SELLER)
   async markDelivered(
     @Param('orderItemId') orderItemId: string,
-    @Query('sellerId') sellerId: string,
+    @CurrentUser('id') sellerId: string,
     @Body() data: { proofUrl?: string; note?: string },
   ) {
     return this.fulfillmentService.markDelivered(
@@ -110,7 +111,7 @@ export class FulfillmentController {
   @Roles(Role.SELLER)
   async markIssue(
     @Param('orderItemId') orderItemId: string,
-    @Query('sellerId') sellerId: string,
+    @CurrentUser('id') sellerId: string,
     @Body() data: { note: string },
   ) {
     return this.fulfillmentService.markIssue(orderItemId, sellerId, data.note);

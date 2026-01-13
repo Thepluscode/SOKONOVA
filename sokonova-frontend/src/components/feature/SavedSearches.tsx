@@ -91,9 +91,9 @@ export default function SavedSearches() {
       {searches.length === 0 ? (
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
           <i className="ri-search-line text-6xl text-gray-300 mb-4"></i>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Saved Searches</h3>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No saved searches.</h3>
           <p className="text-gray-600 mb-6">
-            Save your searches to quickly find products you're interested in
+            Save your searches to quickly find products you're interested in.
           </p>
           <button
             onClick={() => navigate('/products')}

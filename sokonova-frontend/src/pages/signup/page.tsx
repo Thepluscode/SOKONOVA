@@ -4,17 +4,12 @@ import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
-import Toast, { ToastType } from '../../components/base/Toast';
+import { useToast } from '../../contexts/ToastContext';
 import api from '../../lib/api';
-
-interface ToastState {
-  show: boolean;
-  message: string;
-  type: ToastType;
-}
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -23,7 +18,6 @@ export default function SignupPage() {
   });
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -34,37 +28,33 @@ export default function SignupPage() {
 
     // Validation
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
-      setToast({
-        show: true,
-        message: 'Please fill in all fields',
-        type: 'error'
+      showToast({
+        message: 'Please fill in all fields.',
+        type: 'warning'
       });
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setToast({
-        show: true,
-        message: 'Passwords do not match',
-        type: 'error'
+      showToast({
+        message: 'Passwords do not match.',
+        type: 'warning'
       });
       return;
     }
 
     if (formData.password.length < 8) {
-      setToast({
-        show: true,
-        message: 'Password must be at least 8 characters long',
-        type: 'error'
+      showToast({
+        message: 'Password must be at least 8 characters.',
+        type: 'warning'
       });
       return;
     }
 
     if (!agreedToTerms) {
-      setToast({
-        show: true,
-        message: 'Please agree to the terms and conditions',
-        type: 'error'
+      showToast({
+        message: 'Please agree to the terms and conditions.',
+        type: 'warning'
       });
       return;
     }
@@ -79,9 +69,8 @@ export default function SignupPage() {
         password: formData.password
       });
 
-      setToast({
-        show: true,
-        message: 'Account created successfully! Redirecting to login...',
+      showToast({
+        message: 'Account created. Redirecting to login...',
         type: 'success'
       });
 
@@ -91,9 +80,8 @@ export default function SignupPage() {
       }, 2000);
     } catch (error: any) {
       console.error('Signup error:', error);
-      setToast({
-        show: true,
-        message: error.message || 'Failed to create account. Please try again.',
+      showToast({
+        message: error.message || 'Could not create account. Please try again.',
         type: 'error'
       });
     } finally {
@@ -292,15 +280,6 @@ export default function SignupPage() {
       </div>
 
       <Footer />
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
     </div>
   );
 }

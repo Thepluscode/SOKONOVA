@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
+import { useToast } from '../../../contexts/ToastContext';
 
 interface Product {
   id: string;
@@ -16,6 +17,7 @@ export default function BulkActionsPage() {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [bulkAction, setBulkAction] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const { showToast } = useToast();
 
   const products: Product[] = [
     { id: '1', name: 'African Print Dress', sku: 'APD-001', price: 89.99, stock: 45, status: 'active', seller: 'Fashion Hub' },
@@ -49,7 +51,10 @@ export default function BulkActionsPage() {
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
     
-    alert(`Bulk action "${bulkAction}" executed on ${selectedItems.length} items`);
+    showToast({
+      message: `Bulk action "${bulkAction}" applied to ${selectedItems.length} items.`,
+      type: 'success',
+    });
     setIsProcessing(false);
     setSelectedItems([]);
     setBulkAction('');

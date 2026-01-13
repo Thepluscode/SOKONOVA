@@ -1,6 +1,7 @@
 import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { DiscoveryService } from './discovery.service';
 import { JwtAuthGuard } from '@/common/guards/jwt-auth.guard';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @Controller('discovery')
 export class DiscoveryController {
@@ -17,8 +18,39 @@ export class DiscoveryController {
   // GET /discovery/personalized
   @Get('personalized')
   @UseGuards(JwtAuthGuard)
-  async personalized(@Query('userId') userId: string) {
+  async personalized(@CurrentUser('id') userId: string) {
     return this.disc.getPersonalizedDiscovery(userId);
+  }
+
+  // PUBLIC: search with paging + filters
+  // GET /discovery/search?q=...&category=...&minPrice=...&maxPrice=...&rating=...&inStock=true&country=...&sellerId=...&sort=...&page=...&limit=...
+  @Get('search')
+  async search(
+    @Query('q') q?: string,
+    @Query('category') category?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+    @Query('rating') rating?: string,
+    @Query('inStock') inStock?: string,
+    @Query('country') country?: string,
+    @Query('sellerId') sellerId?: string,
+    @Query('sort') sort?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    return this.disc.searchProducts({
+      q,
+      category,
+      minPrice,
+      maxPrice,
+      rating,
+      inStock,
+      country,
+      sellerId,
+      sort,
+      page,
+      limit,
+    });
   }
 
   // PUBLIC: category landing

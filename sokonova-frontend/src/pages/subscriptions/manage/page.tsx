@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
+import { useToast } from '../../../contexts/ToastContext';
 
 export default function ManageSubscriptionPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
+  const { showToast } = useToast();
 
   const currentPlan = {
     name: 'Pro',
@@ -282,9 +284,12 @@ export default function ManageSubscriptionPage() {
               >
                 Keep Subscription
               </Button>
-              <Button
-                onClick={() => {
-                  alert('Subscription cancelled. You will retain access until the end of your billing period.');
+                <Button
+                  onClick={() => {
+                  showToast({
+                    message: 'Subscription canceled. Access remains until the end of your billing period.',
+                    type: 'info',
+                  });
                   setShowCancelModal(false);
                 }}
                 className="flex-1 bg-red-600 hover:bg-red-700 whitespace-nowrap"

@@ -493,6 +493,20 @@ Contributions welcome! Key areas:
 - Performance optimization
 - Testing (Jest, Playwright)
 
+### Toast Copy & Severity Guide
+- success: confirms a completed action; short, past-tense sentence; no exclamation.
+- info: neutral status or confirmation when no action is required; keep it brief.
+- warning: validation or missing input the user can fix; instructive, not alarming.
+- error: system or network failure; state what failed and suggest retry when possible.
+- style: sentence case, period at the end, avoid jargon, keep to one line.
+
+### Inline Error Copy Guide
+- scope: show inline errors for form fields or modals tied to a specific action.
+- wording: state what is wrong and how to fix it; avoid blame.
+- tone: neutral, brief, sentence case with a period.
+- length: one sentence; prefer "Please" only when giving a clear next step.
+- consistency: use the same term as the field label (e.g., "Phone number").
+
 ---
 
 ## 📄 License

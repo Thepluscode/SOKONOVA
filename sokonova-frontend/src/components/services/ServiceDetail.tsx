@@ -53,7 +53,7 @@ export function ServiceDetail({ service, userId, onPurchase }: ServiceDetailProp
         setSuccess(false);
       }, 2000);
     } catch (err) {
-      setError("Failed to purchase service. Please try again.");
+      setError("Could not purchase service. Please try again.");
       console.error("Purchase error:", err);
     } finally {
       setIsSubmitting(false);

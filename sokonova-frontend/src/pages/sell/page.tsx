@@ -4,16 +4,10 @@ import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
-import Toast, { ToastType } from '../../components/base/Toast';
-
-interface ToastState {
-  show: boolean;
-  message: string;
-  type: ToastType;
-}
+import { useToast } from '../../contexts/ToastContext';
 
 export default function SellPage() {
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     businessName: '',
     contactName: '',
@@ -99,9 +93,8 @@ export default function SellPage() {
       });
 
       if (response.ok) {
-        setToast({
-          show: true,
-          message: 'Application submitted successfully! We will review your application and contact you within 2-3 business days.',
+        showToast({
+          message: 'Application submitted. We will review it and contact you within 2-3 business days.',
           type: 'success'
         });
         setFormData({
@@ -126,16 +119,14 @@ export default function SellPage() {
         setSelectedCategories([]);
         setCurrentStep(1);
       } else {
-        setToast({
-          show: true,
-          message: 'Failed to submit application. Please try again.',
+        showToast({
+          message: 'Could not submit application. Please try again.',
           type: 'error'
         });
       }
     } catch (error) {
-      setToast({
-        show: true,
-        message: 'Network error. Please check your connection and try again.',
+      showToast({
+        message: 'Network error. Check your connection and try again.',
         type: 'error'
       });
     }
@@ -658,15 +649,6 @@ export default function SellPage() {
       </section>
 
       <Footer />
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
     </div>
   );
 }

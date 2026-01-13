@@ -172,7 +172,7 @@ export default function SellerSponsoredPlacementsPage() {
                       <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <i className="ri-megaphone-line text-4xl text-gray-400"></i>
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No campaigns yet</h3>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-2">No campaigns yet.</h3>
                       <p className="text-gray-600 mb-4">Create your first campaign to boost your products</p>
                       <Button onClick={() => setShowCreateModal(true)} className="whitespace-nowrap">
                         <i className="ri-add-line mr-2"></i>

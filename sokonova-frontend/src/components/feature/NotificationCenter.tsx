@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { notificationsService } from '../../lib/services';
+import { useAuth } from '../../lib/auth';
 
 interface Notification {
   id: string;
@@ -10,6 +12,7 @@ interface Notification {
   read: boolean;
   link?: string;
   image?: string;
+  orderId?: string;
 }
 
 interface NotificationCenterProps {
@@ -18,30 +21,105 @@ interface NotificationCenterProps {
 }
 
 export default function NotificationCenter({ onClose, onUpdateCount }: NotificationCenterProps) {
-  // TODO: Fetch real notifications from backend API
+  const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const unreadCount = notifications.filter(n => !n.read).length;
     onUpdateCount(unreadCount);
   }, [notifications, onUpdateCount]);
 
-  const markAsRead = (id: string) => {
-    setNotifications(prev =>
-      prev.map(notif =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
+  useEffect(() => {
+    let active = true;
+
+    async function fetchNotifications() {
+      if (!user?.id) {
+        if (active) {
+          setNotifications([]);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const apiNotifications = await notificationsService.list({ limit: 10 });
+        if (!active) return;
+        setNotifications(
+          apiNotifications.map((n: any) => ({
+            id: n.id,
+            type: mapCategory(n.type),
+            title: n.title || 'Notification',
+            message: n.body || n.message || '',
+            time: formatTimeAgo(n.createdAt),
+            read: n.readAt !== null,
+            orderId: n.data?.orderId,
+          })),
+        );
+      } catch (error) {
+        console.error('Failed to fetch notifications:', error);
+      } finally {
+        if (active) {
+          setLoading(false);
+        }
+      }
+    }
+
+    fetchNotifications();
+    return () => {
+      active = false;
+    };
+  }, [user?.id]);
+
+  const markAsRead = async (id: string) => {
+    try {
+      await notificationsService.markRead(id);
+      setNotifications(prev =>
+        prev.map(notif =>
+          notif.id === id ? { ...notif, read: true } : notif
+        )
+      );
+    } catch (error) {
+      console.error('Failed to mark notification as read:', error);
+    }
   };
 
-  const markAllAsRead = () => {
-    setNotifications(prev =>
-      prev.map(notif => ({ ...notif, read: true }))
-    );
+  const markAllAsRead = async () => {
+    try {
+      await notificationsService.markAllRead();
+      setNotifications(prev =>
+        prev.map(notif => ({ ...notif, read: true }))
+      );
+    } catch (error) {
+      console.error('Failed to mark all notifications as read:', error);
+    }
   };
 
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(notif => notif.id !== id));
+  const deleteNotification = async (id: string) => {
+    try {
+      await notificationsService.delete(id);
+      setNotifications(prev => prev.filter(notif => notif.id !== id));
+    } catch (error) {
+      console.error('Failed to delete notification:', error);
+    }
+  };
+
+  const mapCategory = (type: string): Notification['type'] => {
+    const normalized = type?.toLowerCase() || '';
+    if (normalized.startsWith('order_') || normalized === 'new_review') return 'order';
+    if (normalized.includes('promotion')) return 'promotion';
+    if (normalized === 'price_drop') return 'price_drop';
+    if (normalized === 'stock') return 'stock';
+    return 'system';
+  };
+
+  const formatTimeAgo = (date: string) => {
+    const seconds = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+    return `${Math.floor(seconds / 86400)} days ago`;
   };
 
   const getIcon = (type: string) => {
@@ -106,12 +184,14 @@ export default function NotificationCenter({ onClose, onUpdateCount }: Notificat
 
         {/* Notifications List */}
         <div className="flex-1 overflow-y-auto">
-          {notifications.length === 0 ? (
+          {loading ? (
+            <div className="p-4 text-sm text-gray-500">Loading notifications...</div>
+          ) : notifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12 px-4">
               <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
                 <i className="ri-notification-off-line text-3xl text-gray-400"></i>
               </div>
-              <p className="text-gray-500 text-center">No notifications yet</p>
+              <p className="text-gray-500 text-center">No notifications yet.</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -152,9 +232,9 @@ export default function NotificationCenter({ onClose, onUpdateCount }: Notificat
                       <div className="flex items-center justify-between">
                         <span className="text-xs text-gray-500">{notification.time}</span>
                         <div className="flex items-center gap-2">
-                          {notification.link && (
+                          {notification.orderId && (
                             <Link
-                              to={notification.link}
+                              to={`/orders/${notification.orderId}/tracking`}
                               onClick={() => {
                                 markAsRead(notification.id);
                                 onClose();

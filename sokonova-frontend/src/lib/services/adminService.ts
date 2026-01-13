@@ -29,20 +29,17 @@ interface AdminStats {
 export const adminService = {
     /**
      * Get pending seller applications
-     * GET /seller-applications/pending?adminId=xxx
+     * GET /seller-applications/pending
      */
     getSellerApplications: async (status?: string): Promise<SellerApplication[]> => {
         // For now, only fetch pending applications
-        // TODO: Get adminId from auth context
-        const adminId = localStorage.getItem('userId') || 'admin';
-
         if (status === 'pending') {
-            return api.get<SellerApplication[]>(`/seller-applications/pending?adminId=${adminId}`);
+            return api.get<SellerApplication[]>('/seller-applications/pending');
         }
 
         // For approved/rejected, we'll use the same endpoint for now
         // TODO: Backend should provide separate endpoints for these
-        return api.get<SellerApplication[]>(`/seller-applications/pending?adminId=${adminId}`);
+        return api.get<SellerApplication[]>('/seller-applications/pending');
     },
 
     /**
@@ -50,9 +47,7 @@ export const adminService = {
      * PATCH /seller-applications/:id/approve
      */
     approveApplication: async (id: string, note?: string): Promise<{ success: boolean }> => {
-        const adminId = localStorage.getItem('userId') || 'admin';
         return api.patch(`/seller-applications/${id}/approve`, {
-            adminId,
             adminNote: note
         });
     },
@@ -62,9 +57,7 @@ export const adminService = {
      * PATCH /seller-applications/:id/reject
      */
     rejectApplication: async (id: string, reason: string): Promise<{ success: boolean }> => {
-        const adminId = localStorage.getItem('userId') || 'admin';
         return api.patch(`/seller-applications/${id}/reject`, {
-            adminId,
             adminNote: reason
         });
     },

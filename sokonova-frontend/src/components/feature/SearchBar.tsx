@@ -179,8 +179,8 @@ export default function SearchBar() {
       {isOpen && query.trim().length > 1 && results.length === 0 && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 z-50 p-8 text-center">
           <i className="ri-search-line text-4xl text-gray-400 mb-2"></i>
-          <p className="text-gray-600">No results found for "{query}"</p>
-          <p className="text-sm text-gray-500 mt-1">Try different keywords</p>
+          <p className="text-gray-600">No results found for "{query}".</p>
+          <p className="text-sm text-gray-500 mt-1">Try different keywords.</p>
         </div>
       )}
     </div>

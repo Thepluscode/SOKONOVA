@@ -2,9 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
+import { useToast } from '../../contexts/ToastContext';
 
 export default function TestPaymentPage() {
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [testMode, setTestMode] = useState<'success' | 'failure'>('success');
   const [amount, setAmount] = useState('50.00');
@@ -33,11 +35,17 @@ export default function TestPaymentPage() {
       
       if (testMode === 'success') {
         // Simulate successful payment
-        alert('✅ Test Payment Successful!\n\nOrder ID: TEST-' + Date.now() + '\nAmount: $' + amount + '\n\nThis was a test transaction. No real charges were made.');
-        navigate('/order-success');
+        showToast({
+          message: `Test payment succeeded. Order ID: TEST-${Date.now()} (Amount: $${amount}).`,
+          type: 'success',
+        });
+        setTimeout(() => navigate('/order-success'), 800);
       } else {
         // Simulate failed payment
-        alert('❌ Test Payment Failed\n\nError: Card declined (Test Mode)\n\nThis is a simulated failure for testing purposes.');
+        showToast({
+          message: 'Test payment failed. Card declined (test mode).',
+          type: 'error',
+        });
       }
     }, 2000);
   };
@@ -233,7 +241,7 @@ export default function TestPaymentPage() {
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">Test Mode Active</p>
-                    <p className="text-xs text-gray-600">No real charges</p>
+                    <p className="text-xs text-gray-600">No real charges.</p>
                   </div>
                 </div>
               </div>

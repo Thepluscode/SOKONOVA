@@ -152,8 +152,20 @@ export class FulfillmentService {
                 title: true,
                 imageUrl: true,
                 sellerId: true,
+                seller: {
+                  select: {
+                    name: true,
+                  },
+                },
               },
             },
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+            phone: true,
           },
         },
       },
@@ -167,11 +179,17 @@ export class FulfillmentService {
       orderId: order.id,
       status: order.status,
       createdAt: order.createdAt,
+      total: order.total,
+      currency: order.currency,
       shippingAddress: order.shippingAdr,
+      buyerName: order.buyerName || order.user?.name || null,
+      buyerPhone: order.buyerPhone || order.user?.phone || null,
+      buyerEmail: order.buyerEmail || order.user?.email || null,
       items: order.items.map((it) => ({
         orderItemId: it.id,
         productTitle: it.product.title,
         productImage: it.product.imageUrl,
+        sellerName: it.product.seller?.name || null,
         qty: it.qty,
         price: it.price.toString(),
 
@@ -309,6 +327,7 @@ export class FulfillmentService {
         order: {
           select: {
             userId: true,
+            id: true,
           },
         },
       },
@@ -322,6 +341,7 @@ export class FulfillmentService {
         'SHIPPED',
         trackingCode,
         carrier,
+        updatedItem.order.id,
       );
     } catch (error) {
       this.logger.error(`Failed to send shipment notification: ${error.message}`);
@@ -378,6 +398,7 @@ export class FulfillmentService {
         order: {
           select: {
             userId: true,
+            id: true,
           },
         },
       },
@@ -389,6 +410,9 @@ export class FulfillmentService {
         updatedItem.order.userId,
         updatedItem.id,
         'DELIVERED',
+        undefined,
+        undefined,
+        updatedItem.order.id,
       );
     } catch (error) {
       this.logger.error(`Failed to send delivery notification: ${error.message}`);

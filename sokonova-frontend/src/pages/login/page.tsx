@@ -4,31 +4,24 @@ import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
-import Toast, { ToastType } from '../../components/base/Toast';
+import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../lib/auth';
-
-interface ToastState {
-  show: boolean;
-  message: string;
-  type: ToastType;
-}
 
 export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showToast } = useToast();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState<ToastState>({ show: false, message: '', type: 'info' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email || !password) {
-      setToast({
-        show: true,
-        message: 'Please enter both email and password',
-        type: 'error'
+      showToast({
+        message: 'Please enter both email and password.',
+        type: 'warning'
       });
       return;
     }
@@ -38,9 +31,8 @@ export default function LoginPage() {
     try {
       await login(email, password);
 
-      setToast({
-        show: true,
-        message: 'Login successful! Redirecting...',
+      showToast({
+        message: 'Signed in. Redirecting...',
         type: 'success'
       });
 
@@ -50,9 +42,8 @@ export default function LoginPage() {
       }, 1000);
     } catch (error: any) {
       console.error('Login error:', error);
-      setToast({
-        show: true,
-        message: error.message || 'Login failed. Please check your credentials.',
+      showToast({
+        message: error.message || 'Login failed. Check your credentials and try again.',
         type: 'error'
       });
     } finally {
@@ -219,15 +210,6 @@ export default function LoginPage() {
       </div>
 
       <Footer />
-
-      {/* Toast Notification */}
-      {toast.show && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast({ ...toast, show: false })}
-        />
-      )}
     </div>
   );
 }

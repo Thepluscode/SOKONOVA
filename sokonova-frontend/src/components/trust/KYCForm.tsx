@@ -23,7 +23,7 @@ export function KYCForm({ sellerId, onKYCSuccess }: KYCFormProps) {
     e.preventDefault();
     
     if (!documentType.trim() || !documentNumber.trim() || !documentUrl.trim() || !country.trim()) {
-      setError("Please fill in all required fields");
+      setError("Please fill in all required fields.");
       return;
     }
     
@@ -40,7 +40,7 @@ export function KYCForm({ sellerId, onKYCSuccess }: KYCFormProps) {
       setSuccess(true);
       onKYCSuccess();
     } catch (err) {
-      setError("Failed to submit KYC documents. Please try again.");
+      setError("Could not submit KYC documents. Please try again.");
       console.error("KYC submission error:", err);
     } finally {
       setIsSubmitting(false);

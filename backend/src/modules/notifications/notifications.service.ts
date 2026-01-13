@@ -7,6 +7,7 @@ export type NotificationChannel = 'inapp' | 'email' | 'sms' | 'whatsapp';
 
 export type NotificationType =
   | 'ORDER_PAID'
+  | 'ORDER_PAYMENT_FAILED'
   | 'ORDER_SHIPPED'
   | 'ORDER_OUT_FOR_DELIVERY'
   | 'ORDER_DELIVERED'
@@ -70,6 +71,7 @@ export class NotificationsService {
           title,
           body,
           message: body, // For backwards compatibility
+          data: data ? data : undefined,
         },
       });
 
@@ -240,6 +242,20 @@ export class NotificationsService {
   }
 
   /**
+   * Notify buyer that their payment failed
+   */
+  async notifyOrderPaymentFailed(buyerId: string, orderId: string, orderTotal: number, currency: string) {
+    return this.create(
+      buyerId,
+      'ORDER_PAYMENT_FAILED',
+      'Payment Failed',
+      `Your payment of ${currency} ${orderTotal.toFixed(2)} for order #${orderId} failed. Please try again.`,
+      { orderId },
+      ['inapp', 'email'],
+    );
+  }
+
+  /**
    * Notify seller of a new paid order
    */
   async notifySellerNewOrder(
@@ -268,6 +284,7 @@ export class NotificationsService {
     status: 'SHIPPED' | 'OUT_FOR_DELIVERY' | 'DELIVERED',
     trackingCode?: string,
     carrier?: string,
+    orderId?: string,
   ) {
     const statusMessages = {
       SHIPPED: `Your order has been shipped${trackingCode ? ` via ${carrier} (${trackingCode})` : ''}.`,
@@ -287,7 +304,7 @@ export class NotificationsService {
       type,
       `Order ${status === 'DELIVERED' ? 'Delivered' : status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : 'Shipped'}`,
       statusMessages[status],
-      { orderItemId, trackingCode, carrier },
+      { orderId, orderItemId, trackingCode, carrier },
       status === 'DELIVERED' ? ['inapp', 'email'] : ['inapp', 'sms'],
     );
   }
@@ -301,13 +318,14 @@ export class NotificationsService {
     orderItemId: string,
     productTitle: string,
     reason: string,
+    orderId?: string,
   ) {
     return this.create(
       sellerId,
       'DISPUTE_OPENED',
       'New Dispute',
       `A buyer opened a dispute on "${productTitle}" (Reason: ${reason}). Please respond within 48 hours.`,
-      { disputeId, orderItemId },
+      { disputeId, orderItemId, orderId },
       ['inapp', 'email'],
     );
   }
@@ -320,13 +338,14 @@ export class NotificationsService {
     disputeId: string,
     resolution: string,
     resolutionNote?: string,
+    orderId?: string,
   ) {
     return this.create(
       buyerId,
       'DISPUTE_RESOLVED',
       'Dispute Resolved',
       `Your dispute has been resolved: ${resolution}. ${resolutionNote || ''}`,
-      { disputeId },
+      { disputeId, orderId },
       ['inapp', 'email'],
     );
   }
@@ -347,6 +366,25 @@ export class NotificationsService {
       'Payout Released',
       `Your payout of ${currency} ${amount.toFixed(2)} for ${itemCount} orders has been processed and sent.`,
       { batchId, amount, currency },
+      ['inapp', 'email'],
+    );
+  }
+
+  /**
+   * Notify seller of a new review
+   */
+  async notifyNewReview(
+    sellerId: string,
+    reviewId: string,
+    productTitle: string,
+    rating: number,
+  ) {
+    return this.create(
+      sellerId,
+      'NEW_REVIEW',
+      'New Review',
+      `You received a ${rating}-star review for "${productTitle}".`,
+      { reviewId },
       ['inapp', 'email'],
     );
   }

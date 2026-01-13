@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTheme } from '../../contexts/ThemeContext';
 import NotificationCenter from './NotificationCenter';
 import LiveChat from './LiveChat';
@@ -8,6 +8,8 @@ import VisualSearch from './VisualSearch';
 import VoiceSearch from './VoiceSearch';
 import CurrencySwitcher from './CurrencySwitcher';
 import MobileMenuDrawer from './MobileMenuDrawer';
+import { notificationsService } from '../../lib/services';
+import { useAuth } from '../../lib/auth';
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -17,15 +19,31 @@ export default function Header() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
   const { isDark, toggleTheme } = useTheme();
+  const { user } = useAuth();
 
   const handleAdvancedSearch = (filters: SearchFilters) => {
-    console.log('Search filters:', filters);
+    const sortMap: Record<string, string> = {
+      relevance: 'trending',
+      'price-low': 'price_asc',
+      'price-high': 'price_desc',
+      newest: 'newest',
+      popular: 'popular',
+      rating: 'rating',
+    };
+
     // Navigate to products page with filters
     if (typeof window.REACT_APP_NAVIGATE === 'function') {
       const params = new URLSearchParams();
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, String(value));
-      });
+      if (filters.q) params.set('q', filters.q);
+      if (filters.category) params.set('category', filters.category);
+      if (filters.minPrice) params.set('minPrice', filters.minPrice);
+      if (filters.maxPrice) params.set('maxPrice', filters.maxPrice);
+      if (filters.country) params.set('country', filters.country);
+      if (filters.inStock) params.set('inStock', 'true');
+      if (filters.sortBy) {
+        const mappedSort = sortMap[filters.sortBy] || 'trending';
+        params.set('sort', mappedSort);
+      }
       window.REACT_APP_NAVIGATE(`/products?${params.toString()}`);
     }
   };
@@ -45,6 +63,36 @@ export default function Header() {
       window.REACT_APP_NAVIGATE(`/products?q=${encodeURIComponent(query)}`);
     }
   };
+
+  useEffect(() => {
+    let active = true;
+    let interval: number | undefined;
+
+    async function loadUnreadCount() {
+      if (!user?.id) {
+        if (active) setUnreadCount(0);
+        return;
+      }
+      try {
+        const response = await notificationsService.getUnreadCount();
+        if (active) {
+          setUnreadCount(response.count || 0);
+        }
+      } catch (error) {
+        console.error('Failed to fetch unread count:', error);
+      }
+    }
+
+    loadUnreadCount();
+    interval = window.setInterval(loadUnreadCount, 30_000);
+
+    return () => {
+      active = false;
+      if (interval) {
+        window.clearInterval(interval);
+      }
+    };
+  }, [user?.id]);
 
   return (
     <>

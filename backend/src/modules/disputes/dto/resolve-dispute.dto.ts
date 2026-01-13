@@ -1,8 +1,9 @@
 import { IsString, IsOptional } from 'class-validator';
 
 export class ResolveDisputeDto {
+  @IsOptional()
   @IsString()
-  actorId: string; // sellerId OR adminId, depending on policy
+  actorId?: string; // sellerId OR adminId, depending on policy
 
   @IsString()
   status: string;

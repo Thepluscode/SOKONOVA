@@ -19,6 +19,7 @@ import AIRecommendations from '../../../components/feature/AIRecommendations';
 import SmartRecommendations from '../../../components/feature/SmartRecommendations';
 import RecentlyViewed from '../../../components/feature/RecentlyViewed';
 import SkeletonLoader from '../../../components/base/SkeletonLoader';
+import { useToast } from '../../../contexts/ToastContext';
 import { productsService, cartService } from '../../../lib/services';
 import { useAuth } from '../../../lib/auth';
 import type { Product } from '../../../lib/types';
@@ -38,6 +39,7 @@ export default function ProductDetail() {
   const [showZoom, setShowZoom] = useState(false);
   const [cartId, setCartId] = useState<string | null>(null);
   const [addingToCart, setAddingToCart] = useState(false);
+  const { showToast } = useToast();
 
   const { user } = useAuth();
 
@@ -102,7 +104,7 @@ export default function ProductDetail() {
         });
       } catch (err) {
         console.error('Failed to fetch product:', err);
-        setError('Failed to load product. Please try again.');
+        setError('Could not load product. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -117,7 +119,7 @@ export default function ProductDetail() {
     try {
       if (cartId) {
         await cartService.addItem(cartId, product.id, quantity);
-        alert('Added to cart!');
+        showToast({ message: 'Added to cart.', type: 'success' });
       } else {
         // Fallback to localStorage
         const existingCart = localStorage.getItem('cart');
@@ -137,18 +139,18 @@ export default function ProductDetail() {
         }
 
         localStorage.setItem('cart', JSON.stringify(cart));
-        alert('Added to cart!');
+        showToast({ message: 'Added to cart.', type: 'success' });
       }
     } catch (err) {
       console.error('Failed to add to cart:', err);
-      alert('Failed to add to cart. Please try again.');
+      showToast({ message: 'Could not add to cart. Please try again.', type: 'error' });
     } finally {
       setAddingToCart(false);
     }
   };
 
   const addToWishlist = () => {
-    alert('Added to wishlist!');
+    showToast({ message: 'Added to wishlist.', type: 'success' });
   };
 
   if (loading) {
@@ -165,10 +167,10 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
-        <Footer />
-      </div>
-    );
-  }
+      <Footer />
+    </div>
+  );
+}
 
   if (error || !product) {
     return (
@@ -176,7 +178,7 @@ export default function ProductDetail() {
         <Header />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
           <i className="ri-error-warning-line text-6xl text-red-500 mb-4"></i>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">{error || 'Product not found'}</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">{error || 'Product not found.'}</h2>
           <Link to="/products" className="text-teal-600 hover:text-teal-700 font-medium">
             ← Back to products
           </Link>

@@ -111,7 +111,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         apiKeyName: "",
       });
     } catch (err) {
-      setError("Failed to save partner. Please try again.");
+      setError("Could not save partner. Please try again.");
       console.error("Partner error:", err);
     } finally {
       setIsSubmitting(false);
@@ -125,7 +125,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         p.id === partnerId ? { ...p, apiKey: result.apiKey, apiKeyLastGenerated: new Date().toISOString() } : p
       ));
     } catch (err) {
-      setError("Failed to generate API key. Please try again.");
+      setError("Could not generate API key. Please try again.");
       console.error("API key error:", err);
     }
   };
@@ -137,7 +137,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         p.id === partnerId ? { ...p, status } : p
       ));
     } catch (err) {
-      setError("Failed to update partner status. Please try again.");
+      setError("Could not update partner status. Please try again.");
       console.error("Status update error:", err);
     }
   };
@@ -166,7 +166,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         secret: "",
       });
     } catch (err) {
-      setError("Failed to create webhook. Please try again.");
+      setError("Could not create webhook. Please try again.");
       console.error("Webhook error:", err);
     }
   };
@@ -181,7 +181,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         [partnerId]: partnerWebhooks
       }));
     } catch (err) {
-      setError("Failed to fetch webhooks. Please try again.");
+      setError("Could not load webhooks. Please try again.");
       console.error("Webhook fetch error:", err);
     }
   };
@@ -196,7 +196,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         )
       }));
     } catch (err) {
-      setError("Failed to update webhook. Please try again.");
+      setError("Could not update webhook. Please try again.");
       console.error("Webhook update error:", err);
     }
   };
@@ -213,7 +213,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
         [partnerId]: prev[partnerId].filter(w => w.id !== webhookId)
       }));
     } catch (err) {
-      setError("Failed to delete webhook. Please try again.");
+      setError("Could not delete webhook. Please try again.");
       console.error("Webhook delete error:", err);
     }
   };
@@ -549,7 +549,7 @@ export function ApiPartnersDashboard({ partners, adminId }: ApiPartnersDashboard
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     <Webhook className="h-8 w-8 mx-auto mb-2" />
-                    <p>No webhooks configured yet</p>
+                    <p>No webhooks configured yet.</p>
                   </div>
                 )}
               </div>
