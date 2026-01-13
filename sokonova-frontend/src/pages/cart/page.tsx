@@ -50,7 +50,10 @@ export default function CartPage() {
               quantity: item.qty,
               image: product?.imageUrl || `https://readdy.ai/api/search-image?query=product%20photography&width=200&height=200&seq=${item.productId}&orientation=squarish`,
               seller: product?.seller?.shopName || 'SokoNova Seller',
-              inStock: product?.inventory?.quantity ? product.inventory.quantity > 0 : true,
+              inStock:
+                product?.inventory?.quantity !== undefined
+                  ? product.inventory.quantity > 0
+                  : true,
             };
           });
 

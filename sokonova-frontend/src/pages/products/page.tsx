@@ -24,7 +24,10 @@ function transformProduct(product: Product) {
     image: product.imageUrl || `https://readdy.ai/api/search-image?query=premium%20quality%20product%20item%20on%20clean%20white%20background%20with%20professional%20lighting%20minimalist%20product%20photography%20style&width=400&height=400&seq=prod${product.id}&orientation=squarish`,
     category: product.category || 'General',
     seller: product.seller?.shopName || `Seller`,
-    inStock: product.inventory?.quantity ? product.inventory.quantity > 0 : true,
+    inStock:
+      product.inventory?.quantity !== undefined
+        ? product.inventory.quantity > 0
+        : true,
     featured: Math.random() > 0.7,
     discount: Math.floor(Math.random() * 30) + 10,
   };

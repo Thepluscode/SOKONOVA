@@ -73,7 +73,10 @@ export default function ProductDetail() {
           originalPrice: Math.floor(Number(apiProduct.price) * 1.25),
           rating: apiProduct.ratingAvg || 4.5,
           reviews: apiProduct.ratingCount || Math.floor(Math.random() * 500) + 100,
-          inStock: apiProduct.inventory?.quantity ? apiProduct.inventory.quantity > 0 : true,
+          inStock:
+            apiProduct.inventory?.quantity !== undefined
+              ? apiProduct.inventory.quantity > 0
+              : true,
           stock: apiProduct.inventory?.quantity || 50,
           images: [
             apiProduct.imageUrl || `https://readdy.ai/api/search-image?query=premium%20product%20photography%20on%20white%20background&width=600&height=600&seq=prod${id}&orientation=squarish`,
