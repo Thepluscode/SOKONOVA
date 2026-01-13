@@ -59,7 +59,7 @@ let DisputesService = DisputesService_1 = class DisputesService {
             },
         });
         try {
-            await this.notifications.notifyDisputeOpened(oi.sellerId, dispute.id, dto.orderItemId, dispute.orderItem.product.title, dto.reasonCode);
+            await this.notifications.notifyDisputeOpened(oi.sellerId, dispute.id, dto.orderItemId, dispute.orderItem.product.title, dto.reasonCode, oi.order.id);
         }
         catch (error) {
             this.logger.error(`Failed to send dispute opened notification: ${error.message}`);
@@ -108,7 +108,31 @@ let DisputesService = DisputesService_1 = class DisputesService {
             },
         });
     }
+    async listAll() {
+        return this.prisma.dispute.findMany({
+            orderBy: { createdAt: 'desc' },
+            include: {
+                buyer: {
+                    select: { id: true, name: true, email: true },
+                },
+                orderItem: {
+                    include: {
+                        order: {
+                            select: { id: true, total: true, currency: true },
+                        },
+                        product: {
+                            select: {
+                                title: true,
+                                seller: { select: { id: true, name: true } },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+    }
     async resolve(disputeId, dto) {
+        var _a;
         const d = await this.prisma.dispute.findUnique({
             where: { id: disputeId },
             include: {
@@ -142,10 +166,15 @@ let DisputesService = DisputesService_1 = class DisputesService {
                         id: true,
                     },
                 },
+                orderItem: {
+                    select: {
+                        orderId: true,
+                    },
+                },
             },
         });
         try {
-            await this.notifications.notifyDisputeResolved(updatedDispute.buyer.id, disputeId, dto.status, dto.resolutionNote);
+            await this.notifications.notifyDisputeResolved(updatedDispute.buyer.id, disputeId, dto.status, dto.resolutionNote, (_a = updatedDispute.orderItem) === null || _a === void 0 ? void 0 : _a.orderId);
         }
         catch (error) {
             this.logger.error(`Failed to send dispute resolved notification: ${error.message}`);

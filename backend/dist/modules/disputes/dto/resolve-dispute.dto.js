@@ -15,6 +15,7 @@ class ResolveDisputeDto {
 }
 exports.ResolveDisputeDto = ResolveDisputeDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ResolveDisputeDto.prototype, "actorId", void 0);

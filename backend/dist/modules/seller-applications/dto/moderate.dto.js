@@ -15,6 +15,7 @@ class ModerateDto {
 }
 exports.ModerateDto = ModerateDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], ModerateDto.prototype, "adminId", void 0);

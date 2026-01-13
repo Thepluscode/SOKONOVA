@@ -19,6 +19,7 @@ const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
 const client_1 = require("@prisma/client");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 let FulfillmentController = class FulfillmentController {
     constructor(fulfillmentService) {
         this.fulfillmentService = fulfillmentService;
@@ -105,7 +106,7 @@ __decorate([
     (0, common_1.Get)('tracking/:orderId'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('orderId')),
-    __param(1, (0, common_1.Query)('userId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String]),
     __metadata("design:returntype", Promise)
@@ -114,7 +115,7 @@ __decorate([
     (0, common_1.Get)('seller/open'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
-    __param(0, (0, common_1.Query)('sellerId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -123,7 +124,7 @@ __decorate([
     (0, common_1.Get)('seller/stats'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
-    __param(0, (0, common_1.Query)('sellerId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
@@ -133,7 +134,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
     __param(0, (0, common_1.Param)('orderItemId')),
-    __param(1, (0, common_1.Query)('sellerId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),
@@ -144,7 +145,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
     __param(0, (0, common_1.Param)('orderItemId')),
-    __param(1, (0, common_1.Query)('sellerId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),
@@ -155,7 +156,7 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
     (0, roles_decorator_1.Roles)(client_1.Role.SELLER),
     __param(0, (0, common_1.Param)('orderItemId')),
-    __param(1, (0, common_1.Query)('sellerId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(2, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, String, Object]),

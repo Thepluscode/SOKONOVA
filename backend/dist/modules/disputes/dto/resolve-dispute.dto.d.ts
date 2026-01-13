@@ -1,5 +1,5 @@
 export declare class ResolveDisputeDto {
-    actorId: string;
+    actorId?: string;
     status: string;
     resolutionNote?: string;
 }

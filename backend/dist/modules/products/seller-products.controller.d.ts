@@ -6,7 +6,7 @@ export declare class SellerProductsController {
     private products;
     constructor(products: ProductsService);
     myProducts(sellerId: string): Promise<any>;
-    createProduct(dto: CreateProductDto): Promise<{
+    createProduct(dto: CreateProductDto, sellerId: string): Promise<{
         id: string;
         sellerId: string;
         title: string;

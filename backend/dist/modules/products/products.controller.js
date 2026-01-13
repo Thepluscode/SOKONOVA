@@ -16,6 +16,10 @@ exports.ProductsController = void 0;
 const common_1 = require("@nestjs/common");
 const products_service_1 = require("./products.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
+const client_1 = require("@prisma/client");
 let ProductsController = class ProductsController {
     constructor(products) {
         this.products = products;
@@ -30,13 +34,28 @@ let ProductsController = class ProductsController {
     async getById(id) {
         return this.products.getById(id);
     }
-    async create(body) {
-        return this.products.create(body);
+    async create(body, user) {
+        const sellerId = user.role === client_1.Role.ADMIN && body.sellerId ? body.sellerId : user.id;
+        return this.products.create({ ...body, sellerId });
     }
-    async update(id, body) {
+    async update(id, body, user) {
+        const product = await this.products.getById(id);
+        if (!product) {
+            throw new common_1.NotFoundException('Product not found');
+        }
+        if (user.role !== client_1.Role.ADMIN && product.sellerId !== user.id) {
+            throw new common_1.ForbiddenException('You can only update your own products');
+        }
         return this.products.update(id, body);
     }
-    async updateInventory(id, body) {
+    async updateInventory(id, body, user) {
+        const product = await this.products.getById(id);
+        if (!product) {
+            throw new common_1.NotFoundException('Product not found');
+        }
+        if (user.role !== client_1.Role.ADMIN && product.sellerId !== user.id) {
+            throw new common_1.ForbiddenException('You can only update your own products');
+        }
         return this.products.updateInventory(id, body.quantity);
     }
 };
@@ -59,27 +78,34 @@ __decorate([
 ], ProductsController.prototype, "getById", null);
 __decorate([
     (0, common_1.Post)(),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "create", null);
 __decorate([
     (0, common_1.Patch)(':id'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "update", null);
 __decorate([
     (0, common_1.Patch)(':id/inventory'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], ProductsController.prototype, "updateInventory", null);
 exports.ProductsController = ProductsController = __decorate([

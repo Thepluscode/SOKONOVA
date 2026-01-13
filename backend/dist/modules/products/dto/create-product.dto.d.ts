@@ -1,5 +1,5 @@
 export declare class CreateProductDto {
-    sellerId: string;
+    sellerId?: string;
     title: string;
     description: string;
     price: number;

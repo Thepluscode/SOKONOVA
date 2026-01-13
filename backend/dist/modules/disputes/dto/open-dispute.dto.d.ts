@@ -1,5 +1,5 @@
 export declare class OpenDisputeDto {
-    buyerId: string;
+    buyerId?: string;
     orderItemId: string;
     reasonCode: string;
     description: string;

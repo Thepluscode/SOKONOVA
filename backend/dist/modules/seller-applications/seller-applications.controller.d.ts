@@ -4,62 +4,66 @@ import { ModerateDto } from './dto/moderate.dto';
 export declare class SellerApplicationsController {
     private svc;
     constructor(svc: SellerApplicationsService);
-    apply(body: ApplyDto): Promise<{
+    apply(body: ApplyDto, user: {
         id: string;
-        userId: string;
-        businessName: string;
-        phone: string;
-        country: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         city: string;
+        country: string;
+        phone: string;
+        userId: string;
+        status: import(".prisma/client").$Enums.ApplicationStatus;
+        businessName: string;
         storefrontDesc: string;
         bankName: string | null;
         accountNumber: string | null;
         accountName: string | null;
         bankCode: string | null;
-        status: import(".prisma/client").$Enums.ApplicationStatus;
         adminNote: string | null;
         reviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
-    activateInstant(body: ApplyDto): Promise<{
+    activateInstant(body: ApplyDto, user: {
+        id: string;
+    }): Promise<{
         success: boolean;
         application: {
             id: string;
-            userId: string;
-            businessName: string;
-            phone: string;
-            country: string;
+            createdAt: Date;
+            updatedAt: Date;
             city: string;
+            country: string;
+            phone: string;
+            userId: string;
+            status: import(".prisma/client").$Enums.ApplicationStatus;
+            businessName: string;
             storefrontDesc: string;
             bankName: string | null;
             accountNumber: string | null;
             accountName: string | null;
             bankCode: string | null;
-            status: import(".prisma/client").$Enums.ApplicationStatus;
             adminNote: string | null;
             reviewedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         user: {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -70,25 +74,29 @@ export declare class SellerApplicationsController {
         };
         message: string;
     }>;
-    mine(userId: string): Promise<{
+    mine(user: {
         id: string;
-        userId: string;
-        businessName: string;
-        phone: string;
-        country: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         city: string;
+        country: string;
+        phone: string;
+        userId: string;
+        status: import(".prisma/client").$Enums.ApplicationStatus;
+        businessName: string;
         storefrontDesc: string;
         bankName: string | null;
         accountNumber: string | null;
         accountName: string | null;
         bankCode: string | null;
-        status: import(".prisma/client").$Enums.ApplicationStatus;
         adminNote: string | null;
         reviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
-    pending(adminId: string): Promise<({
+    pending(user: {
+        id: string;
+    }): Promise<({
         user: {
             id: string;
             name: string;
@@ -97,59 +105,61 @@ export declare class SellerApplicationsController {
         };
     } & {
         id: string;
-        userId: string;
-        businessName: string;
-        phone: string;
-        country: string;
+        createdAt: Date;
+        updatedAt: Date;
         city: string;
+        country: string;
+        phone: string;
+        userId: string;
+        status: import(".prisma/client").$Enums.ApplicationStatus;
+        businessName: string;
         storefrontDesc: string;
         bankName: string | null;
         accountNumber: string | null;
         accountName: string | null;
         bankCode: string | null;
-        status: import(".prisma/client").$Enums.ApplicationStatus;
         adminNote: string | null;
         reviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     })[]>;
-    approve(appId: string, body: ModerateDto): Promise<{
+    approve(appId: string, body: ModerateDto, user: {
+        id: string;
+    }): Promise<{
         application: {
             id: string;
-            userId: string;
-            businessName: string;
-            phone: string;
-            country: string;
+            createdAt: Date;
+            updatedAt: Date;
             city: string;
+            country: string;
+            phone: string;
+            userId: string;
+            status: import(".prisma/client").$Enums.ApplicationStatus;
+            businessName: string;
             storefrontDesc: string;
             bankName: string | null;
             accountNumber: string | null;
             accountName: string | null;
             bankCode: string | null;
-            status: import(".prisma/client").$Enums.ApplicationStatus;
             adminNote: string | null;
             reviewedAt: Date | null;
-            createdAt: Date;
-            updatedAt: Date;
         };
         user: {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -159,22 +169,24 @@ export declare class SellerApplicationsController {
             quietHoursEnd: number | null;
         };
     }>;
-    reject(appId: string, body: ModerateDto): Promise<{
+    reject(appId: string, body: ModerateDto, user: {
         id: string;
-        userId: string;
-        businessName: string;
-        phone: string;
-        country: string;
+    }): Promise<{
+        id: string;
+        createdAt: Date;
+        updatedAt: Date;
         city: string;
+        country: string;
+        phone: string;
+        userId: string;
+        status: import(".prisma/client").$Enums.ApplicationStatus;
+        businessName: string;
         storefrontDesc: string;
         bankName: string | null;
         accountNumber: string | null;
         accountName: string | null;
         bankCode: string | null;
-        status: import(".prisma/client").$Enums.ApplicationStatus;
         adminNote: string | null;
         reviewedAt: Date | null;
-        createdAt: Date;
-        updatedAt: Date;
     }>;
 }

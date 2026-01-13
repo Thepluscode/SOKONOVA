@@ -48,6 +48,7 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
                     title,
                     body,
                     message: body,
+                    data: data ? data : undefined,
                 },
             });
             this.logger.log(`Created notification ${notification.id} for user ${userId}: ${title}`);
@@ -144,10 +145,13 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
     async notifyOrderPaid(buyerId, orderId, orderTotal, currency) {
         return this.create(buyerId, 'ORDER_PAID', 'Payment Received', `Your payment of ${currency} ${orderTotal.toFixed(2)} was successful. Order #${orderId} is now being prepared.`, { orderId }, ['inapp', 'email']);
     }
+    async notifyOrderPaymentFailed(buyerId, orderId, orderTotal, currency) {
+        return this.create(buyerId, 'ORDER_PAYMENT_FAILED', 'Payment Failed', `Your payment of ${currency} ${orderTotal.toFixed(2)} for order #${orderId} failed. Please try again.`, { orderId }, ['inapp', 'email']);
+    }
     async notifySellerNewOrder(sellerId, orderId, orderItemId, productTitle, quantity) {
         return this.create(sellerId, 'ORDER_PAID', 'New Paid Order', `You have a new order: ${productTitle} x${quantity}. Please prepare for shipment.`, { orderId, orderItemId }, ['inapp', 'email']);
     }
-    async notifyShipmentUpdate(buyerId, orderItemId, status, trackingCode, carrier) {
+    async notifyShipmentUpdate(buyerId, orderItemId, status, trackingCode, carrier, orderId) {
         const statusMessages = {
             SHIPPED: `Your order has been shipped${trackingCode ? ` via ${carrier} (${trackingCode})` : ''}.`,
             OUT_FOR_DELIVERY: 'Your order is out for delivery and will arrive soon!',
@@ -158,22 +162,25 @@ let NotificationsService = NotificationsService_1 = class NotificationsService {
             : status === 'OUT_FOR_DELIVERY'
                 ? 'ORDER_OUT_FOR_DELIVERY'
                 : 'ORDER_SHIPPED';
-        return this.create(buyerId, type, `Order ${status === 'DELIVERED' ? 'Delivered' : status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : 'Shipped'}`, statusMessages[status], { orderItemId, trackingCode, carrier }, status === 'DELIVERED' ? ['inapp', 'email'] : ['inapp', 'sms']);
+        return this.create(buyerId, type, `Order ${status === 'DELIVERED' ? 'Delivered' : status === 'OUT_FOR_DELIVERY' ? 'Out for Delivery' : 'Shipped'}`, statusMessages[status], { orderId, orderItemId, trackingCode, carrier }, status === 'DELIVERED' ? ['inapp', 'email'] : ['inapp', 'sms']);
     }
-    async notifyDisputeOpened(sellerId, disputeId, orderItemId, productTitle, reason) {
-        return this.create(sellerId, 'DISPUTE_OPENED', 'New Dispute', `A buyer opened a dispute on "${productTitle}" (Reason: ${reason}). Please respond within 48 hours.`, { disputeId, orderItemId }, ['inapp', 'email']);
+    async notifyDisputeOpened(sellerId, disputeId, orderItemId, productTitle, reason, orderId) {
+        return this.create(sellerId, 'DISPUTE_OPENED', 'New Dispute', `A buyer opened a dispute on "${productTitle}" (Reason: ${reason}). Please respond within 48 hours.`, { disputeId, orderItemId, orderId }, ['inapp', 'email']);
     }
-    async notifyDisputeResolved(buyerId, disputeId, resolution, resolutionNote) {
-        return this.create(buyerId, 'DISPUTE_RESOLVED', 'Dispute Resolved', `Your dispute has been resolved: ${resolution}. ${resolutionNote || ''}`, { disputeId }, ['inapp', 'email']);
+    async notifyDisputeResolved(buyerId, disputeId, resolution, resolutionNote, orderId) {
+        return this.create(buyerId, 'DISPUTE_RESOLVED', 'Dispute Resolved', `Your dispute has been resolved: ${resolution}. ${resolutionNote || ''}`, { disputeId, orderId }, ['inapp', 'email']);
     }
     async notifyPayoutReleased(sellerId, amount, currency, batchId, itemCount) {
         return this.create(sellerId, 'PAYOUT_RELEASED', 'Payout Released', `Your payout of ${currency} ${amount.toFixed(2)} for ${itemCount} orders has been processed and sent.`, { batchId, amount, currency }, ['inapp', 'email']);
     }
+    async notifyNewReview(sellerId, reviewId, productTitle, rating, buyerName) {
+        const message = buyerName
+            ? `${buyerName} left a ${rating}★ review on "${productTitle}".`
+            : `You received a ${rating}-star review for "${productTitle}".`;
+        return this.create(sellerId, 'NEW_REVIEW', 'New Review', message, { reviewId }, ['inapp', 'email']);
+    }
     async notifyAdminRiskAlert(adminId, alertType, message, data) {
         return this.create(adminId, 'RISK_ALERT', `Risk Alert: ${alertType}`, message, data, ['inapp', 'email']);
-    }
-    async notifyNewReview(sellerId, reviewId, productTitle, rating, buyerName) {
-        return this.create(sellerId, 'NEW_REVIEW', 'New Review', `${buyerName} left a ${rating}★ review on "${productTitle}".`, { reviewId }, ['inapp']);
     }
     async notifyException(buyerId, orderItemId, priority, message) {
         const priorityLabels = {

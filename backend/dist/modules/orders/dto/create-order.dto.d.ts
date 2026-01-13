@@ -1,5 +1,5 @@
 export declare class CreateOrderDto {
-    userId: string;
+    userId?: string;
     total: number;
     currency: string;
     shippingAdr?: string;

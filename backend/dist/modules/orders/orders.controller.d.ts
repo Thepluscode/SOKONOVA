@@ -1,35 +1,36 @@
+import { Role } from '@prisma/client';
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 export declare class OrdersController {
     private orders;
     constructor(orders: OrdersService);
-    listForUser(userId: string): Promise<({
+    listMine(userId: string): Promise<({
         items: ({
             product: {
                 id: string;
-                currency: string;
-                createdAt: Date;
-                updatedAt: Date;
-                price: import("@prisma/client/runtime/library").Decimal;
                 sellerId: string;
                 title: string;
                 description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
                 ratingAvg: number | null;
                 ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            sellerId: string;
+            price: import("@prisma/client/runtime/library").Decimal;
             currency: string;
             createdAt: Date;
             updatedAt: Date;
-            orderId: string;
             productId: string;
+            orderId: string;
             qty: number;
-            price: import("@prisma/client/runtime/library").Decimal;
-            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
@@ -47,19 +48,142 @@ export declare class OrdersController {
         })[];
     } & {
         id: string;
-        userId: string;
-        total: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
         buyerPhone: string | null;
         buyerEmail: string | null;
     })[]>;
-    findById(id: string): Promise<{
+    listSeller(sellerId: string | undefined, user: {
+        id: string;
+        role: Role;
+    }): Promise<({
+        user: {
+            id: string;
+            name: string;
+            email: string;
+        };
+        items: ({
+            product: {
+                id: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
+                imageUrl: string | null;
+                category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            sellerId: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            orderId: string;
+            qty: number;
+            grossAmount: import("@prisma/client/runtime/library").Decimal;
+            feeAmount: import("@prisma/client/runtime/library").Decimal;
+            netAmount: import("@prisma/client/runtime/library").Decimal;
+            payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
+            payoutBatchId: string | null;
+            paidAt: Date | null;
+            fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
+            shippedAt: Date | null;
+            deliveredAt: Date | null;
+            trackingCode: string | null;
+            carrier: string | null;
+            deliveryProofUrl: string | null;
+            notes: string | null;
+            exceptionNotified: boolean | null;
+        })[];
+    } & {
+        id: string;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentRef: string | null;
+        shippingAdr: string | null;
+        buyerName: string | null;
+        buyerPhone: string | null;
+        buyerEmail: string | null;
+    })[]>;
+    listForUser(userId: string): Promise<({
+        items: ({
+            product: {
+                id: string;
+                sellerId: string;
+                title: string;
+                description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
+                imageUrl: string | null;
+                category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
+                viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
+            };
+        } & {
+            id: string;
+            sellerId: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            orderId: string;
+            qty: number;
+            grossAmount: import("@prisma/client/runtime/library").Decimal;
+            feeAmount: import("@prisma/client/runtime/library").Decimal;
+            netAmount: import("@prisma/client/runtime/library").Decimal;
+            payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
+            payoutBatchId: string | null;
+            paidAt: Date | null;
+            fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
+            shippedAt: Date | null;
+            deliveredAt: Date | null;
+            trackingCode: string | null;
+            carrier: string | null;
+            deliveryProofUrl: string | null;
+            notes: string | null;
+            exceptionNotified: boolean | null;
+        })[];
+    } & {
+        id: string;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
+        paymentRef: string | null;
+        shippingAdr: string | null;
+        buyerName: string | null;
+        buyerPhone: string | null;
+        buyerEmail: string | null;
+    })[]>;
+    findById(id: string, user: {
+        id: string;
+        role: Role;
+    }): Promise<{
         user: {
             id: string;
             name: string;
@@ -76,29 +200,29 @@ export declare class OrdersController {
                 };
             } & {
                 id: string;
-                currency: string;
-                createdAt: Date;
-                updatedAt: Date;
-                price: import("@prisma/client/runtime/library").Decimal;
                 sellerId: string;
                 title: string;
                 description: string;
+                price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
                 ratingAvg: number | null;
                 ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
+            sellerId: string;
+            price: import("@prisma/client/runtime/library").Decimal;
             currency: string;
             createdAt: Date;
             updatedAt: Date;
-            orderId: string;
             productId: string;
+            orderId: string;
             qty: number;
-            price: import("@prisma/client/runtime/library").Decimal;
-            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
@@ -116,26 +240,26 @@ export declare class OrdersController {
         })[];
     } & {
         id: string;
-        userId: string;
-        total: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
         buyerPhone: string | null;
         buyerEmail: string | null;
     }>;
-    createFromCart(dto: CreateOrderDto, cartId: string): Promise<{
+    createFromCart(dto: CreateOrderDto, cartId: string, userId: string): Promise<{
         id: string;
-        userId: string;
-        total: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
@@ -153,12 +277,12 @@ export declare class OrdersController {
         currency: string;
     }): Promise<{
         id: string;
-        userId: string;
-        total: import("@prisma/client/runtime/library").Decimal;
         currency: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
+        total: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;

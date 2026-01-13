@@ -14,22 +14,37 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.PayoutsController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const payouts_service_1 = require("./payouts.service");
 const mark_paid_dto_1 = require("./dto/mark-paid.dto");
+const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 let PayoutsController = class PayoutsController {
     constructor(payouts) {
         this.payouts = payouts;
     }
-    async sellerPending(sellerId) {
-        return this.payouts.getPendingForSeller(sellerId);
+    async sellerPending(sellerId, user) {
+        if (sellerId && sellerId !== user.id && user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException('Not allowed to access other sellers');
+        }
+        return this.payouts.getPendingForSeller(user.role === client_1.Role.ADMIN && sellerId ? sellerId : user.id);
     }
-    async sellerAll(sellerId) {
-        return this.payouts.getAllForSeller(sellerId);
+    async sellerAll(sellerId, user) {
+        if (sellerId && sellerId !== user.id && user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException('Not allowed to access other sellers');
+        }
+        return this.payouts.getAllForSeller(user.role === client_1.Role.ADMIN && sellerId ? sellerId : user.id);
     }
-    async sellerCsv(sellerId, res) {
-        const csv = await this.payouts.getCsvForSeller(sellerId);
+    async sellerCsv(sellerId, res, user) {
+        if (sellerId && sellerId !== user.id && user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException('Not allowed to access other sellers');
+        }
+        const targetSellerId = user.role === client_1.Role.ADMIN && sellerId ? sellerId : user.id;
+        const csv = await this.payouts.getCsvForSeller(targetSellerId);
         res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="payouts-${sellerId}.csv"`);
+        res.setHeader('Content-Disposition', `attachment; filename="payouts-${targetSellerId}.csv"`);
         res.send(csv);
     }
     async markPaid(dto) {
@@ -42,28 +57,39 @@ let PayoutsController = class PayoutsController {
 exports.PayoutsController = PayoutsController;
 __decorate([
     (0, common_1.Get)('seller/pending'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Query)('sellerId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], PayoutsController.prototype, "sellerPending", null);
 __decorate([
     (0, common_1.Get)('seller/all'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Query)('sellerId')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String]),
+    __metadata("design:paramtypes", [String, Object]),
     __metadata("design:returntype", Promise)
 ], PayoutsController.prototype, "sellerAll", null);
 __decorate([
     (0, common_1.Get)('seller/csv'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.SELLER, client_1.Role.ADMIN),
     __param(0, (0, common_1.Query)('sellerId')),
     __param(1, (0, common_1.Res)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], PayoutsController.prototype, "sellerCsv", null);
 __decorate([
     (0, common_1.Post)('admin/mark-paid'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
     __param(0, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [mark_paid_dto_1.MarkPaidDto]),
@@ -71,6 +97,8 @@ __decorate([
 ], PayoutsController.prototype, "markPaid", null);
 __decorate([
     (0, common_1.Get)('admin/summary'),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", []),
     __metadata("design:returntype", Promise)

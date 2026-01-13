@@ -4,27 +4,27 @@ export declare class DiscoveryService {
     constructor(prisma: PrismaService);
     getDiscoveryHighlights(): Promise<{
         trendingProducts: ({
+            seller: {
+                ratingAvg: number;
+                shopName: string;
+            };
             _count: {
                 views: number;
             };
-            seller: {
-                shopName: string;
-                ratingAvg: number;
-            };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         featuredSellers: ({
             _count: {
@@ -32,22 +32,22 @@ export declare class DiscoveryService {
             };
         } & {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -62,107 +62,132 @@ export declare class DiscoveryService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         communityStories: ({
-            user: {
-                name: string;
-                shopName: string;
-            };
             product: {
                 title: string;
                 imageUrl: string;
             };
+            user: {
+                name: string;
+                shopName: string;
+            };
         } & {
             id: string;
-            userId: string;
-            createdAt: Date;
             imageUrl: string | null;
+            createdAt: Date;
             productId: string;
+            userId: string;
             content: string;
         })[];
     }>;
     getProductsByCategory(slug: string): Promise<({
+        seller: {
+            ratingAvg: number;
+            shopName: string;
+        };
         _count: {
             views: number;
         };
-        seller: {
-            shopName: string;
-            ratingAvg: number;
-        };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
     getProductsByRegion(regionSlug: string): Promise<({
-        _count: {
-            views: number;
-        };
         seller: {
+            ratingAvg: number;
             country: string;
             shopName: string;
-            ratingAvg: number;
         };
-    } & {
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
-        sellerId: string;
-        title: string;
-        description: string;
-        price: import("@prisma/client/runtime/library").Decimal;
-        imageUrl: string | null;
-        category: string | null;
-        viewCount: number;
-    })[]>;
-    searchProducts(query: string): Promise<({
         _count: {
             views: number;
         };
-        seller: {
-            shopName: string;
-            ratingAvg: number;
-        };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     })[]>;
+    searchProducts(filters: {
+        q?: string;
+        category?: string;
+        minPrice?: string;
+        maxPrice?: string;
+        rating?: string;
+        inStock?: string;
+        country?: string;
+        sellerId?: string;
+        sort?: string;
+        page?: string;
+        limit?: string;
+    }): Promise<{
+        items: ({
+            seller: {
+                ratingAvg: number;
+                ratingCount: number;
+                country: string;
+                shopName: string;
+            };
+            inventory: {
+                quantity: number;
+            };
+            _count: {
+                views: number;
+            };
+        } & {
+            id: string;
+            sellerId: string;
+            title: string;
+            description: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            imageUrl: string | null;
+            category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
+            viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
+        })[];
+        pagination: {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+        };
+    }>;
     getCategoryPage(slug: string): Promise<{
         sellers: ({
             _count: {
@@ -170,22 +195,22 @@ export declare class DiscoveryService {
             };
         } & {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -195,28 +220,28 @@ export declare class DiscoveryService {
             quietHoursEnd: number | null;
         })[];
         products: ({
+            seller: {
+                ratingAvg: number;
+                ratingCount: number;
+                shopName: string;
+            };
             _count: {
                 views: number;
             };
-            seller: {
-                shopName: string;
-                ratingAvg: number;
-                ratingCount: number;
-            };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
     }>;
     getRegionPage(regionSlug: string): Promise<{
@@ -226,22 +251,22 @@ export declare class DiscoveryService {
             };
         } & {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -251,57 +276,57 @@ export declare class DiscoveryService {
             quietHoursEnd: number | null;
         })[];
         products: ({
+            seller: {
+                ratingAvg: number;
+                ratingCount: number;
+                country: string;
+                shopName: string;
+            };
             _count: {
                 views: number;
             };
-            seller: {
-                country: string;
-                shopName: string;
-                ratingAvg: number;
-                ratingCount: number;
-            };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
     }>;
     getPersonalizedDiscovery(userId: string): Promise<{
         recommendedForYou: {
             category: string;
             products: ({
+                seller: {
+                    ratingAvg: number;
+                    ratingCount: number;
+                    shopName: string;
+                };
                 _count: {
                     views: number;
                 };
-                seller: {
-                    shopName: string;
-                    ratingAvg: number;
-                    ratingCount: number;
-                };
             } & {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             })[];
         }[];
         trendingInYourCity: {
@@ -309,28 +334,28 @@ export declare class DiscoveryService {
             categories: string[];
         };
         becauseYouViewed: ({
+            seller: {
+                ratingAvg: number;
+                ratingCount: number;
+                shopName: string;
+            };
             _count: {
                 views: number;
             };
-            seller: {
-                shopName: string;
-                ratingAvg: number;
-                ratingCount: number;
-            };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         popularInYourArea: ({
             _count: {
@@ -338,22 +363,22 @@ export declare class DiscoveryService {
             };
         } & {
             id: string;
-            phone: string | null;
-            country: string | null;
-            city: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
             name: string | null;
             email: string;
             password: string | null;
             role: string;
+            city: string | null;
+            country: string | null;
+            phone: string | null;
             sellerHandle: string | null;
             shopName: string | null;
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
-            ratingAvg: number | null;
-            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;

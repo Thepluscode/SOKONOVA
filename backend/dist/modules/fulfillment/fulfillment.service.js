@@ -88,6 +88,7 @@ let FulfillmentService = FulfillmentService_1 = class FulfillmentService {
         };
     }
     async getOrderTracking(orderId, userId) {
+        var _a, _b, _c;
         const order = await this.prisma.order.findFirst({
             where: { id: orderId, userId },
             include: {
@@ -98,8 +99,20 @@ let FulfillmentService = FulfillmentService_1 = class FulfillmentService {
                                 title: true,
                                 imageUrl: true,
                                 sellerId: true,
+                                seller: {
+                                    select: {
+                                        name: true,
+                                    },
+                                },
                             },
                         },
+                    },
+                },
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        phone: true,
                     },
                 },
             },
@@ -111,21 +124,30 @@ let FulfillmentService = FulfillmentService_1 = class FulfillmentService {
             orderId: order.id,
             status: order.status,
             createdAt: order.createdAt,
+            total: order.total,
+            currency: order.currency,
             shippingAddress: order.shippingAdr,
-            items: order.items.map((it) => ({
-                orderItemId: it.id,
-                productTitle: it.product.title,
-                productImage: it.product.imageUrl,
-                qty: it.qty,
-                price: it.price.toString(),
-                fulfillmentStatus: it.fulfillmentStatus,
-                trackingCode: it.trackingCode,
-                carrier: it.carrier,
-                shippedAt: it.shippedAt,
-                deliveredAt: it.deliveredAt,
-                deliveryProofUrl: it.deliveryProofUrl,
-                notes: it.notes,
-            })),
+            buyerName: order.buyerName || ((_a = order.user) === null || _a === void 0 ? void 0 : _a.name) || null,
+            buyerPhone: order.buyerPhone || ((_b = order.user) === null || _b === void 0 ? void 0 : _b.phone) || null,
+            buyerEmail: order.buyerEmail || ((_c = order.user) === null || _c === void 0 ? void 0 : _c.email) || null,
+            items: order.items.map((it) => {
+                var _a;
+                return ({
+                    orderItemId: it.id,
+                    productTitle: it.product.title,
+                    productImage: it.product.imageUrl,
+                    sellerName: ((_a = it.product.seller) === null || _a === void 0 ? void 0 : _a.name) || null,
+                    qty: it.qty,
+                    price: it.price.toString(),
+                    fulfillmentStatus: it.fulfillmentStatus,
+                    trackingCode: it.trackingCode,
+                    carrier: it.carrier,
+                    shippedAt: it.shippedAt,
+                    deliveredAt: it.deliveredAt,
+                    deliveryProofUrl: it.deliveryProofUrl,
+                    notes: it.notes,
+                });
+            }),
         };
     }
     async getSellerOpenFulfillment(sellerId) {
@@ -218,12 +240,13 @@ let FulfillmentService = FulfillmentService_1 = class FulfillmentService {
                 order: {
                     select: {
                         userId: true,
+                        id: true,
                     },
                 },
             },
         });
         try {
-            await this.notifications.notifyShipmentUpdate(updatedItem.order.userId, updatedItem.id, 'SHIPPED', trackingCode, carrier);
+            await this.notifications.notifyShipmentUpdate(updatedItem.order.userId, updatedItem.id, 'SHIPPED', trackingCode, carrier, updatedItem.order.id);
         }
         catch (error) {
             this.logger.error(`Failed to send shipment notification: ${error.message}`);
@@ -255,12 +278,13 @@ let FulfillmentService = FulfillmentService_1 = class FulfillmentService {
                 order: {
                     select: {
                         userId: true,
+                        id: true,
                     },
                 },
             },
         });
         try {
-            await this.notifications.notifyShipmentUpdate(updatedItem.order.userId, updatedItem.id, 'DELIVERED');
+            await this.notifications.notifyShipmentUpdate(updatedItem.order.userId, updatedItem.id, 'DELIVERED', undefined, undefined, updatedItem.order.id);
         }
         catch (error) {
             this.logger.error(`Failed to send delivery notification: ${error.message}`);

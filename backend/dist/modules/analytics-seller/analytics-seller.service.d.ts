@@ -25,28 +25,27 @@ export declare class AnalyticsSellerService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -61,15 +60,16 @@ export declare class AnalyticsSellerService {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         })[];
         id: string;
-        userId: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         total: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
@@ -121,28 +121,27 @@ export declare class AnalyticsSellerService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -157,15 +156,16 @@ export declare class AnalyticsSellerService {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         })[];
         id: string;
-        userId: string;
-        status: import(".prisma/client").$Enums.OrderStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
+        userId: string;
         total: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
@@ -255,27 +255,27 @@ export declare class AnalyticsSellerService {
     generateInventoryRecommendations(sellerId: string, productId?: string): Promise<any[]>;
     getTopSellingProducts(sellerId: string, limit?: number): Promise<{
         totalSold: number;
-        _count: {
-            orderItems: number;
-        };
         inventory: {
             id: string;
             updatedAt: Date;
             productId: string;
             quantity: number;
         };
+        _count: {
+            orderItems: number;
+        };
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        currency: string;
         sellerId: string;
         title: string;
         description: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         imageUrl: string | null;
         category: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         viewCount: number;
+        createdAt: Date;
+        updatedAt: Date;
     }[]>;
 }

@@ -14,7 +14,7 @@ export declare class PaymentsService {
     private initStripe;
     createPaymentIntent({ orderId, provider }: CreateIntentInput): Promise<{
         orderId: string;
-        provider: "stripe" | "flutterwave" | "paystack";
+        provider: "flutterwave" | "paystack" | "stripe";
         externalRef: string;
         status: import(".prisma/client").$Enums.PaymentStatus;
         amount: string;
@@ -24,64 +24,64 @@ export declare class PaymentsService {
     }>;
     markPaymentSuccess(externalRef: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;
     markPaymentFailed(externalRef: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;
     markPaymentSuccessByRef(externalRef: string, orderId?: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;
     markPaymentFailedByRef(externalRef: string): Promise<{
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;
     getPaymentByOrderId(orderId: string): Promise<{
         order: {
             id: string;
-            status: import(".prisma/client").$Enums.OrderStatus;
+            currency: string;
             createdAt: Date;
             total: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
+            status: import(".prisma/client").$Enums.OrderStatus;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;

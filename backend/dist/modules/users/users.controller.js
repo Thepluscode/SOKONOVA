@@ -17,6 +17,7 @@ const common_1 = require("@nestjs/common");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
 const roles_guard_1 = require("../../common/guards/roles.guard");
 const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 const client_1 = require("@prisma/client");
 const users_service_1 = require("./users.service");
 let UsersController = class UsersController {
@@ -61,7 +62,7 @@ exports.UsersController = UsersController;
 __decorate([
     (0, common_1.Get)('me'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
@@ -69,7 +70,7 @@ __decorate([
 __decorate([
     (0, common_1.Patch)('me'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
@@ -78,7 +79,7 @@ __decorate([
 __decorate([
     (0, common_1.Post)('me/password'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String, Object]),
@@ -87,7 +88,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('me/orders'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
@@ -95,7 +96,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('me/wishlist'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
@@ -103,7 +104,7 @@ __decorate([
 __decorate([
     (0, common_1.Get)('me/reviews'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)

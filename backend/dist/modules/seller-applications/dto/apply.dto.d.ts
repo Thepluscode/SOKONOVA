@@ -1,5 +1,5 @@
 export declare class ApplyDto {
-    userId: string;
+    userId?: string;
     businessName: string;
     phone: string;
     country: string;

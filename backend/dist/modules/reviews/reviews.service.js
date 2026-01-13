@@ -13,12 +13,15 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewsService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../prisma.service");
+const notifications_service_1 = require("../notifications/notifications.service");
 let ReviewsService = ReviewsService_1 = class ReviewsService {
-    constructor(prisma) {
+    constructor(prisma, notifications) {
         this.prisma = prisma;
+        this.notifications = notifications;
         this.logger = new common_1.Logger(ReviewsService_1.name);
     }
     async createReview(data) {
+        var _a;
         const orderItem = await this.prisma.orderItem.findUnique({
             where: { id: data.orderItemId },
             include: { product: true },
@@ -37,6 +40,16 @@ let ReviewsService = ReviewsService_1 = class ReviewsService {
                 isVisible: true,
             },
         });
+        const sellerId = data.sellerId || orderItem.sellerId;
+        const productTitle = ((_a = orderItem.product) === null || _a === void 0 ? void 0 : _a.title) || 'Product';
+        if (sellerId) {
+            try {
+                await this.notifications.notifyNewReview(sellerId, review.id, productTitle, data.rating);
+            }
+            catch (error) {
+                this.logger.error(`Failed to send review notification: ${error.message}`);
+            }
+        }
         return review;
     }
     async getSellerReviews(handle, limit = 10) {
@@ -307,6 +320,7 @@ let ReviewsService = ReviewsService_1 = class ReviewsService {
 exports.ReviewsService = ReviewsService;
 exports.ReviewsService = ReviewsService = ReviewsService_1 = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
+        notifications_service_1.NotificationsService])
 ], ReviewsService);
 //# sourceMappingURL=reviews.service.js.map

@@ -25,8 +25,8 @@ let SellerProductsController = class SellerProductsController {
     async myProducts(sellerId) {
         return this.products.sellerList(sellerId);
     }
-    async createProduct(dto) {
-        return this.products.create(dto);
+    async createProduct(dto, sellerId) {
+        return this.products.create({ ...dto, sellerId });
     }
     async updateProduct(productId, dto, sellerId) {
         return this.products.sellerUpdate(sellerId, productId, dto);
@@ -46,8 +46,9 @@ __decorate([
 __decorate([
     (0, common_1.Post)(),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, common_1.Query)('sellerId')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_product_dto_1.CreateProductDto]),
+    __metadata("design:paramtypes", [create_product_dto_1.CreateProductDto, String]),
     __metadata("design:returntype", Promise)
 ], SellerProductsController.prototype, "createProduct", null);
 __decorate([

@@ -14,13 +14,12 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -35,14 +34,15 @@ export declare class DisputesService {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -64,13 +64,12 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -85,14 +84,15 @@ export declare class DisputesService {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -109,18 +109,17 @@ export declare class DisputesService {
             };
             order: {
                 id: string;
-                userId: string;
                 createdAt: Date;
+                userId: string;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -135,6 +134,7 @@ export declare class DisputesService {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         };
         buyer: {
@@ -144,10 +144,68 @@ export declare class DisputesService {
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         createdAt: Date;
         updatedAt: Date;
+        status: import(".prisma/client").$Enums.DisputeStatus;
+        orderItemId: string;
+        buyerId: string;
+        reasonCode: import(".prisma/client").$Enums.DisputeReason;
+        photoProofUrl: string | null;
+        resolutionNote: string | null;
+        resolvedById: string | null;
+        resolvedAt: Date | null;
+    })[]>;
+    listAll(): Promise<({
+        orderItem: {
+            product: {
+                title: string;
+                seller: {
+                    id: string;
+                    name: string;
+                };
+            };
+            order: {
+                id: string;
+                currency: string;
+                total: import("@prisma/client/runtime/library").Decimal;
+            };
+        } & {
+            id: string;
+            sellerId: string;
+            price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
+            productId: string;
+            orderId: string;
+            qty: number;
+            grossAmount: import("@prisma/client/runtime/library").Decimal;
+            feeAmount: import("@prisma/client/runtime/library").Decimal;
+            netAmount: import("@prisma/client/runtime/library").Decimal;
+            payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
+            payoutBatchId: string | null;
+            paidAt: Date | null;
+            fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
+            shippedAt: Date | null;
+            deliveredAt: Date | null;
+            trackingCode: string | null;
+            carrier: string | null;
+            deliveryProofUrl: string | null;
+            notes: string | null;
+            exceptionNotified: boolean | null;
+        };
+        buyer: {
+            id: string;
+            name: string;
+            email: string;
+        };
+    } & {
+        id: string;
         description: string;
+        createdAt: Date;
+        updatedAt: Date;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -157,15 +215,18 @@ export declare class DisputesService {
         resolvedAt: Date | null;
     })[]>;
     resolve(disputeId: string, dto: ResolveDisputeDto): Promise<{
+        orderItem: {
+            orderId: string;
+        };
         buyer: {
             id: string;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         createdAt: Date;
         updatedAt: Date;
-        description: string;
+        status: import(".prisma/client").$Enums.DisputeStatus;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;

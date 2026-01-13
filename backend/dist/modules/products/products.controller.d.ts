@@ -1,4 +1,5 @@
 import { ProductsService } from './products.service';
+import { Role } from '@prisma/client';
 export declare class ProductsController {
     private products;
     constructor(products: ProductsService);
@@ -57,6 +58,9 @@ export declare class ProductsController {
         currency?: string;
         imageUrl?: string;
         category?: string;
+    }, user: {
+        id: string;
+        role: Role;
     }): Promise<{
         id: string;
         sellerId: string;
@@ -79,6 +83,9 @@ export declare class ProductsController {
         currency?: string;
         imageUrl?: string;
         category?: string;
+    }, user: {
+        id: string;
+        role: Role;
     }): Promise<{
         id: string;
         sellerId: string;
@@ -96,6 +103,9 @@ export declare class ProductsController {
     }>;
     updateInventory(id: string, body: {
         quantity: number;
+    }, user: {
+        id: string;
+        role: Role;
     }): Promise<{
         id: string;
         updatedAt: Date;

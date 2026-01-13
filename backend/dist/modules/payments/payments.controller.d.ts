@@ -6,7 +6,7 @@ export declare class PaymentsController {
     constructor(payments: PaymentsService);
     createIntent(dto: CreateIntentDto): Promise<{
         orderId: string;
-        provider: "stripe" | "flutterwave" | "paystack";
+        provider: "flutterwave" | "paystack" | "stripe";
         externalRef: string;
         status: import(".prisma/client").$Enums.PaymentStatus;
         amount: string;
@@ -20,19 +20,19 @@ export declare class PaymentsController {
     getPayment(orderId: string): Promise<{
         order: {
             id: string;
-            status: import(".prisma/client").$Enums.OrderStatus;
+            currency: string;
             createdAt: Date;
             total: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
+            status: import(".prisma/client").$Enums.OrderStatus;
         };
     } & {
         id: string;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        currency: string;
-        provider: string;
+        status: import(".prisma/client").$Enums.PaymentStatus;
         orderId: string;
+        provider: string;
         externalRef: string | null;
         amount: import("@prisma/client/runtime/library").Decimal;
     }>;

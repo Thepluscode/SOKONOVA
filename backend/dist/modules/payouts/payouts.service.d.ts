@@ -12,14 +12,14 @@ export declare class PayoutsService {
         totalNet: number;
         count: number;
         items: {
-            id: string;
-            createdAt: Date;
             product: {
                 title: string;
                 imageUrl: string;
             };
-            currency: string;
+            id: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
             productId: string;
             orderId: string;
             qty: number;
@@ -29,13 +29,13 @@ export declare class PayoutsService {
         }[];
     }>;
     getAllForSeller(sellerId: string): Promise<{
-        id: string;
-        createdAt: Date;
         product: {
             title: string;
         };
-        currency: string;
+        id: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        createdAt: Date;
         productId: string;
         orderId: string;
         qty: number;
@@ -51,12 +51,12 @@ export declare class PayoutsService {
         paidAt: Date;
         count: number;
         lines: {
-            id: string;
             product: {
                 title: string;
             };
-            currency: string;
+            id: string;
             sellerId: string;
+            currency: string;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutBatchId: string;
             paidAt: Date;

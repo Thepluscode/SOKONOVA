@@ -15,6 +15,7 @@ class CreateReviewDto {
 }
 exports.CreateReviewDto = CreateReviewDto;
 __decorate([
+    (0, class_validator_1.IsOptional)(),
     (0, class_validator_1.IsString)(),
     __metadata("design:type", String)
 ], CreateReviewDto.prototype, "buyerId", void 0);

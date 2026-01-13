@@ -16,6 +16,7 @@ exports.DiscoveryController = void 0;
 const common_1 = require("@nestjs/common");
 const discovery_service_1 = require("./discovery.service");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 let DiscoveryController = class DiscoveryController {
     constructor(disc) {
         this.disc = disc;
@@ -25,6 +26,21 @@ let DiscoveryController = class DiscoveryController {
     }
     async personalized(userId) {
         return this.disc.getPersonalizedDiscovery(userId);
+    }
+    async search(q, category, minPrice, maxPrice, rating, inStock, country, sellerId, sort, page, limit) {
+        return this.disc.searchProducts({
+            q,
+            category,
+            minPrice,
+            maxPrice,
+            rating,
+            inStock,
+            country,
+            sellerId,
+            sort,
+            page,
+            limit,
+        });
     }
     async byCategory(slug) {
         return this.disc.getCategoryPage(slug.toLowerCase());
@@ -43,11 +59,28 @@ __decorate([
 __decorate([
     (0, common_1.Get)('personalized'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
-    __param(0, (0, common_1.Query)('userId')),
+    __param(0, (0, current_user_decorator_1.CurrentUser)('id')),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", Promise)
 ], DiscoveryController.prototype, "personalized", null);
+__decorate([
+    (0, common_1.Get)('search'),
+    __param(0, (0, common_1.Query)('q')),
+    __param(1, (0, common_1.Query)('category')),
+    __param(2, (0, common_1.Query)('minPrice')),
+    __param(3, (0, common_1.Query)('maxPrice')),
+    __param(4, (0, common_1.Query)('rating')),
+    __param(5, (0, common_1.Query)('inStock')),
+    __param(6, (0, common_1.Query)('country')),
+    __param(7, (0, common_1.Query)('sellerId')),
+    __param(8, (0, common_1.Query)('sort')),
+    __param(9, (0, common_1.Query)('page')),
+    __param(10, (0, common_1.Query)('limit')),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [String, String, String, String, String, String, String, String, String, String, String]),
+    __metadata("design:returntype", Promise)
+], DiscoveryController.prototype, "search", null);
 __decorate([
     (0, common_1.Get)('by-category/:slug'),
     __param(0, (0, common_1.Param)('slug')),

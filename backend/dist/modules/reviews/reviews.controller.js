@@ -14,19 +14,23 @@ var __param = (this && this.__param) || function (paramIndex, decorator) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReviewsController = void 0;
 const common_1 = require("@nestjs/common");
+const client_1 = require("@prisma/client");
 const reviews_service_1 = require("./reviews.service");
 const create_review_dto_1 = require("./dto/create-review.dto");
 const moderate_review_dto_1 = require("./dto/moderate-review.dto");
 const jwt_auth_guard_1 = require("../../common/guards/jwt-auth.guard");
+const roles_guard_1 = require("../../common/guards/roles.guard");
+const roles_decorator_1 = require("../../common/decorators/roles.decorator");
+const current_user_decorator_1 = require("../../common/decorators/current-user.decorator");
 let ReviewsController = class ReviewsController {
     constructor(reviews) {
         this.reviews = reviews;
     }
-    async create(body) {
-        return this.reviews.createReview(body);
+    async create(body, user) {
+        return this.reviews.createReview({ ...body, buyerId: user.id });
     }
-    async createAlias(body) {
-        return this.reviews.createReview(body);
+    async createAlias(body, user) {
+        return this.reviews.createReview({ ...body, buyerId: user.id });
     }
     async listForSeller(handle) {
         return this.reviews.listForSellerHandle(handle);
@@ -39,7 +43,10 @@ let ReviewsController = class ReviewsController {
     async getProductReviewsSummary(productId) {
         return this.reviews.getProductReviewsSummary(productId);
     }
-    async getUserReviews(userId, page, limit) {
+    async getUserReviews(userId, user, page, limit) {
+        if (userId !== user.id && user.role !== client_1.Role.ADMIN) {
+            throw new common_1.ForbiddenException('Not allowed to access other users');
+        }
         const pageNum = page ? parseInt(page, 10) : 1;
         const limitNum = limit ? parseInt(limit, 10) : 20;
         return this.reviews.getUserReviews(userId, pageNum, limitNum);
@@ -49,14 +56,14 @@ let ReviewsController = class ReviewsController {
         const limitNum = limit ? parseInt(limit, 10) : 20;
         return this.reviews.getPendingReviews(pageNum, limitNum);
     }
-    async update(id, body) {
-        return this.reviews.updateReview(id, body.buyerId, {
+    async update(id, body, user) {
+        return this.reviews.updateReview(id, user.id, {
             rating: body.rating,
             comment: body.comment,
         });
     }
-    async delete(id, body) {
-        return this.reviews.deleteReview(id, body.buyerId);
+    async delete(id, body, user) {
+        return this.reviews.deleteReview(id, user.id);
     }
     async hide(reviewId, body) {
         return this.reviews.hideReview(reviewId, body);
@@ -67,16 +74,18 @@ __decorate([
     (0, common_1.Post)('create'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_review_dto_1.CreateReviewDto]),
+    __metadata("design:paramtypes", [create_review_dto_1.CreateReviewDto, Object]),
     __metadata("design:returntype", Promise)
 ], ReviewsController.prototype, "create", null);
 __decorate([
     (0, common_1.Post)(),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Body)()),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [create_review_dto_1.CreateReviewDto]),
+    __metadata("design:paramtypes", [create_review_dto_1.CreateReviewDto, Object]),
     __metadata("design:returntype", Promise)
 ], ReviewsController.prototype, "createAlias", null);
 __decorate([
@@ -106,15 +115,17 @@ __decorate([
     (0, common_1.Get)('user/:userId'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('userId')),
-    __param(1, (0, common_1.Query)('page')),
-    __param(2, (0, common_1.Query)('limit')),
+    __param(1, (0, current_user_decorator_1.CurrentUser)()),
+    __param(2, (0, common_1.Query)('page')),
+    __param(3, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, String, String]),
+    __metadata("design:paramtypes", [String, Object, String, String]),
     __metadata("design:returntype", Promise)
 ], ReviewsController.prototype, "getUserReviews", null);
 __decorate([
     (0, common_1.Get)('pending'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
     __param(0, (0, common_1.Query)('page')),
     __param(1, (0, common_1.Query)('limit')),
     __metadata("design:type", Function),
@@ -126,8 +137,9 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], ReviewsController.prototype, "update", null);
 __decorate([
@@ -135,13 +147,15 @@ __decorate([
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
+    __param(2, (0, current_user_decorator_1.CurrentUser)()),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [String, Object]),
+    __metadata("design:paramtypes", [String, Object, Object]),
     __metadata("design:returntype", Promise)
 ], ReviewsController.prototype, "delete", null);
 __decorate([
     (0, common_1.Patch)(':id/hide'),
-    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
+    (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard, roles_guard_1.RolesGuard),
+    (0, roles_decorator_1.Roles)(client_1.Role.ADMIN),
     __param(0, (0, common_1.Param)('id')),
     __param(1, (0, common_1.Body)()),
     __metadata("design:type", Function),

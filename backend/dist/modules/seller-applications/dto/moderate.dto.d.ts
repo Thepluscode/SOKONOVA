@@ -1,4 +1,4 @@
 export declare class ModerateDto {
-    adminId: string;
+    adminId?: string;
     adminNote?: string;
 }

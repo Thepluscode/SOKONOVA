@@ -6,18 +6,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
@@ -29,9 +29,9 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
         anonKey: string | null;
         version: number;
     }>;
@@ -39,18 +39,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
@@ -62,9 +62,9 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
         anonKey: string | null;
         version: number;
     }>;
@@ -72,18 +72,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
@@ -95,9 +95,9 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
         anonKey: string | null;
         version: number;
     }>;
@@ -105,18 +105,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
@@ -128,9 +128,9 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
         anonKey: string | null;
         version: number;
     }>;
@@ -138,18 +138,18 @@ export declare class CartService {
         items: ({
             product: {
                 id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                ratingAvg: number | null;
-                ratingCount: number | null;
-                currency: string;
                 sellerId: string;
                 title: string;
                 description: string;
                 price: import("@prisma/client/runtime/library").Decimal;
+                currency: string;
                 imageUrl: string | null;
                 category: string | null;
+                ratingAvg: number | null;
+                ratingCount: number | null;
                 viewCount: number;
+                createdAt: Date;
+                updatedAt: Date;
             };
         } & {
             id: string;
@@ -161,9 +161,9 @@ export declare class CartService {
         })[];
     } & {
         id: string;
-        userId: string | null;
         createdAt: Date;
         updatedAt: Date;
+        userId: string | null;
         anonKey: string | null;
         version: number;
     }>;

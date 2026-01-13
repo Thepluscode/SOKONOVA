@@ -1,24 +1,28 @@
+import { Role } from '@prisma/client';
 import { PayoutsService } from './payouts.service';
 import { Response } from 'express';
 import { MarkPaidDto } from './dto/mark-paid.dto';
 export declare class PayoutsController {
     private payouts;
     constructor(payouts: PayoutsService);
-    sellerPending(sellerId: string): Promise<{
+    sellerPending(sellerId: string | undefined, user: {
+        id: string;
+        role: Role;
+    }): Promise<{
         currency: string;
         totalGross: number;
         totalFees: number;
         totalNet: number;
         count: number;
         items: {
-            id: string;
-            createdAt: Date;
             product: {
                 title: string;
                 imageUrl: string;
             };
-            currency: string;
+            id: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
             productId: string;
             orderId: string;
             qty: number;
@@ -27,14 +31,17 @@ export declare class PayoutsController {
             netAmount: import("@prisma/client/runtime/library").Decimal;
         }[];
     }>;
-    sellerAll(sellerId: string): Promise<{
+    sellerAll(sellerId: string | undefined, user: {
         id: string;
-        createdAt: Date;
+        role: Role;
+    }): Promise<{
         product: {
             title: string;
         };
-        currency: string;
+        id: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        createdAt: Date;
         productId: string;
         orderId: string;
         qty: number;
@@ -45,18 +52,21 @@ export declare class PayoutsController {
         payoutBatchId: string;
         paidAt: Date;
     }[]>;
-    sellerCsv(sellerId: string, res: Response): Promise<void>;
+    sellerCsv(sellerId: string | undefined, res: Response, user: {
+        id: string;
+        role: Role;
+    }): Promise<void>;
     markPaid(dto: MarkPaidDto): Promise<{
         batchId: string;
         paidAt: Date;
         count: number;
         lines: {
-            id: string;
             product: {
                 title: string;
             };
-            currency: string;
+            id: string;
             sellerId: string;
+            currency: string;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutBatchId: string;
             paidAt: Date;

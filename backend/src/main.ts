@@ -6,8 +6,8 @@ import { AppModule } from './modules/app.module'
 import { ValidationPipe } from '@nestjs/common'
 import helmet from 'helmet'
 import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
-import express from 'express'
 
+const express = require('express')
 const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 

@@ -46,11 +46,17 @@ export declare class FulfillmentController {
         orderId: string;
         status: import(".prisma/client").$Enums.OrderStatus;
         createdAt: Date;
+        total: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
         shippingAddress: string;
+        buyerName: string;
+        buyerPhone: string;
+        buyerEmail: string;
         items: {
             orderItemId: string;
             productTitle: string;
             productImage: string;
+            sellerName: string;
             qty: number;
             price: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
@@ -100,17 +106,17 @@ export declare class FulfillmentController {
         note?: string;
     }): Promise<{
         order: {
+            id: string;
             userId: string;
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        currency: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
         productId: string;
-        notes: string | null;
         orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -125,6 +131,7 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
+        notes: string | null;
         exceptionNotified: boolean | null;
     }>;
     markDelivered(orderItemId: string, sellerId: string, data: {
@@ -132,17 +139,17 @@ export declare class FulfillmentController {
         note?: string;
     }): Promise<{
         order: {
+            id: string;
             userId: string;
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        currency: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
         productId: string;
-        notes: string | null;
         orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -157,19 +164,19 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
+        notes: string | null;
         exceptionNotified: boolean | null;
     }>;
     markIssue(orderItemId: string, sellerId: string, data: {
         note: string;
     }): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        currency: string;
         sellerId: string;
         price: import("@prisma/client/runtime/library").Decimal;
+        currency: string;
+        createdAt: Date;
+        updatedAt: Date;
         productId: string;
-        notes: string | null;
         orderId: string;
         qty: number;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -184,6 +191,7 @@ export declare class FulfillmentController {
         trackingCode: string | null;
         carrier: string | null;
         deliveryProofUrl: string | null;
+        notes: string | null;
         exceptionNotified: boolean | null;
     }>;
     getDeliveryPromise(productId: string, location?: string): Promise<{

@@ -248,6 +248,23 @@ let PaymentsService = PaymentsService_1 = class PaymentsService {
                 status: 'CANCELLED',
             },
         });
+        try {
+            const order = await this.prisma.order.findUnique({
+                where: { id: payment.orderId },
+                select: {
+                    id: true,
+                    userId: true,
+                    total: true,
+                    currency: true,
+                },
+            });
+            if (order === null || order === void 0 ? void 0 : order.userId) {
+                await this.notifications.notifyOrderPaymentFailed(order.userId, order.id, Number(order.total || 0), order.currency || 'USD');
+            }
+        }
+        catch (error) {
+            this.logger.error(`Failed to send payment failure notification: ${error.message}`);
+        }
         return updatedPayment;
     }
     async markPaymentSuccessByRef(externalRef, orderId) {
@@ -320,6 +337,23 @@ let PaymentsService = PaymentsService_1 = class PaymentsService {
                 status: 'CANCELLED',
             },
         });
+        try {
+            const order = await this.prisma.order.findUnique({
+                where: { id: payment.orderId },
+                select: {
+                    id: true,
+                    userId: true,
+                    total: true,
+                    currency: true,
+                },
+            });
+            if (order === null || order === void 0 ? void 0 : order.userId) {
+                await this.notifications.notifyOrderPaymentFailed(order.userId, order.id, Number(order.total || 0), order.currency || 'USD');
+            }
+        }
+        catch (error) {
+            this.logger.error(`Failed to send payment failure notification: ${error.message}`);
+        }
         return updatedPayment;
     }
     async getPaymentByOrderId(orderId) {

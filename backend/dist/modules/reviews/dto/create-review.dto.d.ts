@@ -1,5 +1,5 @@
 export declare class CreateReviewDto {
-    buyerId: string;
+    buyerId?: string;
     orderItemId: string;
     rating: number;
     comment: string;

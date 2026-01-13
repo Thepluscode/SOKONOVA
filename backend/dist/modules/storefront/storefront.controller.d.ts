@@ -4,44 +4,44 @@ export declare class StorefrontController {
     constructor(sf: StorefrontService);
     getFeaturedSellers(limit?: string): Promise<{
         id: string;
+        ratingAvg: number;
+        ratingCount: number;
         country: string;
         shopName: string;
         shopLogoUrl: string;
-        ratingAvg: number;
-        ratingCount: number;
         products: ({
             _count: {
                 views: number;
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
     }[]>;
     getAllSellers(page?: string, limit?: string): Promise<{
         sellers: {
             id: string;
-            country: string;
-            city: string;
-            sellerHandle: string;
-            shopName: string;
-            shopLogoUrl: string;
             ratingAvg: number;
             ratingCount: number;
             _count: {
                 products: number;
             };
+            city: string;
+            country: string;
+            sellerHandle: string;
+            shopName: string;
+            shopLogoUrl: string;
         }[];
         pagination: {
             total: number;
@@ -52,14 +52,17 @@ export declare class StorefrontController {
     }>;
     getSellerById(id: string): Promise<{
         id: string;
-        country: string;
+        ratingAvg: number;
+        ratingCount: number;
+        _count: {
+            products: number;
+        };
         city: string;
+        country: string;
         sellerHandle: string;
         shopName: string;
         shopLogoUrl: string;
         shopBannerUrl: string;
-        ratingAvg: number;
-        ratingCount: number;
         bio: string;
         products: ({
             _count: {
@@ -67,22 +70,19 @@ export declare class StorefrontController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
-        _count: {
-            products: number;
-        };
     }>;
     getSellerProducts(handle: string, page?: string, limit?: string): Promise<{
         products: ({
@@ -91,18 +91,18 @@ export declare class StorefrontController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
         pagination: {
             total: number;
@@ -124,15 +124,15 @@ export declare class StorefrontController {
             };
         } & {
             id: string;
+            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
-            orderItemId: string;
-            buyerId: string;
             productId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
+            orderItemId: string;
+            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -143,13 +143,16 @@ export declare class StorefrontController {
     }>;
     getStorefrontByHandle(handle: string): Promise<{
         id: string;
-        country: string;
+        ratingAvg: number;
+        ratingCount: number;
+        _count: {
+            products: number;
+        };
         city: string;
+        country: string;
         shopName: string;
         shopLogoUrl: string;
         shopBannerUrl: string;
-        ratingAvg: number;
-        ratingCount: number;
         bio: string;
         products: ({
             _count: {
@@ -157,21 +160,18 @@ export declare class StorefrontController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            currency: string;
             sellerId: string;
             title: string;
             description: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             imageUrl: string | null;
             category: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             viewCount: number;
+            createdAt: Date;
+            updatedAt: Date;
         })[];
-        _count: {
-            products: number;
-        };
     }>;
 }

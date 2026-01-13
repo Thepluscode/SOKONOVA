@@ -25,6 +25,31 @@ let OrdersService = class OrdersService {
             orderBy: { createdAt: 'desc' },
         });
     }
+    async listForSeller(sellerId) {
+        return this.prisma.order.findMany({
+            where: {
+                items: {
+                    some: {
+                        sellerId,
+                    },
+                },
+            },
+            include: {
+                items: {
+                    where: { sellerId },
+                    include: { product: true },
+                },
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                    },
+                },
+            },
+            orderBy: { createdAt: 'desc' },
+        });
+    }
     async findById(orderId) {
         const order = await this.prisma.order.findUnique({
             where: { id: orderId },

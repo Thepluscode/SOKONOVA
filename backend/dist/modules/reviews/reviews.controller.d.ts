@@ -1,32 +1,37 @@
+import { Role } from '@prisma/client';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 import { ModerateReviewDto } from './dto/moderate-review.dto';
 export declare class ReviewsController {
     private reviews;
     constructor(reviews: ReviewsService);
-    create(body: CreateReviewDto): Promise<{
+    create(body: CreateReviewDto, user: {
         id: string;
+    }): Promise<{
+        id: string;
+        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        orderItemId: string;
-        buyerId: string;
         productId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
+        orderItemId: string;
+        buyerId: string;
     }>;
-    createAlias(body: CreateReviewDto): Promise<{
+    createAlias(body: CreateReviewDto, user: {
         id: string;
+    }): Promise<{
+        id: string;
+        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        orderItemId: string;
-        buyerId: string;
         productId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
+        orderItemId: string;
+        buyerId: string;
     }>;
     listForSeller(handle: string): Promise<({
         orderItem: {
@@ -35,13 +40,12 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            currency: string;
             sellerId: string;
             price: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
+            createdAt: Date;
+            updatedAt: Date;
             productId: string;
-            notes: string | null;
             orderId: string;
             qty: number;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
@@ -56,6 +60,7 @@ export declare class ReviewsController {
             trackingCode: string | null;
             carrier: string | null;
             deliveryProofUrl: string | null;
+            notes: string | null;
             exceptionNotified: boolean | null;
         };
         buyer: {
@@ -63,15 +68,15 @@ export declare class ReviewsController {
         };
     } & {
         id: string;
+        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        orderItemId: string;
-        buyerId: string;
         productId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
+        orderItemId: string;
+        buyerId: string;
     })[]>;
     getProductReviews(productId: string, page?: string, limit?: string): Promise<{
         reviews: ({
@@ -81,15 +86,15 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
+            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
-            orderItemId: string;
-            buyerId: string;
             productId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
+            orderItemId: string;
+            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -109,7 +114,10 @@ export declare class ReviewsController {
             5: number;
         };
     }>;
-    getUserReviews(userId: string, page?: string, limit?: string): Promise<{
+    getUserReviews(userId: string, user: {
+        id: string;
+        role: Role;
+    }, page?: string, limit?: string): Promise<{
         reviews: ({
             product: {
                 id: string;
@@ -123,15 +131,15 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
+            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
-            orderItemId: string;
-            buyerId: string;
             productId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
+            orderItemId: string;
+            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -159,15 +167,15 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
+            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
-            sellerId: string;
-            orderItemId: string;
-            buyerId: string;
             productId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
+            orderItemId: string;
+            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -177,9 +185,11 @@ export declare class ReviewsController {
         };
     }>;
     update(id: string, body: {
-        buyerId: string;
+        buyerId?: string;
         rating?: number;
         comment?: string;
+    }, user: {
+        id: string;
     }): Promise<{
         product: {
             id: string;
@@ -191,31 +201,33 @@ export declare class ReviewsController {
         };
     } & {
         id: string;
+        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        orderItemId: string;
-        buyerId: string;
         productId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
+        orderItemId: string;
+        buyerId: string;
     }>;
     delete(id: string, body: {
-        buyerId: string;
+        buyerId?: string;
+    }, user: {
+        id: string;
     }): Promise<{
         message: string;
     }>;
     hide(reviewId: string, body: ModerateReviewDto): Promise<{
         id: string;
+        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
-        sellerId: string;
-        orderItemId: string;
-        buyerId: string;
         productId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
+        orderItemId: string;
+        buyerId: string;
     }>;
 }
