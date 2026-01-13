@@ -18,7 +18,7 @@ import { UpdateInventoryDto } from './dto/update-inventory.dto';
  */
 @Controller('seller/products')
 export class SellerProductsController {
-  constructor(private products: ProductsService) {}
+  constructor(private products: ProductsService) { }
 
   /**
    * List all products for a seller
@@ -41,9 +41,8 @@ export class SellerProductsController {
   /**
    * Create a new product
    *
-   * POST /seller/products
+   * POST /seller/products?sellerId=clx123
    * {
-   *   "sellerId": "clx123",
    *   "title": "New Product",
    *   "description": "Product description",
    *   "price": 49.99,
@@ -55,8 +54,11 @@ export class SellerProductsController {
    * dto.sellerId = user.id;
    */
   @Post()
-  async createProduct(@Body() dto: CreateProductDto) {
-    return this.products.create(dto);
+  async createProduct(
+    @Body() dto: CreateProductDto,
+    @Query('sellerId') sellerId: string,
+  ) {
+    return this.products.create({ ...dto, sellerId });
   }
 
   /**

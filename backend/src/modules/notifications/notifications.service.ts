@@ -28,7 +28,7 @@ export class NotificationsService {
     private prisma: PrismaService,
     private email: EmailAdapter,
     private sms: SmsAdapter,
-  ) {}
+  ) { }
 
   /**
    * Create a notification and optionally send via external channels
@@ -378,12 +378,16 @@ export class NotificationsService {
     reviewId: string,
     productTitle: string,
     rating: number,
+    buyerName?: string,
   ) {
+    const message = buyerName
+      ? `${buyerName} left a ${rating}★ review on "${productTitle}".`
+      : `You received a ${rating}-star review for "${productTitle}".`;
     return this.create(
       sellerId,
       'NEW_REVIEW',
       'New Review',
-      `You received a ${rating}-star review for "${productTitle}".`,
+      message,
       { reviewId },
       ['inapp', 'email'],
     );
@@ -408,25 +412,7 @@ export class NotificationsService {
     );
   }
 
-  /**
-   * Notify seller of new review
-   */
-  async notifyNewReview(
-    sellerId: string,
-    reviewId: string,
-    productTitle: string,
-    rating: number,
-    buyerName: string,
-  ) {
-    return this.create(
-      sellerId,
-      'NEW_REVIEW',
-      'New Review',
-      `${buyerName} left a ${rating}★ review on "${productTitle}".`,
-      { reviewId },
-      ['inapp'],
-    );
-  }
+
 
   // NEW NOTIFICATION METHODS FOR LOGISTICS & FULFILLMENT EXCELLENCE
 

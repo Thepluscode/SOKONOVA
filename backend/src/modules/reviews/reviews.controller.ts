@@ -21,7 +21,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
 
 @Controller('reviews')
 export class ReviewsController {
-  constructor(private reviews: ReviewsService) {}
+  constructor(private reviews: ReviewsService) { }
 
   // BUYER: leave a review
   @Post('create')
@@ -73,9 +73,9 @@ export class ReviewsController {
   @UseGuards(JwtAuthGuard)
   async getUserReviews(
     @Param('userId') userId: string,
+    @CurrentUser() user: { id: string; role: Role },
     @Query('page') page?: string,
     @Query('limit') limit?: string,
-    @CurrentUser() user: { id: string; role: Role },
   ) {
     if (userId !== user.id && user.role !== Role.ADMIN) {
       throw new ForbiddenException('Not allowed to access other users');

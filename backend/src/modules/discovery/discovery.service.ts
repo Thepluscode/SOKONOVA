@@ -3,7 +3,7 @@ import { PrismaService } from '../prisma.service';
 
 @Injectable()
 export class DiscoveryService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async getDiscoveryHighlights() {
     // Get trending products based on views
@@ -28,7 +28,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     // Get featured sellers
     const featuredSellers = await this.prisma.user.findMany({
       where: {
@@ -49,7 +49,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     // Get new arrivals
     const newArrivals = await this.prisma.product.findMany({
       take: 10,
@@ -64,7 +64,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     // Get community stories
     const communityStories = await this.prisma.communityStory.findMany({
       take: 5,
@@ -86,7 +86,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     return {
       trendingProducts,
       featuredSellers,
@@ -119,7 +119,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     return products;
   }
 
@@ -150,7 +150,7 @@ export class DiscoveryService {
         },
       },
     });
-    
+
     return products;
   }
 
@@ -188,11 +188,11 @@ export class DiscoveryService {
       ...(inStock ? { inventory: { quantity: { gt: 0 } } } : {}),
       ...(minPrice || maxPrice
         ? {
-            price: {
-              ...(minPrice !== undefined ? { gte: minPrice } : {}),
-              ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
-            },
-          }
+          price: {
+            ...(minPrice !== undefined ? { gte: minPrice } : {}),
+            ...(maxPrice !== undefined ? { lte: maxPrice } : {}),
+          },
+        }
         : {}),
     };
 
@@ -208,18 +208,18 @@ export class DiscoveryService {
     const orderBy = (() => {
       switch (filters.sort) {
         case 'newest':
-          return { createdAt: 'desc' };
+          return { createdAt: 'desc' as const };
         case 'price_asc':
-          return { price: 'asc' };
+          return { price: 'asc' as const };
         case 'price_desc':
-          return { price: 'desc' };
+          return { price: 'desc' as const };
         case 'rating':
-          return { ratingAvg: 'desc' };
+          return { ratingAvg: 'desc' as const };
         case 'popular':
-          return { ratingCount: 'desc' };
+          return { ratingCount: 'desc' as const };
         case 'trending':
         default:
-          return { views: { _count: 'desc' } };
+          return { views: { _count: 'desc' as const } };
       }
     })();
 
@@ -423,7 +423,7 @@ export class DiscoveryService {
 
     // Get top 3 categories
     const topCategories = Object.entries(categoryCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 3)
       .map(([category]) => category);
 
@@ -491,7 +491,7 @@ export class DiscoveryService {
     const trendingInYourCity = {
       city: user.city,
       categories: Object.entries(cityCategoryCount)
-        .sort(([,a], [,b]) => b - a)
+        .sort(([, a], [, b]) => b - a)
         .slice(0, 5)
         .map(([category]) => category),
     };
@@ -548,7 +548,7 @@ export class DiscoveryService {
 
     // Get top 5 similar users
     const similarUsers = Object.entries(userSimilarity)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 5)
       .map(([userId]) => userId);
 
@@ -573,7 +573,7 @@ export class DiscoveryService {
 
     // Get top products
     const recommendedProductIds = Object.entries(productCount)
-      .sort(([,a], [,b]) => b - a)
+      .sort(([, a], [, b]) => b - a)
       .slice(0, 10)
       .map(([productId]) => productId);
 
