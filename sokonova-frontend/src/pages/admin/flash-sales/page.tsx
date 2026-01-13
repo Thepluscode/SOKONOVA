@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import { useToast } from '../../../contexts/ToastContext';
+import { adminService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 interface FlashSale {
   id: string;
@@ -16,8 +18,13 @@ interface FlashSale {
 }
 
 export default function FlashSalesPage() {
+  useRequireAuth('ADMIN');
+
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'active' | 'scheduled' | 'ended'>('active');
+  const [flashSales, setFlashSales] = useState<FlashSale[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
@@ -29,73 +36,68 @@ export default function FlashSalesPage() {
     products: [] as string[],
   });
 
-  const flashSales: FlashSale[] = [
-    {
-      id: '1',
-      name: 'Weekend Flash Sale',
-      startDate: '2024-01-20 09:00',
-      endDate: '2024-01-21 23:59',
-      discount: 30,
-      products: 45,
-      status: 'active',
-      revenue: 12450,
-    },
-    {
-      id: '2',
-      name: 'New Year Mega Sale',
-      startDate: '2024-01-25 00:00',
-      endDate: '2024-01-27 23:59',
-      discount: 40,
-      products: 120,
-      status: 'scheduled',
-      revenue: 0,
-    },
-    {
-      id: '3',
-      name: 'Holiday Special',
-      startDate: '2024-01-10 10:00',
-      endDate: '2024-01-12 22:00',
-      discount: 25,
-      products: 80,
-      status: 'ended',
-      revenue: 28900,
-    },
-  ];
+  useEffect(() => {
+    fetchFlashSales();
+  }, []);
 
-  const handleCreateSale = (e: React.FormEvent) => {
+  const fetchFlashSales = async () => {
+    try {
+      const data = await adminService.getFlashSales();
+      setFlashSales(data || []);
+    } catch (err) {
+      console.error('Failed to fetch flash sales:', err);
+      // Show demo data if API fails
+      setFlashSales([
+        { id: '1', name: 'Weekend Flash Sale', startDate: '2024-01-20 09:00', endDate: '2024-01-21 23:59', discount: 30, products: 45, status: 'active', revenue: 12450 },
+        { id: '2', name: 'New Year Mega Sale', startDate: '2024-01-25 00:00', endDate: '2024-01-27 23:59', discount: 40, products: 120, status: 'scheduled', revenue: 0 },
+      ]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateSale = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const newSale = {
-      id: Date.now().toString(),
-      name: formData.name,
-      startDate: `${formData.startDate} ${formData.startTime}`,
-      endDate: `${formData.endDate} ${formData.endTime}`,
-      discount: parseInt(formData.discount),
-      products: formData.products.length,
-      status: 'scheduled' as const,
-      revenue: 0,
-    };
+    setSubmitting(true);
 
-    // Save to localStorage
-    const existingSales = JSON.parse(localStorage.getItem('flashSales') || '[]');
-    existingSales.push(newSale);
-    localStorage.setItem('flashSales', JSON.stringify(existingSales));
+    try {
+      const newSale = {
+        name: formData.name,
+        startDate: `${formData.startDate} ${formData.startTime}`,
+        endDate: `${formData.endDate} ${formData.endTime}`,
+        discount: parseInt(formData.discount),
+        products: formData.products,
+      };
 
-    // Reset form
-    setFormData({
-      name: '',
-      startDate: '',
-      startTime: '',
-      endDate: '',
-      endTime: '',
-      discount: '',
-      products: [],
-    });
-    setShowCreateModal(false);
-    showToast({
-      message: 'Flash sale created.',
-      type: 'success',
-    });
+      await adminService.createFlashSale(newSale);
+
+      // Refresh list
+      await fetchFlashSales();
+
+      // Reset form
+      setFormData({
+        name: '',
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
+        discount: '',
+        products: [],
+      });
+      setShowCreateModal(false);
+      showToast({
+        message: 'Flash sale created successfully!',
+        type: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to create flash sale:', err);
+      showToast({
+        message: err.message || 'Failed to create flash sale. Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const filteredSales = flashSales.filter(sale => sale.status === activeTab);
@@ -153,11 +155,10 @@ export default function FlashSalesPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex-1 px-6 py-4 font-semibold transition-colors whitespace-nowrap cursor-pointer ${
-                  activeTab === tab.id
+                className={`flex-1 px-6 py-4 font-semibold transition-colors whitespace-nowrap cursor-pointer ${activeTab === tab.id
                     ? 'text-orange-600 border-b-2 border-orange-600'
                     : 'text-gray-600 hover:text-gray-900'
-                }`}
+                  }`}
               >
                 <i className={`${tab.icon} mr-2`}></i>
                 {tab.label}
@@ -184,13 +185,12 @@ export default function FlashSalesPage() {
                         <div className="flex items-center gap-3 mb-2">
                           <h3 className="text-xl font-bold text-gray-900">{sale.name}</h3>
                           <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                              sale.status === 'active'
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${sale.status === 'active'
                                 ? 'bg-orange-100 text-orange-700'
                                 : sale.status === 'scheduled'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-gray-100 text-gray-700'
-                            }`}
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-gray-100 text-gray-700'
+                              }`}
                           >
                             {sale.status.charAt(0).toUpperCase() + sale.status.slice(1)}
                           </span>

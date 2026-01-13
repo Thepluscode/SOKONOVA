@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import { useToast } from '../../contexts/ToastContext';
+import { adminService } from '../../lib/services';
 
 export default function Loyalty() {
   const [activeTab, setActiveTab] = useState('overview');
   const [showSettings, setShowSettings] = useState(false);
+  const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
   const [settings, setSettings] = useState({
     pointsPerDollar: 1,
@@ -28,13 +30,32 @@ export default function Loyalty() {
     pointsToNextTier: 550,
   };
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('loyaltySettings', JSON.stringify(settings));
-    setShowSettings(false);
-    showToast({
-      message: 'Loyalty settings saved.',
-      type: 'success',
-    });
+  useEffect(() => {
+    adminService.getLoyaltySettings()
+      .then(data => {
+        if (data) setSettings(data);
+      })
+      .catch(err => console.error('Failed to fetch loyalty settings:', err));
+  }, []);
+
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    try {
+      await adminService.updateLoyaltySettings(settings);
+      setShowSettings(false);
+      showToast({
+        message: 'Loyalty settings saved!',
+        type: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to save loyalty settings:', err);
+      showToast({
+        message: err.message || 'Failed to save settings',
+        type: 'error',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const rewards = [
@@ -113,7 +134,7 @@ export default function Loyalty() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
       <Header />
-      
+
       {/* Hero Section with animation */}
       <div className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white py-16 animate-fade-in-down">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -343,11 +364,10 @@ export default function Loyalty() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`pb-4 px-6 font-semibold transition-all duration-300 ${
-                activeTab === tab.id
+              className={`pb-4 px-6 font-semibold transition-all duration-300 ${activeTab === tab.id
                   ? 'border-b-2 border-teal-600 text-teal-600'
                   : 'text-gray-600 hover:text-teal-600'
-              }`}
+                }`}
               style={{ animationDelay: `${index * 50}ms` }}
             >
               <i className={`${tab.icon} mr-2`}></i>
@@ -436,11 +456,10 @@ export default function Loyalty() {
                   </div>
                   <button
                     disabled={userPoints.current < reward.points}
-                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 ripple-effect whitespace-nowrap ${
-                      userPoints.current >= reward.points
+                    className={`w-full py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 ripple-effect whitespace-nowrap ${userPoints.current >= reward.points
                         ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white hover:from-teal-700 hover:to-emerald-700 shadow-lg hover:shadow-xl'
                         : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                    }`}
+                      }`}
                   >
                     {userPoints.current >= reward.points ? 'Redeem' : 'Not Enough Points'}
                   </button>
@@ -466,16 +485,14 @@ export default function Loyalty() {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div
-                        className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                          transaction.type === 'earned'
+                        className={`w-12 h-12 rounded-full flex items-center justify-center ${transaction.type === 'earned'
                             ? 'bg-green-100 text-green-600'
                             : 'bg-red-100 text-red-600'
-                        }`}
+                          }`}
                       >
                         <i
-                          className={`${
-                            transaction.type === 'earned' ? 'ri-add-line' : 'ri-subtract-line'
-                          } text-xl`}
+                          className={`${transaction.type === 'earned' ? 'ri-add-line' : 'ri-subtract-line'
+                            } text-xl`}
                         ></i>
                       </div>
                       <div>
@@ -484,9 +501,8 @@ export default function Loyalty() {
                       </div>
                     </div>
                     <span
-                      className={`text-xl font-bold ${
-                        transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'
-                      }`}
+                      className={`text-xl font-bold ${transaction.type === 'earned' ? 'text-green-600' : 'text-red-600'
+                        }`}
                     >
                       {transaction.points > 0 ? '+' : ''}{transaction.points}
                     </span>
@@ -503,9 +519,8 @@ export default function Loyalty() {
             {tiers.map((tier, index) => (
               <div
                 key={tier.name}
-                className={`bg-white rounded-2xl shadow-lg overflow-hidden hover-lift transition-all duration-500 animate-slide-in-left ${
-                  tier.name === userPoints.tier ? 'ring-4 ring-teal-500' : ''
-                }`}
+                className={`bg-white rounded-2xl shadow-lg overflow-hidden hover-lift transition-all duration-500 animate-slide-in-left ${tier.name === userPoints.tier ? 'ring-4 ring-teal-500' : ''
+                  }`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className={`bg-gradient-to-r ${tier.color} p-6 text-white`}>

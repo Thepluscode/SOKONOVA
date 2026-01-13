@@ -15,42 +15,42 @@ export declare class PayoutsController {
         totalNet: number;
         count: number;
         items: {
+            id: string;
+            createdAt: Date;
+            orderId: string;
+            productId: string;
+            qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            grossAmount: import("@prisma/client/runtime/library").Decimal;
+            feeAmount: import("@prisma/client/runtime/library").Decimal;
+            netAmount: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             product: {
                 title: string;
                 imageUrl: string;
             };
-            id: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
-            createdAt: Date;
-            productId: string;
-            orderId: string;
-            qty: number;
-            grossAmount: import("@prisma/client/runtime/library").Decimal;
-            feeAmount: import("@prisma/client/runtime/library").Decimal;
-            netAmount: import("@prisma/client/runtime/library").Decimal;
         }[];
     }>;
     sellerAll(sellerId: string | undefined, user: {
         id: string;
         role: Role;
     }): Promise<{
-        product: {
-            title: string;
-        };
         id: string;
-        price: import("@prisma/client/runtime/library").Decimal;
-        currency: string;
         createdAt: Date;
-        productId: string;
         orderId: string;
+        productId: string;
         qty: number;
+        price: import("@prisma/client/runtime/library").Decimal;
         grossAmount: import("@prisma/client/runtime/library").Decimal;
         feeAmount: import("@prisma/client/runtime/library").Decimal;
         netAmount: import("@prisma/client/runtime/library").Decimal;
         payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
         payoutBatchId: string;
         paidAt: Date;
+        currency: string;
+        product: {
+            title: string;
+        };
     }[]>;
     sellerCsv(sellerId: string | undefined, res: Response, user: {
         id: string;
@@ -61,15 +61,15 @@ export declare class PayoutsController {
         paidAt: Date;
         count: number;
         lines: {
-            product: {
-                title: string;
-            };
             id: string;
             sellerId: string;
-            currency: string;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutBatchId: string;
             paidAt: Date;
+            currency: string;
+            product: {
+                title: string;
+            };
         }[];
     }>;
     adminSummary(): Promise<any[]>;

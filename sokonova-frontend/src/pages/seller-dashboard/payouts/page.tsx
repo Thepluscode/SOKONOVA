@@ -184,7 +184,7 @@ export default function SellerPayouts() {
     }
   };
 
-  const handleRequestPayout = () => {
+  const handleRequestPayout = async () => {
     const amount = parseFloat(payoutAmount);
     if (amount < payoutStats.minimumPayout) {
       setPayoutFormError(`Minimum payout amount is $${payoutStats.minimumPayout}`);
@@ -199,11 +199,51 @@ export default function SellerPayouts() {
       return;
     }
 
-    console.log('Requesting payout:', { amount, method: selectedMethod });
-    setShowPayoutModal(false);
-    setPayoutAmount('');
-    setSelectedMethod('');
+    if (!user?.id) {
+      setPayoutFormError('You must be logged in to request a payout.');
+      return;
+    }
+
+    setRequesting(true);
     setPayoutFormError('');
+
+    try {
+      // Get the method details
+      const method = payoutMethods.find(m => m.id === selectedMethod);
+
+      await payoutsService.requestPayout(user.id, amount, method?.type || 'bank');
+
+      // Update local state to reflect the payout
+      setPayoutStats(prev => ({
+        ...prev,
+        availableBalance: prev.availableBalance - amount,
+        pendingEarnings: prev.pendingEarnings + amount,
+      }));
+
+      setShowPayoutModal(false);
+      setPayoutAmount('');
+      setSelectedMethod('');
+
+      // Refresh payout history
+      const history = await payoutsService.getHistory();
+      if (history && history.length > 0) {
+        setPayoutHistory(history.map((h: any) => ({
+          id: h.id,
+          amount: h.amount,
+          commission: h.amount * 0.1,
+          netAmount: h.amount * 0.9,
+          status: h.status,
+          method: h.method || 'Bank Account',
+          requestedAt: h.createdAt,
+          processedAt: h.paidAt,
+        })));
+      }
+    } catch (err: any) {
+      console.error('Failed to request payout:', err);
+      setPayoutFormError(err.message || 'Failed to request payout. Please try again.');
+    } finally {
+      setRequesting(false);
+    }
   };
 
   const openPayoutModal = () => {
@@ -212,8 +252,32 @@ export default function SellerPayouts() {
   };
 
   const handleExportCSV = () => {
-    console.log('Exporting earnings to CSV');
-    // Implement CSV export
+    // Generate CSV from earnings data
+    const headers = ['Order ID', 'Product', 'Order Amount', 'Commission', 'Net Earning', 'Status', 'Date'];
+    const rows = earnings.map(e => [
+      e.orderId,
+      e.productName,
+      `$${e.orderAmount.toFixed(2)}`,
+      `$${e.commission.toFixed(2)}`,
+      `$${e.netEarning.toFixed(2)}`,
+      e.status,
+      new Date(e.orderDate).toLocaleDateString()
+    ]);
+
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `earnings-${Date.now()}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -632,11 +696,11 @@ export default function SellerPayouts() {
               )}
 
               <div className="flex space-x-3 pt-4">
-                <Button variant="outline" onClick={() => setShowPayoutModal(false)} className="flex-1">
+                <Button variant="outline" onClick={() => setShowPayoutModal(false)} disabled={requesting} className="flex-1">
                   Cancel
                 </Button>
-                <Button onClick={handleRequestPayout} className="flex-1">
-                  Request Payout
+                <Button onClick={handleRequestPayout} disabled={requesting} className="flex-1">
+                  {requesting ? 'Processing...' : 'Request Payout'}
                 </Button>
               </div>
             </div>

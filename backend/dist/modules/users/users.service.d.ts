@@ -4,13 +4,9 @@ export declare class UsersService {
     constructor(prisma: PrismaService);
     findOneByEmail(email: string): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -20,6 +16,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -27,16 +25,14 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     findOneById(id: string): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -46,6 +42,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -53,6 +51,8 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     createUser(data: {
         email: string;
@@ -60,13 +60,9 @@ export declare class UsersService {
         role?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -76,6 +72,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -83,6 +81,8 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateUserProfile(userId: string, data: {
         name?: string;
@@ -92,13 +92,9 @@ export declare class UsersService {
         bio?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -108,6 +104,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -115,6 +113,8 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateSellerProfile(userId: string, data: {
         shopName?: string;
@@ -124,13 +124,9 @@ export declare class UsersService {
         sellerHandle?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -140,6 +136,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -147,6 +145,8 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateNotificationPreferences(userId: string, data: {
         notifyEmail?: boolean;
@@ -154,13 +154,9 @@ export declare class UsersService {
         notifyPush?: boolean;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -170,6 +166,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -177,6 +175,8 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getSellerByHandle(handle: string): Promise<{
         products: ({
@@ -185,28 +185,24 @@ export declare class UsersService {
             };
         } & {
             id: string;
-            sellerId: string;
-            title: string;
-            description: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
-            imageUrl: string | null;
-            category: string | null;
             ratingAvg: number | null;
             ratingCount: number | null;
-            viewCount: number;
             createdAt: Date;
             updatedAt: Date;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
+            currency: string;
+            title: string;
+            description: string;
+            imageUrl: string | null;
+            category: string | null;
+            viewCount: number;
         })[];
     } & {
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -216,6 +212,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -223,41 +221,43 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getBuyerProfile(userId: string): Promise<{
         orders: ({
             items: ({
                 product: {
                     id: string;
-                    sellerId: string;
-                    title: string;
-                    description: string;
-                    price: import("@prisma/client/runtime/library").Decimal;
-                    currency: string;
-                    imageUrl: string | null;
-                    category: string | null;
                     ratingAvg: number | null;
                     ratingCount: number | null;
-                    viewCount: number;
                     createdAt: Date;
                     updatedAt: Date;
+                    price: import("@prisma/client/runtime/library").Decimal;
+                    sellerId: string;
+                    currency: string;
+                    title: string;
+                    description: string;
+                    imageUrl: string | null;
+                    category: string | null;
+                    viewCount: number;
                 };
             } & {
                 id: string;
-                sellerId: string;
-                price: import("@prisma/client/runtime/library").Decimal;
-                currency: string;
                 createdAt: Date;
                 updatedAt: Date;
-                productId: string;
                 orderId: string;
+                productId: string;
                 qty: number;
+                price: import("@prisma/client/runtime/library").Decimal;
+                sellerId: string;
                 grossAmount: import("@prisma/client/runtime/library").Decimal;
                 feeAmount: import("@prisma/client/runtime/library").Decimal;
                 netAmount: import("@prisma/client/runtime/library").Decimal;
                 payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
                 payoutBatchId: string | null;
                 paidAt: Date | null;
+                currency: string;
                 fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
                 shippedAt: Date | null;
                 deliveredAt: Date | null;
@@ -269,12 +269,12 @@ export declare class UsersService {
             })[];
         } & {
             id: string;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
+            currency: string;
+            status: import(".prisma/client").$Enums.OrderStatus;
             userId: string;
             total: import("@prisma/client/runtime/library").Decimal;
-            status: import(".prisma/client").$Enums.OrderStatus;
             paymentRef: string | null;
             shippingAdr: string | null;
             buyerName: string | null;
@@ -283,13 +283,9 @@ export declare class UsersService {
         })[];
     } & {
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -299,6 +295,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -306,39 +304,37 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getSellerProfile(userId: string): Promise<{
-        _count: {
-            products: number;
-        };
         products: ({
             _count: {
                 views: number;
             };
         } & {
             id: string;
-            sellerId: string;
-            title: string;
-            description: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
-            imageUrl: string | null;
-            category: string | null;
             ratingAvg: number | null;
             ratingCount: number | null;
-            viewCount: number;
             createdAt: Date;
             updatedAt: Date;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
+            currency: string;
+            title: string;
+            description: string;
+            imageUrl: string | null;
+            category: string | null;
+            viewCount: number;
         })[];
+        _count: {
+            products: number;
+        };
     } & {
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -348,6 +344,8 @@ export declare class UsersService {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -355,5 +353,7 @@ export declare class UsersService {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }

@@ -4,14 +4,14 @@ export declare class NotificationsController {
     constructor(notificationsService: NotificationsService);
     list(userId: string, limit?: string, unreadOnly?: string): Promise<{
         id: string;
-        title: string;
         createdAt: Date;
         updatedAt: Date;
-        data: import("@prisma/client/runtime/library").JsonValue | null;
+        title: string;
         userId: string;
+        data: import("@prisma/client/runtime/library").JsonValue | null;
+        type: string;
         body: string;
         message: string;
-        type: string;
         isRead: boolean;
         readAt: Date | null;
     }[]>;

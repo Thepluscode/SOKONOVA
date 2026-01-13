@@ -1,15 +1,22 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
 import Input from '../../../components/base/Input';
 import { useToast } from '../../../contexts/ToastContext';
+import { productsService } from '../../../lib/services';
+import { useAuth, useRequireAuth } from '../../../lib/auth';
 
 export default function AddProduct() {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  useRequireAuth('SELLER');
+
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<string[]>([]);
   const [imagePreview, setImagePreview] = useState<string>('');
+  const [submitting, setSubmitting] = useState(false);
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
     // Basic Information
@@ -18,7 +25,7 @@ export default function AddProduct() {
     subcategory: '',
     description: '',
     shortDescription: '',
-    
+
     // Pricing & Inventory
     price: '',
     comparePrice: '',
@@ -28,7 +35,7 @@ export default function AddProduct() {
     trackQuantity: true,
     quantity: '',
     lowStockThreshold: '',
-    
+
     // Shipping
     weight: '',
     dimensions: {
@@ -38,7 +45,7 @@ export default function AddProduct() {
     },
     shippingFrom: '',
     processingTime: '',
-    
+
     // SEO & Visibility
     seoTitle: '',
     seoDescription: '',
@@ -113,54 +120,53 @@ export default function AddProduct() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Save product data
-    const productData = {
-      ...formData,
-      images,
-      createdAt: new Date().toISOString(),
-    };
-    
-    // Save to localStorage (in production, this would be an API call)
-    const existingProducts = JSON.parse(localStorage.getItem('products') || '[]');
-    existingProducts.push(productData);
-    localStorage.setItem('products', JSON.stringify(existingProducts));
-    
-    // Show success message
-    showToast({
-      message: `Product ${formData.status === 'active' ? 'published' : 'saved as draft'}.`,
-      type: 'success',
-    });
-    
-    // Reset form
-    setFormData({
-      productName: '',
-      category: '',
-      subcategory: '',
-      description: '',
-      shortDescription: '',
-      price: '',
-      comparePrice: '',
-      costPerItem: '',
-      sku: '',
-      barcode: '',
-      trackQuantity: true,
-      quantity: '',
-      lowStockThreshold: '',
-      weight: '',
-      dimensions: { length: '', width: '', height: '' },
-      shippingFrom: '',
-      processingTime: '',
-      seoTitle: '',
-      seoDescription: '',
-      tags: '',
-      status: 'draft'
-    });
-    setImages([]);
-    setImagePreview('');
-    setCurrentStep(1);
+
+    if (!user?.id) {
+      showToast({
+        message: 'You must be logged in to create a product.',
+        type: 'error',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      // Create product via API
+      const product = await productsService.create({
+        sellerId: user.id,
+        title: formData.productName,
+        description: formData.description,
+        price: parseFloat(formData.price) || 0,
+        currency: 'USD',
+        imageUrl: images[0] || undefined,
+        category: formData.category || undefined,
+      });
+
+      // If quantity is provided, update inventory
+      if (formData.quantity && parseInt(formData.quantity) > 0) {
+        await productsService.updateInventory(product.id, parseInt(formData.quantity));
+      }
+
+      // Show success message
+      showToast({
+        message: `Product "${formData.productName}" ${formData.status === 'active' ? 'published' : 'created'} successfully!`,
+        type: 'success',
+      });
+
+      // Redirect to seller dashboard
+      navigate('/seller-dashboard');
+    } catch (err: any) {
+      console.error('Failed to create product:', err);
+      showToast({
+        message: err.message || 'Failed to create product. Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const steps = [
@@ -173,13 +179,13 @@ export default function AddProduct() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       {/* Page Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center space-x-4">
-            <Link 
-              to="/seller-dashboard" 
+            <Link
+              to="/seller-dashboard"
               className="text-gray-600 hover:text-gray-900"
             >
               <i className="ri-arrow-left-line text-xl"></i>
@@ -198,24 +204,21 @@ export default function AddProduct() {
           <div className="flex items-center justify-between">
             {steps.map((step, index) => (
               <div key={step.id} className="flex items-center">
-                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${
-                  currentStep >= step.id 
-                    ? 'bg-emerald-500 border-emerald-500 text-white' 
-                    : 'border-gray-300 text-gray-500'
-                }`}>
+                <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 ${currentStep >= step.id
+                  ? 'bg-emerald-500 border-emerald-500 text-white'
+                  : 'border-gray-300 text-gray-500'
+                  }`}>
                   <i className={step.icon}></i>
                 </div>
                 <div className="ml-3">
-                  <p className={`text-sm font-medium ${
-                    currentStep >= step.id ? 'text-emerald-600' : 'text-gray-500'
-                  }`}>
+                  <p className={`text-sm font-medium ${currentStep >= step.id ? 'text-emerald-600' : 'text-gray-500'
+                    }`}>
                     {step.title}
                   </p>
                 </div>
                 {index < steps.length - 1 && (
-                  <div className={`w-16 h-0.5 mx-4 ${
-                    currentStep > step.id ? 'bg-emerald-500' : 'bg-gray-300'
-                  }`}></div>
+                  <div className={`w-16 h-0.5 mx-4 ${currentStep > step.id ? 'bg-emerald-500' : 'bg-gray-300'
+                    }`}></div>
                 )}
               </div>
             ))}
@@ -226,14 +229,14 @@ export default function AddProduct() {
       {/* Form Content */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <form onSubmit={handleSubmit} className="space-y-8">
-          
+
           {/* Step 1: Basic Information */}
           {currentStep === 1 && (
             <div className="space-y-6">
               {/* Product Images */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">Product Images</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Main Image Preview */}
                   <div>
@@ -302,7 +305,7 @@ export default function AddProduct() {
               {/* Basic Information */}
               <div className="bg-white rounded-lg shadow-sm p-6">
                 <h3 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h3>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="md:col-span-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -385,7 +388,7 @@ export default function AddProduct() {
           {currentStep === 2 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Pricing & Inventory</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -456,7 +459,7 @@ export default function AddProduct() {
                   </div>
                 </div>
 
-                {formData.trackQuantity === 'true' && (
+                {formData.trackQuantity && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -494,7 +497,7 @@ export default function AddProduct() {
           {currentStep === 3 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">Shipping & Details</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -586,7 +589,7 @@ export default function AddProduct() {
           {currentStep === 4 && (
             <div className="bg-white rounded-lg shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-6">SEO & Publish</h3>
-              
+
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -659,19 +662,20 @@ export default function AddProduct() {
                 </Button>
               )}
             </div>
-            
+
             <div className="flex items-center space-x-4">
               <Button
                 type="button"
                 variant="outline"
+                disabled={submitting}
                 onClick={() => {
                   setFormData({ ...formData, status: 'draft' });
                   handleSubmit(new Event('submit') as any);
                 }}
               >
-                Save as Draft
+                {submitting ? 'Saving...' : 'Save as Draft'}
               </Button>
-              
+
               {currentStep < 4 ? (
                 <Button
                   type="button"
@@ -681,12 +685,16 @@ export default function AddProduct() {
                   <i className="ri-arrow-right-line ml-2"></i>
                 </Button>
               ) : (
-                <Button 
+                <Button
                   type="submit"
+                  disabled={submitting}
                   onClick={() => setFormData({ ...formData, status: 'active' })}
                 >
-                  <i className="ri-check-line mr-2"></i>
-                  Publish Product
+                  {submitting ? (
+                    <><i className="ri-loader-4-line animate-spin mr-2"></i>Publishing...</>
+                  ) : (
+                    <><i className="ri-check-line mr-2"></i>Publish Product</>
+                  )}
                 </Button>
               )}
             </div>

@@ -6,13 +6,13 @@ export declare class SellerApplicationsService {
     constructor(prisma: PrismaService);
     apply(dto: ApplyDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         city: string;
         country: string;
         phone: string;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import(".prisma/client").$Enums.ApplicationStatus;
+        userId: string;
         businessName: string;
         storefrontDesc: string;
         bankName: string | null;
@@ -26,13 +26,13 @@ export declare class SellerApplicationsService {
         success: boolean;
         application: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             city: string;
             country: string;
             phone: string;
-            userId: string;
+            createdAt: Date;
+            updatedAt: Date;
             status: import(".prisma/client").$Enums.ApplicationStatus;
+            userId: string;
             businessName: string;
             storefrontDesc: string;
             bankName: string | null;
@@ -44,13 +44,9 @@ export declare class SellerApplicationsService {
         };
         user: {
             id: string;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            createdAt: Date;
-            updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;
@@ -60,6 +56,8 @@ export declare class SellerApplicationsService {
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -67,18 +65,20 @@ export declare class SellerApplicationsService {
             timezone: string | null;
             quietHoursStart: number | null;
             quietHoursEnd: number | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
         message: string;
     }>;
     getMine(userId: string): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         city: string;
         country: string;
         phone: string;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import(".prisma/client").$Enums.ApplicationStatus;
+        userId: string;
         businessName: string;
         storefrontDesc: string;
         bankName: string | null;
@@ -91,19 +91,19 @@ export declare class SellerApplicationsService {
     listPending(adminId: string): Promise<({
         user: {
             id: string;
-            name: string;
             email: string;
+            name: string;
             role: string;
         };
     } & {
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         city: string;
         country: string;
         phone: string;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import(".prisma/client").$Enums.ApplicationStatus;
+        userId: string;
         businessName: string;
         storefrontDesc: string;
         bankName: string | null;
@@ -116,13 +116,13 @@ export declare class SellerApplicationsService {
     approve(appId: string, dto: ModerateDto): Promise<{
         application: {
             id: string;
-            createdAt: Date;
-            updatedAt: Date;
             city: string;
             country: string;
             phone: string;
-            userId: string;
+            createdAt: Date;
+            updatedAt: Date;
             status: import(".prisma/client").$Enums.ApplicationStatus;
+            userId: string;
             businessName: string;
             storefrontDesc: string;
             bankName: string | null;
@@ -134,13 +134,9 @@ export declare class SellerApplicationsService {
         };
         user: {
             id: string;
-            ratingAvg: number | null;
-            ratingCount: number | null;
-            createdAt: Date;
-            updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;
@@ -150,6 +146,8 @@ export declare class SellerApplicationsService {
             shopLogoUrl: string | null;
             shopBannerUrl: string | null;
             shopBio: string | null;
+            ratingAvg: number | null;
+            ratingCount: number | null;
             bio: string | null;
             notifyEmail: boolean;
             notifySms: boolean;
@@ -157,17 +155,19 @@ export declare class SellerApplicationsService {
             timezone: string | null;
             quietHoursStart: number | null;
             quietHoursEnd: number | null;
+            createdAt: Date;
+            updatedAt: Date;
         };
     }>;
     reject(appId: string, dto: ModerateDto): Promise<{
         id: string;
-        createdAt: Date;
-        updatedAt: Date;
         city: string;
         country: string;
         phone: string;
-        userId: string;
+        createdAt: Date;
+        updatedAt: Date;
         status: import(".prisma/client").$Enums.ApplicationStatus;
+        userId: string;
         businessName: string;
         storefrontDesc: string;
         bankName: string | null;

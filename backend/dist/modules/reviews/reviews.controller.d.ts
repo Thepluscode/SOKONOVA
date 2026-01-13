@@ -9,29 +9,29 @@ export declare class ReviewsController {
         id: string;
     }): Promise<{
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     createAlias(body: CreateReviewDto, user: {
         id: string;
     }): Promise<{
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     listForSeller(handle: string): Promise<({
         orderItem: {
@@ -40,20 +40,20 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -68,15 +68,15 @@ export declare class ReviewsController {
         };
     } & {
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     })[]>;
     getProductReviews(productId: string, page?: string, limit?: string): Promise<{
         reviews: ({
@@ -86,15 +86,15 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -131,15 +131,15 @@ export declare class ReviewsController {
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -162,20 +162,20 @@ export declare class ReviewsController {
             };
             buyer: {
                 id: string;
-                name: string;
                 email: string;
+                name: string;
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -201,15 +201,15 @@ export declare class ReviewsController {
         };
     } & {
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     delete(id: string, body: {
         buyerId?: string;
@@ -220,14 +220,14 @@ export declare class ReviewsController {
     }>;
     hide(reviewId: string, body: ModerateReviewDto): Promise<{
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
 }

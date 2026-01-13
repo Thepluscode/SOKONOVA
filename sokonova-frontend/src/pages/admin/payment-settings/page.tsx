@@ -1,13 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import { useToast } from '../../../contexts/ToastContext';
+import { adminService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 export default function AdminPaymentSettingsPage() {
+  useRequireAuth('ADMIN');
+
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
   const { showToast } = useToast();
-  
+
   const [paymentMethods, setPaymentMethods] = useState({
     stripe: {
       enabled: true,
@@ -31,10 +36,28 @@ export default function AdminPaymentSettingsPage() {
     },
   });
 
-  const handleSave = () => {
-    localStorage.setItem('paymentSettings', JSON.stringify(paymentMethods));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    // Fetch existing settings on mount
+    adminService.getPaymentSettings()
+      .then(data => {
+        if (data) setPaymentMethods(data);
+      })
+      .catch(err => console.error('Failed to fetch payment settings:', err));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await adminService.updatePaymentSettings(paymentMethods);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      showToast({ message: 'Payment settings saved!', type: 'success' });
+    } catch (err: any) {
+      console.error('Failed to save payment settings:', err);
+      showToast({ message: err.message || 'Failed to save settings', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleTest = async () => {
@@ -61,7 +84,7 @@ export default function AdminPaymentSettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Payment Settings</h1>
@@ -336,7 +359,7 @@ export default function AdminPaymentSettingsPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Payment Info</h2>
-              
+
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 rounded-lg">
                   <div className="flex items-start gap-2">

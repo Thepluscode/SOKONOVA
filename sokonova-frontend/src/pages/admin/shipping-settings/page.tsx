@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
+import { useToast } from '../../../contexts/ToastContext';
+import { adminService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 interface ShippingZone {
   id: string;
@@ -14,10 +17,14 @@ interface ShippingZone {
 }
 
 export default function AdminShippingSettingsPage() {
+  useRequireAuth('ADMIN');
+
+  const { showToast } = useToast();
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [freeShippingThreshold, setFreeShippingThreshold] = useState(5000);
   const [localPickupEnabled, setLocalPickupEnabled] = useState(true);
-  
+
   const [shippingZones, setShippingZones] = useState<ShippingZone[]>([
     {
       id: '1',
@@ -62,14 +69,35 @@ export default function AdminShippingSettingsPage() {
     { name: 'Mombasa Hub', address: 'Nyali, Mombasa' },
   ]);
 
-  const handleSave = () => {
-    localStorage.setItem('shippingSettings', JSON.stringify({
-      zones: shippingZones,
-      freeShippingThreshold,
-      localPickupEnabled,
-    }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    adminService.getShippingSettings()
+      .then(data => {
+        if (data) {
+          if (data.zones) setShippingZones(data.zones);
+          if (data.freeShippingThreshold) setFreeShippingThreshold(data.freeShippingThreshold);
+          if (typeof data.localPickupEnabled === 'boolean') setLocalPickupEnabled(data.localPickupEnabled);
+        }
+      })
+      .catch(err => console.error('Failed to fetch shipping settings:', err));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await adminService.updateShippingSettings({
+        zones: shippingZones,
+        freeShippingThreshold,
+        localPickupEnabled,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      showToast({ message: 'Shipping settings saved!', type: 'success' });
+    } catch (err: any) {
+      console.error('Failed to save shipping settings:', err);
+      showToast({ message: err.message || 'Failed to save settings', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const updateRate = (zoneId: string, rateIndex: number, field: 'price' | 'estimatedDays', value: string | number) => {
@@ -91,7 +119,7 @@ export default function AdminShippingSettingsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Shipping Settings</h1>
@@ -238,7 +266,7 @@ export default function AdminShippingSettingsPage() {
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24 space-y-6">
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-4">Shipping Info</h2>
-                
+
                 <div className="space-y-4">
                   <div className="p-4 bg-blue-50 rounded-lg">
                     <div className="flex items-start gap-2">

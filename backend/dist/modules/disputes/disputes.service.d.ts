@@ -14,20 +14,20 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -39,10 +39,10 @@ export declare class DisputesService {
         };
     } & {
         id: string;
-        description: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -64,20 +64,20 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -89,10 +89,10 @@ export declare class DisputesService {
         };
     } & {
         id: string;
-        description: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -114,20 +114,20 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -139,15 +139,15 @@ export declare class DisputesService {
         };
         buyer: {
             id: string;
-            name: string;
             email: string;
+            name: string;
         };
     } & {
         id: string;
-        description: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -172,20 +172,20 @@ export declare class DisputesService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -197,15 +197,15 @@ export declare class DisputesService {
         };
         buyer: {
             id: string;
-            name: string;
             email: string;
+            name: string;
         };
     } & {
         id: string;
-        description: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;
@@ -223,10 +223,10 @@ export declare class DisputesService {
         };
     } & {
         id: string;
-        description: string;
         createdAt: Date;
         updatedAt: Date;
         status: import(".prisma/client").$Enums.DisputeStatus;
+        description: string;
         orderItemId: string;
         buyerId: string;
         reasonCode: import(".prisma/client").$Enums.DisputeReason;

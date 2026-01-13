@@ -117,6 +117,136 @@ export const adminService = {
     getActiveSubscriptions: async (): Promise<any[]> => {
         return api.get('/subscriptions/active');
     },
+
+    // ============= Admin Settings APIs =============
+
+    /**
+     * Get payment settings
+     * GET /admin/settings/payments
+     */
+    getPaymentSettings: async (): Promise<any> => {
+        return api.get('/admin/settings/payments');
+    },
+
+    /**
+     * Update payment settings
+     * PUT /admin/settings/payments
+     */
+    updatePaymentSettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/payments', settings);
+    },
+
+    /**
+     * Get shipping settings
+     * GET /admin/settings/shipping
+     */
+    getShippingSettings: async (): Promise<any> => {
+        return api.get('/admin/settings/shipping');
+    },
+
+    /**
+     * Update shipping settings
+     * PUT /admin/settings/shipping
+     */
+    updateShippingSettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/shipping', settings);
+    },
+
+    /**
+     * Get branding settings
+     * GET /admin/settings/branding
+     */
+    getBrandingSettings: async (): Promise<any> => {
+        return api.get('/admin/settings/branding');
+    },
+
+    /**
+     * Update branding settings
+     * PUT /admin/settings/branding
+     */
+    updateBrandingSettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/branding', settings);
+    },
+
+    /**
+     * Get commission settings
+     * GET /admin/settings/commissions
+     */
+    getCommissionSettings: async (): Promise<any> => {
+        return api.get('/admin/settings/commissions');
+    },
+
+    /**
+     * Update commission settings
+     * PUT /admin/settings/commissions
+     */
+    updateCommissionSettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/commissions', settings);
+    },
+
+    /**
+     * Get flash sales
+     * GET /admin/flash-sales
+     */
+    getFlashSales: async (): Promise<any[]> => {
+        return api.get('/admin/flash-sales');
+    },
+
+    /**
+     * Create flash sale
+     * POST /admin/flash-sales
+     */
+    createFlashSale: async (sale: any): Promise<any> => {
+        return api.post('/admin/flash-sales', sale);
+    },
+
+    /**
+     * Update flash sale
+     * PUT /admin/flash-sales/:id
+     */
+    updateFlashSale: async (id: string, sale: any): Promise<any> => {
+        return api.put(`/admin/flash-sales/${id}`, sale);
+    },
+
+    /**
+     * Delete flash sale
+     * DELETE /admin/flash-sales/:id
+     */
+    deleteFlashSale: async (id: string): Promise<void> => {
+        return api.delete(`/admin/flash-sales/${id}`);
+    },
+
+    /**
+     * Get loyalty settings
+     * GET /admin/settings/loyalty
+     */
+    getLoyaltySettings: async (): Promise<any> => {
+        return api.get('/admin/settings/loyalty');
+    },
+
+    /**
+     * Update loyalty settings
+     * PUT /admin/settings/loyalty
+     */
+    updateLoyaltySettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/loyalty', settings);
+    },
+
+    /**
+     * Get referral settings
+     * GET /admin/settings/referral
+     */
+    getReferralSettings: async (): Promise<any> => {
+        return api.get('/admin/settings/referral');
+    },
+
+    /**
+     * Update referral settings
+     * PUT /admin/settings/referral
+     */
+    updateReferralSettings: async (settings: any): Promise<any> => {
+        return api.put('/admin/settings/referral', settings);
+    },
 };
 
 export default adminService;

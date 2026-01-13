@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
+import { useToast } from '../../../contexts/ToastContext';
+import { adminService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 const colorPresets = [
   { name: 'Teal', primary: '#14B8A6', secondary: '#0D9488', accent: '#5EEAD4' },
@@ -14,6 +17,9 @@ const colorPresets = [
 ];
 
 export default function AdminBrandingPage() {
+  useRequireAuth('ADMIN');
+
+  const { showToast } = useToast();
   const [brandName, setBrandName] = useState('SOKONOVA');
   const [tagline, setTagline] = useState('Your Trusted Marketplace');
   const [selectedPreset, setSelectedPreset] = useState(colorPresets[0]);
@@ -25,17 +31,41 @@ export default function AdminBrandingPage() {
   const [logoUrl, setLogoUrl] = useState('');
   const [faviconUrl, setFaviconUrl] = useState('');
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    localStorage.setItem('brandSettings', JSON.stringify({
-      brandName,
-      tagline,
-      colors: customColors,
-      logoUrl,
-      faviconUrl,
-    }));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  useEffect(() => {
+    adminService.getBrandingSettings()
+      .then(data => {
+        if (data) {
+          setBrandName(data.brandName || 'SOKONOVA');
+          setTagline(data.tagline || 'Your Trusted Marketplace');
+          if (data.colors) setCustomColors(data.colors);
+          setLogoUrl(data.logoUrl || '');
+          setFaviconUrl(data.faviconUrl || '');
+        }
+      })
+      .catch(err => console.error('Failed to fetch branding settings:', err));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await adminService.updateBrandingSettings({
+        brandName,
+        tagline,
+        colors: customColors,
+        logoUrl,
+        faviconUrl,
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      showToast({ message: 'Branding settings saved!', type: 'success' });
+    } catch (err: any) {
+      console.error('Failed to save branding settings:', err);
+      showToast({ message: err.message || 'Failed to save settings', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const applyPreset = (preset: typeof colorPresets[0]) => {
@@ -50,7 +80,7 @@ export default function AdminBrandingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-8 mt-20">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Branding & Customization</h1>
@@ -73,7 +103,7 @@ export default function AdminBrandingPage() {
                 <i className="ri-store-2-line text-teal-600"></i>
                 Brand Information
               </h2>
-              
+
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -117,11 +147,10 @@ export default function AdminBrandingPage() {
                     <button
                       key={preset.name}
                       onClick={() => applyPreset(preset)}
-                      className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${
-                        selectedPreset.name === preset.name
+                      className={`p-3 rounded-lg border-2 transition-all cursor-pointer ${selectedPreset.name === preset.name
                           ? 'border-teal-600 shadow-md'
                           : 'border-gray-200 hover:border-gray-300'
-                      }`}
+                        }`}
                     >
                       <div className="flex gap-1 mb-2">
                         <div
@@ -254,7 +283,7 @@ export default function AdminBrandingPage() {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-xl shadow-sm p-6 sticky top-24">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Live Preview</h2>
-              
+
               <div className="space-y-4">
                 <div className="border border-gray-200 rounded-lg p-4">
                   <p className="text-xs text-gray-500 mb-2">Brand Name</p>
@@ -281,9 +310,9 @@ export default function AdminBrandingPage() {
                     </button>
                     <button
                       className="w-full py-2 rounded-lg border-2 font-medium whitespace-nowrap cursor-pointer"
-                      style={{ 
+                      style={{
                         borderColor: customColors.accent,
-                        color: customColors.primary 
+                        color: customColors.primary
                       }}
                     >
                       Accent Button

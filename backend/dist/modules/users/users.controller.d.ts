@@ -4,13 +4,9 @@ export declare class UsersController {
     constructor(users: UsersService);
     getCurrentUser(userId: string): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -20,6 +16,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -27,6 +25,8 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateCurrentUser(userId: string, body: {
         name?: string;
@@ -36,13 +36,9 @@ export declare class UsersController {
         bio?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -52,6 +48,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -59,6 +57,8 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     changePassword(userId: string, body: {
         currentPassword: string;
@@ -70,35 +70,35 @@ export declare class UsersController {
         items: ({
             product: {
                 id: string;
-                sellerId: string;
-                title: string;
-                description: string;
-                price: import("@prisma/client/runtime/library").Decimal;
-                currency: string;
-                imageUrl: string | null;
-                category: string | null;
                 ratingAvg: number | null;
                 ratingCount: number | null;
-                viewCount: number;
                 createdAt: Date;
                 updatedAt: Date;
+                price: import("@prisma/client/runtime/library").Decimal;
+                sellerId: string;
+                currency: string;
+                title: string;
+                description: string;
+                imageUrl: string | null;
+                category: string | null;
+                viewCount: number;
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -110,12 +110,12 @@ export declare class UsersController {
         })[];
     } & {
         id: string;
-        currency: string;
         createdAt: Date;
         updatedAt: Date;
+        currency: string;
+        status: import(".prisma/client").$Enums.OrderStatus;
         userId: string;
         total: import("@prisma/client/runtime/library").Decimal;
-        status: import(".prisma/client").$Enums.OrderStatus;
         paymentRef: string | null;
         shippingAdr: string | null;
         buyerName: string | null;
@@ -130,13 +130,9 @@ export declare class UsersController {
     };
     findOne(id: string): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -146,6 +142,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -153,16 +151,14 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getNotificationPreferences(id: string): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -172,6 +168,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -179,6 +177,8 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateProfile(id: string, body: {
         name?: string;
@@ -188,13 +188,9 @@ export declare class UsersController {
         bio?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -204,6 +200,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -211,6 +209,8 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateStorefrontProfile(id: string, body: {
         shopName?: string;
@@ -220,13 +220,9 @@ export declare class UsersController {
         sellerHandle?: string;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -236,6 +232,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -243,6 +241,8 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     updateNotificationPreferences(id: string, body: {
         notifyEmail?: boolean;
@@ -250,13 +250,9 @@ export declare class UsersController {
         notifyPush?: boolean;
     }): Promise<{
         id: string;
-        ratingAvg: number | null;
-        ratingCount: number | null;
-        createdAt: Date;
-        updatedAt: Date;
-        name: string | null;
         email: string;
         password: string | null;
+        name: string | null;
         role: string;
         city: string | null;
         country: string | null;
@@ -266,6 +262,8 @@ export declare class UsersController {
         shopLogoUrl: string | null;
         shopBannerUrl: string | null;
         shopBio: string | null;
+        ratingAvg: number | null;
+        ratingCount: number | null;
         bio: string | null;
         notifyEmail: boolean;
         notifySms: boolean;
@@ -273,5 +271,7 @@ export declare class UsersController {
         timezone: string | null;
         quietHoursStart: number | null;
         quietHoursEnd: number | null;
+        createdAt: Date;
+        updatedAt: Date;
     }>;
 }

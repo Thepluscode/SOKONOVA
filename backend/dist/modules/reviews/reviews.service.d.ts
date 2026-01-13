@@ -15,15 +15,15 @@ export declare class ReviewsService {
         comment: string;
     }): Promise<{
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     getSellerReviews(handle: string, limit?: number): Promise<({
         orderItem: {
@@ -32,20 +32,20 @@ export declare class ReviewsService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -60,15 +60,15 @@ export declare class ReviewsService {
         };
     } & {
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     })[]>;
     listForSellerHandle(handle: string, limit?: number): Promise<({
         orderItem: {
@@ -77,20 +77,20 @@ export declare class ReviewsService {
             };
         } & {
             id: string;
-            sellerId: string;
-            price: import("@prisma/client/runtime/library").Decimal;
-            currency: string;
             createdAt: Date;
             updatedAt: Date;
-            productId: string;
             orderId: string;
+            productId: string;
             qty: number;
+            price: import("@prisma/client/runtime/library").Decimal;
+            sellerId: string;
             grossAmount: import("@prisma/client/runtime/library").Decimal;
             feeAmount: import("@prisma/client/runtime/library").Decimal;
             netAmount: import("@prisma/client/runtime/library").Decimal;
             payoutStatus: import(".prisma/client").$Enums.PayoutStatus;
             payoutBatchId: string | null;
             paidAt: Date | null;
+            currency: string;
             fulfillmentStatus: import(".prisma/client").$Enums.FulfillmentStatus;
             shippedAt: Date | null;
             deliveredAt: Date | null;
@@ -105,27 +105,27 @@ export declare class ReviewsService {
         };
     } & {
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     })[]>;
     hideReview(id: string, body?: ModerateReviewDto): Promise<{
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     getProductReviews(productId: string, page?: number, limit?: number): Promise<{
         reviews: ({
@@ -135,15 +135,15 @@ export declare class ReviewsService {
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -177,15 +177,15 @@ export declare class ReviewsService {
         };
     } & {
         id: string;
-        sellerId: string;
         createdAt: Date;
         updatedAt: Date;
         productId: string;
+        sellerId: string;
+        orderItemId: string;
+        buyerId: string;
         rating: number;
         comment: string;
         isVisible: boolean;
-        orderItemId: string;
-        buyerId: string;
     }>;
     deleteReview(id: string, buyerId: string): Promise<{
         message: string;
@@ -204,15 +204,15 @@ export declare class ReviewsService {
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;
@@ -235,20 +235,20 @@ export declare class ReviewsService {
             };
             buyer: {
                 id: string;
-                name: string;
                 email: string;
+                name: string;
             };
         } & {
             id: string;
-            sellerId: string;
             createdAt: Date;
             updatedAt: Date;
             productId: string;
+            sellerId: string;
+            orderItemId: string;
+            buyerId: string;
             rating: number;
             comment: string;
             isVisible: boolean;
-            orderItemId: string;
-            buyerId: string;
         })[];
         pagination: {
             total: number;

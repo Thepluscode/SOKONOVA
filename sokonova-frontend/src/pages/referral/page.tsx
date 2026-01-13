@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../components/feature/Header';
 import Footer from '../../components/feature/Footer';
 import { useToast } from '../../contexts/ToastContext';
+import { adminService } from '../../lib/services';
 
 interface Referral {
   id: string;
@@ -17,9 +18,22 @@ export default function Referral() {
   const [isActive, setIsActive] = useState(true);
   const [rewardAmount, setRewardAmount] = useState(25);
   const [referralBonus, setReferralBonus] = useState(15);
+  const [saving, setSaving] = useState(false);
   const { showToast } = useToast();
   const referralCode = 'SOKONOVA2024';
   const referralLink = `https://sokonova.com/ref/${referralCode}`;
+
+  useEffect(() => {
+    adminService.getReferralSettings()
+      .then(data => {
+        if (data) {
+          if (typeof data.isActive === 'boolean') setIsActive(data.isActive);
+          if (data.rewardAmount) setRewardAmount(data.rewardAmount);
+          if (data.referralBonus) setReferralBonus(data.referralBonus);
+        }
+      })
+      .catch(err => console.error('Failed to fetch referral settings:', err));
+  }, []);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(referralLink);
@@ -27,16 +41,27 @@ export default function Referral() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSaveSettings = () => {
-    localStorage.setItem('referralSettings', JSON.stringify({
-      isActive,
-      rewardAmount,
-      referralBonus,
-    }));
-    showToast({
-      message: 'Referral settings saved.',
-      type: 'success',
-    });
+  const handleSaveSettings = async () => {
+    setSaving(true);
+    try {
+      await adminService.updateReferralSettings({
+        isActive,
+        rewardAmount,
+        referralBonus,
+      });
+      showToast({
+        message: 'Referral settings saved!',
+        type: 'success',
+      });
+    } catch (err: any) {
+      console.error('Failed to save referral settings:', err);
+      showToast({
+        message: err.message || 'Failed to save settings',
+        type: 'error',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const shareOnSocial = (platform: string) => {
@@ -53,13 +78,13 @@ export default function Referral() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       <Header />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 mt-20">
         {/* Hero Section */}
         <div className="bg-gradient-to-r from-teal-600 to-teal-700 rounded-2xl p-8 md:p-12 text-white mb-8 relative overflow-hidden animate-fade-in-down">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32 animate-float"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24 animate-float" style={{ animationDelay: '1s' }}></div>
-          
+
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-4 animate-fade-in" style={{ animationDelay: '200ms' }}>
               <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center">
@@ -98,14 +123,12 @@ export default function Referral() {
                   <span className="text-sm text-gray-600">Program Status:</span>
                   <button
                     onClick={() => setIsActive(!isActive)}
-                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${
-                      isActive ? 'bg-teal-600' : 'bg-gray-300'
-                    }`}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${isActive ? 'bg-teal-600' : 'bg-gray-300'
+                      }`}
                   >
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                        isActive ? 'translate-x-6' : 'translate-x-1'
-                      }`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${isActive ? 'translate-x-6' : 'translate-x-1'
+                        }`}
                     />
                   </button>
                   <span className={`text-sm font-semibold ${isActive ? 'text-teal-600' : 'text-gray-500'}`}>

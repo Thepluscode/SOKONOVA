@@ -28,6 +28,7 @@ const sponsored_placements_module_1 = require("./sponsored-placements/sponsored-
 const seller_services_module_1 = require("./seller-services/seller-services.module");
 const subscriptions_module_1 = require("./subscriptions/subscriptions.module");
 const admin_control_tower_module_1 = require("./admin-control-tower/admin-control-tower.module");
+const admin_settings_module_1 = require("./admin-settings/admin-settings.module");
 const impact_inclusion_module_1 = require("./impact-inclusion/impact-inclusion.module");
 const api_partner_platform_module_1 = require("./api-partner-platform/api-partner-platform.module");
 const wishlist_module_1 = require("./wishlist/wishlist.module");
@@ -64,6 +65,7 @@ exports.AppModule = AppModule = __decorate([
             seller_services_module_1.SellerServicesModule,
             subscriptions_module_1.SubscriptionsModule,
             admin_control_tower_module_1.AdminControlTowerModule,
+            admin_settings_module_1.AdminSettingsModule,
             impact_inclusion_module_1.ImpactInclusionModule,
             api_partner_platform_module_1.ApiPartnerPlatformModule,
             teams_module_1.TeamsModule,

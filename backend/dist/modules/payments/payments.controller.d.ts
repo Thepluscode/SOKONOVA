@@ -20,20 +20,20 @@ export declare class PaymentsController {
     getPayment(orderId: string): Promise<{
         order: {
             id: string;
-            currency: string;
             createdAt: Date;
-            total: import("@prisma/client/runtime/library").Decimal;
+            currency: string;
             status: import(".prisma/client").$Enums.OrderStatus;
+            total: import("@prisma/client/runtime/library").Decimal;
         };
     } & {
         id: string;
-        currency: string;
         createdAt: Date;
         updatedAt: Date;
-        status: import(".prisma/client").$Enums.PaymentStatus;
+        amount: import("@prisma/client/runtime/library").Decimal;
         orderId: string;
+        currency: string;
         provider: string;
         externalRef: string | null;
-        amount: import("@prisma/client/runtime/library").Decimal;
+        status: import(".prisma/client").$Enums.PaymentStatus;
     }>;
 }

@@ -1,12 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
 import Input from '../../../components/base/Input';
+import { useToast } from '../../../contexts/ToastContext';
+import { adminService } from '../../../lib/services';
+import { useRequireAuth } from '../../../lib/auth';
 
 export default function AdminOpsPage() {
+  useRequireAuth('ADMIN');
+
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'commission' | 'orders' | 'inventory' | 'logistics'>('commission');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Commission Settings State
   const [commissionSettings, setCommissionSettings] = useState({
@@ -22,11 +29,27 @@ export default function AdminOpsPage() {
     fixedFee: 0.30
   });
 
-  const handleSaveCommission = () => {
-    // Save commission settings
-    localStorage.setItem('commissionSettings', JSON.stringify(commissionSettings));
-    setShowSuccessMessage(true);
-    setTimeout(() => setShowSuccessMessage(false), 3000);
+  useEffect(() => {
+    adminService.getCommissionSettings()
+      .then(data => {
+        if (data) setCommissionSettings(data);
+      })
+      .catch(err => console.error('Failed to fetch commission settings:', err));
+  }, []);
+
+  const handleSaveCommission = async () => {
+    setSaving(true);
+    try {
+      await adminService.updateCommissionSettings(commissionSettings);
+      setShowSuccessMessage(true);
+      setTimeout(() => setShowSuccessMessage(false), 3000);
+      showToast({ message: 'Commission settings saved!', type: 'success' });
+    } catch (err: any) {
+      console.error('Failed to save commission settings:', err);
+      showToast({ message: err.message || 'Failed to save settings', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
   };
 
   const orders = [
@@ -70,7 +93,7 @@ export default function AdminOpsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 animate-fade-in-down">
@@ -145,42 +168,38 @@ export default function AdminOpsPage() {
             <div className="flex space-x-8 px-6 overflow-x-auto">
               <button
                 onClick={() => setActiveTab('commission')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === 'commission'
+                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'commission'
                     ? 'border-emerald-600 text-emerald-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 <i className="ri-percent-line mr-2"></i>
                 Commission Rates
               </button>
               <button
                 onClick={() => setActiveTab('orders')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === 'orders'
+                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'orders'
                     ? 'border-emerald-600 text-emerald-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Orders
               </button>
               <button
                 onClick={() => setActiveTab('inventory')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === 'inventory'
+                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'inventory'
                     ? 'border-emerald-600 text-emerald-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Inventory
               </button>
               <button
                 onClick={() => setActiveTab('logistics')}
-                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${
-                  activeTab === 'logistics'
+                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'logistics'
                     ? 'border-emerald-600 text-emerald-600'
                     : 'border-transparent text-gray-500 hover:text-gray-700'
-                }`}
+                  }`}
               >
                 Logistics
               </button>
@@ -214,7 +233,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.defaultRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, defaultRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, defaultRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -232,7 +251,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.fashionRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, fashionRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, fashionRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -250,7 +269,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.electronicsRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, electronicsRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, electronicsRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -268,7 +287,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.craftsRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, craftsRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, craftsRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -286,7 +305,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.jewelryRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, jewelryRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, jewelryRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -304,7 +323,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.homeRate}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, homeRate: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, homeRate: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="100"
@@ -328,7 +347,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.transactionFee}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, transactionFee: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, transactionFee: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="10"
@@ -348,7 +367,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.fixedFee}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, fixedFee: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, fixedFee: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           max="5"
@@ -373,7 +392,7 @@ export default function AdminOpsPage() {
                         <Input
                           type="number"
                           value={commissionSettings.minimumPayout}
-                          onChange={(e) => setCommissionSettings({...commissionSettings, minimumPayout: parseFloat(e.target.value)})}
+                          onChange={(e) => setCommissionSettings({ ...commissionSettings, minimumPayout: parseFloat(e.target.value) })}
                           className="flex-1"
                           min="0"
                           step="10"
@@ -388,7 +407,7 @@ export default function AdminOpsPage() {
                       </label>
                       <select
                         value={commissionSettings.payoutSchedule}
-                        onChange={(e) => setCommissionSettings({...commissionSettings, payoutSchedule: e.target.value})}
+                        onChange={(e) => setCommissionSettings({ ...commissionSettings, payoutSchedule: e.target.value })}
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="daily">Daily</option>
@@ -539,11 +558,10 @@ export default function AdminOpsPage() {
                   >
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-gray-900">{carrier.carrier}</h3>
-                      <span className={`px-3 py-1 text-sm font-medium rounded-full ${
-                        carrier.status === 'excellent' 
-                          ? 'bg-green-100 text-green-700' 
+                      <span className={`px-3 py-1 text-sm font-medium rounded-full ${carrier.status === 'excellent'
+                          ? 'bg-green-100 text-green-700'
                           : 'bg-blue-100 text-blue-700'
-                      }`}>
+                        }`}>
                         {carrier.status}
                       </span>
                     </div>

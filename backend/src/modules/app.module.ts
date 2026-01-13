@@ -21,6 +21,7 @@ import { SponsoredPlacementsModule } from './sponsored-placements/sponsored-plac
 import { SellerServicesModule } from './seller-services/seller-services.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { AdminControlTowerModule } from './admin-control-tower/admin-control-tower.module';
+import { AdminSettingsModule } from './admin-settings/admin-settings.module';
 import { ImpactInclusionModule } from './impact-inclusion/impact-inclusion.module';
 import { ApiPartnerPlatformModule } from './api-partner-platform/api-partner-platform.module';
 import { WishlistModule } from './wishlist/wishlist.module';
@@ -60,6 +61,7 @@ import { SentryExceptionFilter } from '../common/filters/sentry-exception.filter
     SellerServicesModule,
     SubscriptionsModule,
     AdminControlTowerModule,
+    AdminSettingsModule,
     ImpactInclusionModule,
     ApiPartnerPlatformModule,
     // Security & Access Control
