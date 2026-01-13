@@ -41,6 +41,7 @@ const ServicesPage = lazy(() => import('../pages/services/page'));
 const ServiceDetailPage = lazy(() => import('../pages/services/[id]/page'));
 const SubscriptionsPage = lazy(() => import('../pages/subscriptions/page'));
 const ManageSubscriptionPage = lazy(() => import('../pages/subscriptions/manage/page'));
+const MyAccountPage = lazy(() => import('../pages/account/page'));
 const AccountSettingsPage = lazy(() => import('../pages/account/settings/page'));
 const NotificationSettingsPage = lazy(() => import('../pages/account/settings/notifications/page'));
 const AccountNotificationsPage = lazy(() => import('../pages/account/notifications/page'));
@@ -230,6 +231,10 @@ const routes: RouteObject[] = [
   {
     path: '/subscriptions/manage',
     element: <ManageSubscriptionPage />,
+  },
+  {
+    path: '/account',
+    element: <MyAccountPage />,
   },
   {
     path: '/account/settings',

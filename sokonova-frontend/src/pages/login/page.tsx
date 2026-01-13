@@ -38,7 +38,7 @@ export default function LoginPage() {
 
       // Redirect after short delay
       setTimeout(() => {
-        navigate('/account/settings');
+        navigate('/account');
       }, 1000);
     } catch (error: any) {
       console.error('Login error:', error);
