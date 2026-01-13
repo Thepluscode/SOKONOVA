@@ -36,9 +36,9 @@ export declare class DiscoveryController {
             ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;
@@ -88,8 +88,8 @@ export declare class DiscoveryController {
             id: string;
             imageUrl: string | null;
             createdAt: Date;
-            productId: string;
             userId: string;
+            productId: string;
             content: string;
         })[];
     }>;
@@ -159,9 +159,9 @@ export declare class DiscoveryController {
             ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;
@@ -227,9 +227,9 @@ export declare class DiscoveryController {
             ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;
@@ -283,9 +283,9 @@ export declare class DiscoveryController {
             ratingCount: number | null;
             createdAt: Date;
             updatedAt: Date;
-            name: string | null;
             email: string;
             password: string | null;
+            name: string | null;
             role: string;
             city: string | null;
             country: string | null;

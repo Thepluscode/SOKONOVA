@@ -65,7 +65,7 @@ __decorate([
     __metadata("design:returntype", Promise)
 ], DiscoveryController.prototype, "personalized", null);
 __decorate([
-    (0, common_1.Get)('search'),
+    (0, common_1.Get)('products-search'),
     __param(0, (0, common_1.Query)('q')),
     __param(1, (0, common_1.Query)('category')),
     __param(2, (0, common_1.Query)('minPrice')),

@@ -5,7 +5,7 @@ import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @Controller('discovery')
 export class DiscoveryController {
-  constructor(private disc: DiscoveryService) {}
+  constructor(private disc: DiscoveryService) { }
 
   // PUBLIC: main discovery landing sections
   // GET /discovery/highlights
@@ -23,8 +23,8 @@ export class DiscoveryController {
   }
 
   // PUBLIC: search with paging + filters
-  // GET /discovery/search?q=...&category=...&minPrice=...&maxPrice=...&rating=...&inStock=true&country=...&sellerId=...&sort=...&page=...&limit=...
-  @Get('search')
+  // GET /discovery/products-search?q=...&category=...&minPrice=...&maxPrice=...&rating=...&inStock=true&country=...&sellerId=...&sort=...&page=...&limit=...
+  @Get('products-search')
   async search(
     @Query('q') q?: string,
     @Query('category') category?: string,
