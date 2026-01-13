@@ -14,19 +14,7 @@ const cookieParser = require('cookie-parser')
 async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
-  // Security
-  app.use(helmet())
-  app.use(morgan('dev'))
-  app.use(cookieParser())
-  app.use(
-    express.json({
-      verify: (req: any, res, buf) => {
-        req.rawBody = buf.toString()
-      },
-    }),
-  )
-
-  // CORS
+  // CORS - Must be enabled BEFORE Helmet
   app.enableCors({
     origin: [
       'http://localhost:3000',
@@ -39,6 +27,21 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,
   })
+
+  // Security - Configure Helmet to not interfere with CORS
+  app.use(helmet({
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+    crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+  }))
+  app.use(morgan('dev'))
+  app.use(cookieParser())
+  app.use(
+    express.json({
+      verify: (req: any, res, buf) => {
+        req.rawBody = buf.toString()
+      },
+    }),
+  )
 
   // Global pipes and filters
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
