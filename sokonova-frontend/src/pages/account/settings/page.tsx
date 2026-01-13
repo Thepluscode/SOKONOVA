@@ -1,23 +1,83 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Header from '../../../components/feature/Header';
 import Footer from '../../../components/feature/Footer';
 import Button from '../../../components/base/Button';
 import Input from '../../../components/base/Input';
+import { useAuth } from '../../../lib/auth';
+import { useToast } from '../../../contexts/ToastContext';
+import api from '../../../lib/api';
 
 export default function AccountSettingsPage() {
+  const { user, isLoading } = useAuth();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'profile' | 'security' | 'preferences'>('profile');
   const [showSuccess, setShowSuccess] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = () => {
-    setShowSuccess(true);
-    setTimeout(() => setShowSuccess(false), 3000);
+  // Form state
+  const [formData, setFormData] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    city: '',
+    country: '',
+    bio: '',
+  });
+
+  // Load user data when available
+  useEffect(() => {
+    if (user) {
+      const nameParts = (user.name || '').split(' ');
+      setFormData({
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '',
+        email: user.email || '',
+        phone: user.phone || '',
+        city: user.city || '',
+        country: user.country || '',
+        bio: user.bio || '',
+      });
+    }
+  }, [user]);
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await api.patch('/users/me', {
+        name: `${formData.firstName} ${formData.lastName}`.trim(),
+        phone: formData.phone,
+        city: formData.city,
+        country: formData.country,
+        bio: formData.bio,
+      });
+      setShowSuccess(true);
+      showToast({ message: 'Profile updated successfully!', type: 'success' });
+      setTimeout(() => setShowSuccess(false), 3000);
+    } catch (error: any) {
+      showToast({ message: error.message || 'Failed to update profile', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
@@ -39,33 +99,30 @@ export default function AccountSettingsPage() {
             <div className="bg-white rounded-lg border border-gray-200 p-2">
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  activeTab === 'profile'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${activeTab === 'profile'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 <i className="ri-user-line mr-2"></i>
                 Profile Information
               </button>
               <button
                 onClick={() => setActiveTab('security')}
-                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  activeTab === 'security'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${activeTab === 'security'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 <i className="ri-shield-line mr-2"></i>
                 Security
               </button>
               <button
                 onClick={() => setActiveTab('preferences')}
-                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${
-                  activeTab === 'preferences'
-                    ? 'bg-emerald-50 text-emerald-700'
-                    : 'text-gray-700 hover:bg-gray-50'
-                }`}
+                className={`w-full text-left px-4 py-3 rounded-lg text-sm font-medium transition-colors cursor-pointer ${activeTab === 'preferences'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'text-gray-700 hover:bg-gray-50'
+                  }`}
               >
                 <i className="ri-settings-3-line mr-2"></i>
                 Preferences
@@ -92,7 +149,7 @@ export default function AccountSettingsPage() {
             {activeTab === 'profile' && (
               <div className="bg-white rounded-lg border border-gray-200 p-6">
                 <h2 className="text-xl font-bold text-gray-900 mb-6">Profile Information</h2>
-                
+
                 <div className="space-y-6">
                   {/* Avatar */}
                   <div>
@@ -115,35 +172,64 @@ export default function AccountSettingsPage() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                      <Input type="text" defaultValue="John" />
+                      <Input
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) => handleChange('firstName', e.target.value)}
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                      <Input type="text" defaultValue="Doe" />
+                      <Input
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) => handleChange('lastName', e.target.value)}
+                      />
                     </div>
                   </div>
 
                   {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                    <Input type="email" defaultValue="john.doe@example.com" />
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      disabled
+                      className="bg-gray-100"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Email cannot be changed</p>
                   </div>
 
                   {/* Phone */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                    <Input type="tel" defaultValue="+234 801 234 5678" />
+                    <Input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => handleChange('phone', e.target.value)}
+                      placeholder="+234 801 234 5678"
+                    />
                   </div>
 
                   {/* Location */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">City</label>
-                      <Input type="text" defaultValue="Lagos" />
+                      <Input
+                        type="text"
+                        value={formData.city}
+                        onChange={(e) => handleChange('city', e.target.value)}
+                        placeholder="Lagos"
+                      />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Country</label>
-                      <Input type="text" defaultValue="Nigeria" />
+                      <Input
+                        type="text"
+                        value={formData.country}
+                        onChange={(e) => handleChange('country', e.target.value)}
+                        placeholder="Nigeria"
+                      />
                     </div>
                   </div>
 
@@ -153,14 +239,25 @@ export default function AccountSettingsPage() {
                     <textarea
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
                       rows={4}
-                      defaultValue="Passionate entrepreneur and marketplace enthusiast."
+                      value={formData.bio}
+                      onChange={(e) => handleChange('bio', e.target.value)}
+                      placeholder="Tell us about yourself..."
                     />
                   </div>
 
                   <div className="flex justify-end">
-                    <Button onClick={handleSave} className="whitespace-nowrap">
-                      <i className="ri-save-line mr-2"></i>
-                      Save Changes
+                    <Button onClick={handleSave} disabled={saving} className="whitespace-nowrap">
+                      {saving ? (
+                        <>
+                          <i className="ri-loader-4-line animate-spin mr-2"></i>
+                          Saving...
+                        </>
+                      ) : (
+                        <>
+                          <i className="ri-save-line mr-2"></i>
+                          Save Changes
+                        </>
+                      )}
                     </Button>
                   </div>
                 </div>
@@ -172,7 +269,7 @@ export default function AccountSettingsPage() {
                 {/* Change Password */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Change Password</h2>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
@@ -212,7 +309,7 @@ export default function AccountSettingsPage() {
                 {/* Active Sessions */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Active Sessions</h2>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
@@ -224,7 +321,7 @@ export default function AccountSettingsPage() {
                       </div>
                       <span className="px-3 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-full">Current</span>
                     </div>
-                    
+
                     <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
                         <i className="ri-smartphone-line text-2xl text-gray-600"></i>
@@ -247,7 +344,7 @@ export default function AccountSettingsPage() {
                 {/* Language & Region */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Language &amp; Region</h2>
-                  
+
                   <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
@@ -281,7 +378,7 @@ export default function AccountSettingsPage() {
                 {/* Privacy */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Privacy</h2>
-                  
+
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
@@ -293,7 +390,7 @@ export default function AccountSettingsPage() {
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                       </label>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-gray-900">Public profile</p>
@@ -304,7 +401,7 @@ export default function AccountSettingsPage() {
                         <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-emerald-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
                       </label>
                     </div>
-                    
+
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium text-gray-900">Show purchase history</p>
@@ -321,7 +418,7 @@ export default function AccountSettingsPage() {
                 {/* Data & Storage */}
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h2 className="text-xl font-bold text-gray-900 mb-6">Data &amp; Storage</h2>
-                  
+
                   <div className="space-y-4">
                     <Button variant="outline" className="whitespace-nowrap">
                       <i className="ri-download-line mr-2"></i>
