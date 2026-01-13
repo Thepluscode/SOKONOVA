@@ -29,12 +29,14 @@ async function bootstrap() {
   // CORS
   app.enableCors({
     origin: [
-      /localhost:3000$/,
-      /localhost:54112$/,
-      /localhost:\d+$/,
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:54112',
       'https://sokonova-frontend-production.up.railway.app',
-      /\.up\.railway\.app$/  // Allow all Railway subdomains
+      'https://sokonova-backend-production.up.railway.app',
     ],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,
   })
 
