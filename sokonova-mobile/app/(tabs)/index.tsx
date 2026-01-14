@@ -1,10 +1,9 @@
-// Home Screen
+// Home Screen - Web-compatible version
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator, Image, TouchableOpacity, RefreshControl } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 
-// Using direct API call since services might need adjustment for mobile
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'https://sokonova-backend-production.up.railway.app';
 
 async function fetchFeaturedProducts() {
@@ -48,8 +47,8 @@ export default function HomeScreen() {
                 </Link>
                 {!user && (
                     <Link href="/auth/login" asChild>
-                        <TouchableOpacity style={[styles.actionButton, styles.actionSecondary]}>
-                            <Text style={[styles.actionText, styles.actionTextSecondary]}>👤 Login</Text>
+                        <TouchableOpacity style={styles.actionButtonSecondary}>
+                            <Text style={styles.actionTextSecondary}>👤 Login</Text>
                         </TouchableOpacity>
                     </Link>
                 )}
@@ -62,18 +61,16 @@ export default function HomeScreen() {
                 {isLoading ? (
                     <ActivityIndicator size="large" color="#10B981" style={styles.loader} />
                 ) : products?.length > 0 ? (
-                    <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.productRow}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false}>
                         {products.slice(0, 6).map((product: any) => (
-                            <Link key={product.id} href={`/product/${product.id}`} asChild>
-                                <TouchableOpacity style={styles.productCard}>
-                                    <Image
-                                        source={{ uri: product.imageUrl || 'https://via.placeholder.com/150' }}
-                                        style={styles.productImage}
-                                    />
-                                    <Text style={styles.productTitle} numberOfLines={2}>{product.title}</Text>
-                                    <Text style={styles.productPrice}>${product.price}</Text>
-                                </TouchableOpacity>
-                            </Link>
+                            <TouchableOpacity key={product.id} style={styles.productCard}>
+                                <Image
+                                    source={{ uri: product.imageUrl || 'https://via.placeholder.com/150' }}
+                                    style={styles.productImage}
+                                />
+                                <Text style={styles.productTitle} numberOfLines={2}>{product.title}</Text>
+                                <Text style={styles.productPrice}>${product.price}</Text>
+                            </TouchableOpacity>
                         ))}
                     </ScrollView>
                 ) : (
@@ -86,11 +83,9 @@ export default function HomeScreen() {
                 <Text style={styles.sectionTitle}>Categories</Text>
                 <View style={styles.categories}>
                     {['Fashion', 'Electronics', 'Home', 'Beauty', 'Food'].map((cat) => (
-                        <Link key={cat} href={`/discover?category=${cat.toLowerCase()}`} asChild>
-                            <TouchableOpacity style={styles.categoryChip}>
-                                <Text style={styles.categoryText}>{cat}</Text>
-                            </TouchableOpacity>
-                        </Link>
+                        <TouchableOpacity key={cat} style={styles.categoryChip}>
+                            <Text style={styles.categoryText}>{cat}</Text>
+                        </TouchableOpacity>
                     ))}
                 </View>
             </View>
@@ -127,7 +122,6 @@ const styles = StyleSheet.create({
     quickActions: {
         flexDirection: 'row',
         padding: 16,
-        gap: 12,
     },
     actionButton: {
         flex: 1,
@@ -135,11 +129,16 @@ const styles = StyleSheet.create({
         paddingVertical: 14,
         borderRadius: 12,
         alignItems: 'center',
+        marginRight: 12,
     },
-    actionSecondary: {
+    actionButtonSecondary: {
+        flex: 1,
         backgroundColor: '#fff',
         borderWidth: 2,
         borderColor: '#10B981',
+        paddingVertical: 14,
+        borderRadius: 12,
+        alignItems: 'center',
     },
     actionText: {
         color: '#fff',
@@ -148,6 +147,8 @@ const styles = StyleSheet.create({
     },
     actionTextSecondary: {
         color: '#10B981',
+        fontWeight: '600',
+        fontSize: 16,
     },
     section: {
         padding: 16,
@@ -161,22 +162,15 @@ const styles = StyleSheet.create({
     loader: {
         padding: 40,
     },
-    productRow: {
-        marginHorizontal: -8,
-    },
     productCard: {
         width: 150,
         backgroundColor: '#fff',
         borderRadius: 12,
-        marginHorizontal: 8,
+        marginRight: 12,
         overflow: 'hidden',
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
     },
     productImage: {
-        width: '100%',
+        width: 150,
         height: 120,
         backgroundColor: '#E5E7EB',
     },
@@ -201,7 +195,6 @@ const styles = StyleSheet.create({
     categories: {
         flexDirection: 'row',
         flexWrap: 'wrap',
-        gap: 8,
     },
     categoryChip: {
         backgroundColor: '#fff',
@@ -210,6 +203,8 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         borderWidth: 1,
         borderColor: '#E5E7EB',
+        marginRight: 8,
+        marginBottom: 8,
     },
     categoryText: {
         color: '#374151',

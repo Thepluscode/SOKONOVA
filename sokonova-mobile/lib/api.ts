@@ -1,7 +1,7 @@
 // Mobile API Configuration
-// Adapted from web frontend for React Native
+// Uses cross-platform storage for web compatibility
 
-import * as SecureStore from 'expo-secure-store';
+import { getItemAsync, setItemAsync, deleteItemAsync } from './storage';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'https://sokonova-backend-production.up.railway.app';
 
@@ -20,18 +20,18 @@ export class ApiError extends Error {
 
 async function getAuthToken(): Promise<string | null> {
     try {
-        return await SecureStore.getItemAsync('auth_token');
+        return await getItemAsync('auth_token');
     } catch {
         return null;
     }
 }
 
 export async function setAuthToken(token: string): Promise<void> {
-    await SecureStore.setItemAsync('auth_token', token);
+    await setItemAsync('auth_token', token);
 }
 
 export async function removeAuthToken(): Promise<void> {
-    await SecureStore.deleteItemAsync('auth_token');
+    await deleteItemAsync('auth_token');
 }
 
 async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {

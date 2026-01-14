@@ -1,8 +1,7 @@
-// Login Screen
+// Login Screen - Web-compatible version
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useState } from 'react';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../lib/auth';
 
 export default function LoginScreen() {
@@ -33,7 +32,7 @@ export default function LoginScreen() {
         <View style={styles.container}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <Ionicons name="close" size={28} color="#374151" />
+                    <Text style={styles.backText}>✕</Text>
                 </TouchableOpacity>
             </View>
 
@@ -43,7 +42,7 @@ export default function LoginScreen() {
 
                 <View style={styles.form}>
                     <View style={styles.inputContainer}>
-                        <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                        <Text style={styles.inputIcon}>📧</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Email"
@@ -56,7 +55,7 @@ export default function LoginScreen() {
                     </View>
 
                     <View style={styles.inputContainer}>
-                        <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.inputIcon} />
+                        <Text style={styles.inputIcon}>🔒</Text>
                         <TextInput
                             style={styles.input}
                             placeholder="Password"
@@ -65,7 +64,7 @@ export default function LoginScreen() {
                             secureTextEntry={!showPassword}
                         />
                         <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                            <Ionicons name={showPassword ? 'eye-off-outline' : 'eye-outline'} size={20} color="#9CA3AF" />
+                            <Text>{showPassword ? '🙈' : '👁️'}</Text>
                         </TouchableOpacity>
                     </View>
 
@@ -88,7 +87,7 @@ export default function LoginScreen() {
 
                 <View style={styles.footer}>
                     <Text style={styles.footerText}>Don't have an account? </Text>
-                    <TouchableOpacity onPress={() => router.replace('/auth/register')}>
+                    <TouchableOpacity>
                         <Text style={styles.footerLink}>Sign up</Text>
                     </TouchableOpacity>
                 </View>
@@ -111,6 +110,10 @@ const styles = StyleSheet.create({
     backButton: {
         padding: 4,
     },
+    backText: {
+        fontSize: 24,
+        color: '#374151',
+    },
     content: {
         flex: 1,
         padding: 24,
@@ -127,7 +130,7 @@ const styles = StyleSheet.create({
         marginBottom: 32,
     },
     form: {
-        gap: 16,
+        marginTop: 8,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -137,8 +140,10 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: '#E5E7EB',
         paddingHorizontal: 16,
+        marginBottom: 16,
     },
     inputIcon: {
+        fontSize: 20,
         marginRight: 12,
     },
     input: {
@@ -149,6 +154,7 @@ const styles = StyleSheet.create({
     },
     forgotPassword: {
         alignSelf: 'flex-end',
+        marginBottom: 16,
     },
     forgotPasswordText: {
         color: '#10B981',

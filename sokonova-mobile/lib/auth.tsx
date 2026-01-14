@@ -1,8 +1,8 @@
 // Mobile Auth Context
-// Provides authentication state and methods for React Native
+// Uses cross-platform storage for web compatibility
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import * as SecureStore from 'expo-secure-store';
+import { getItemAsync } from './storage';
 import api, { setAuthToken, removeAuthToken } from './api';
 
 interface User {
@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     async function checkAuth() {
         try {
-            const token = await SecureStore.getItemAsync('auth_token');
+            const token = await getItemAsync('auth_token');
             if (token) {
                 const userData = await api.get<User>('/auth/me');
                 setUser(userData);

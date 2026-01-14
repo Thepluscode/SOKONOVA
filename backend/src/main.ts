@@ -19,6 +19,7 @@ async function bootstrap() {
     origin: [
       'http://localhost:3000',
       'http://localhost:5173',
+      'http://localhost:8081',  // Expo web
       'http://localhost:54112',
       'https://sokonova-frontend-production.up.railway.app',
       'https://sokonova-backend-production.up.railway.app',

@@ -1,10 +1,8 @@
-// Cart Screen
-import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
-import { Link, router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+// Cart Screen - Web-compatible version
+import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { Link } from 'expo-router';
 import { useAuth } from '../../lib/auth';
 
-// Placeholder cart data - will be connected to API/state
 const MOCK_CART = [
     { id: '1', title: 'African Print Dress', price: 45.00, quantity: 1, image: 'https://via.placeholder.com/100' },
     { id: '2', title: 'Handmade Beads', price: 25.00, quantity: 2, image: 'https://via.placeholder.com/100' },
@@ -12,7 +10,7 @@ const MOCK_CART = [
 
 export default function CartScreen() {
     const { isAuthenticated } = useAuth();
-    const cartItems = MOCK_CART; // TODO: Replace with real cart state/API
+    const cartItems = MOCK_CART;
 
     const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const shipping = subtotal > 50 ? 0 : 5.99;
@@ -21,7 +19,7 @@ export default function CartScreen() {
     if (!isAuthenticated) {
         return (
             <View style={styles.emptyContainer}>
-                <Ionicons name="cart-outline" size={64} color="#D1D5DB" />
+                <Text style={styles.emptyIcon}>🛒</Text>
                 <Text style={styles.emptyTitle}>Your cart is waiting</Text>
                 <Text style={styles.emptyText}>Login to view your cart</Text>
                 <Link href="/auth/login" asChild>
@@ -36,7 +34,7 @@ export default function CartScreen() {
     if (cartItems.length === 0) {
         return (
             <View style={styles.emptyContainer}>
-                <Ionicons name="cart-outline" size={64} color="#D1D5DB" />
+                <Text style={styles.emptyIcon}>🛒</Text>
                 <Text style={styles.emptyTitle}>Your cart is empty</Text>
                 <Text style={styles.emptyText}>Start shopping to add items</Text>
                 <Link href="/discover" asChild>
@@ -62,22 +60,21 @@ export default function CartScreen() {
                             <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
                             <View style={styles.quantityRow}>
                                 <TouchableOpacity style={styles.qtyButton}>
-                                    <Ionicons name="remove" size={16} color="#6B7280" />
+                                    <Text>−</Text>
                                 </TouchableOpacity>
                                 <Text style={styles.qtyText}>{item.quantity}</Text>
                                 <TouchableOpacity style={styles.qtyButton}>
-                                    <Ionicons name="add" size={16} color="#6B7280" />
+                                    <Text>+</Text>
                                 </TouchableOpacity>
                             </View>
                         </View>
                         <TouchableOpacity style={styles.removeButton}>
-                            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                            <Text style={styles.removeText}>🗑️</Text>
                         </TouchableOpacity>
                     </View>
                 )}
             />
 
-            {/* Order Summary */}
             <View style={styles.summary}>
                 <View style={styles.summaryRow}>
                     <Text style={styles.summaryLabel}>Subtotal</Text>
@@ -87,14 +84,11 @@ export default function CartScreen() {
                     <Text style={styles.summaryLabel}>Shipping</Text>
                     <Text style={styles.summaryValue}>{shipping === 0 ? 'FREE' : `$${shipping.toFixed(2)}`}</Text>
                 </View>
-                <View style={[styles.summaryRow, styles.totalRow]}>
+                <View style={styles.totalRow}>
                     <Text style={styles.totalLabel}>Total</Text>
                     <Text style={styles.totalValue}>${total.toFixed(2)}</Text>
                 </View>
-                <TouchableOpacity
-                    style={styles.checkoutButton}
-                    onPress={() => Alert.alert('Checkout', 'Checkout flow coming soon!')}
-                >
+                <TouchableOpacity style={styles.checkoutButton}>
                     <Text style={styles.checkoutText}>Proceed to Checkout</Text>
                 </TouchableOpacity>
             </View>
@@ -113,6 +107,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         padding: 24,
+    },
+    emptyIcon: {
+        fontSize: 64,
     },
     emptyTitle: {
         fontSize: 20,
@@ -157,10 +154,6 @@ const styles = StyleSheet.create({
         borderRadius: 12,
         padding: 12,
         marginBottom: 12,
-        shadowColor: '#000',
-        shadowOpacity: 0.05,
-        shadowRadius: 4,
-        elevation: 2,
     },
     itemImage: {
         width: 80,
@@ -203,6 +196,9 @@ const styles = StyleSheet.create({
     removeButton: {
         padding: 8,
     },
+    removeText: {
+        fontSize: 20,
+    },
     summary: {
         backgroundColor: '#fff',
         padding: 20,
@@ -223,6 +219,8 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     totalRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
         borderTopWidth: 1,
         borderTopColor: '#E5E7EB',
         paddingTop: 12,
