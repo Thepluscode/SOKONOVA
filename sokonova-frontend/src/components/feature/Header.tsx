@@ -231,15 +231,51 @@ export default function Header() {
 
               {/* User Menu - Desktop Only */}
               <div className="relative hidden lg:block">
-                {/* ... existing user menu code ... */}
-                <a
-                  href="/login"
-                  className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
-                >
-                  <i className="ri-login-box-line"></i>
-                  <span className="text-sm font-medium">Sign In</span>
-                </a>
-
+                {user ? (
+                  <div className="flex items-center space-x-3">
+                    {/* Role-based dashboard links */}
+                    {user.role === 'ADMIN' && (
+                      <a
+                        href="/admin/control-tower"
+                        className="flex items-center space-x-1 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        <i className="ri-dashboard-line"></i>
+                        <span className="text-sm">Admin</span>
+                      </a>
+                    )}
+                    {user.role === 'SELLER' && (
+                      <a
+                        href="/seller-dashboard"
+                        className="flex items-center space-x-1 px-3 py-2 text-gray-700 dark:text-gray-300 hover:text-emerald-600 dark:hover:text-emerald-400 font-medium transition-colors cursor-pointer whitespace-nowrap"
+                      >
+                        <i className="ri-store-2-line"></i>
+                        <span className="text-sm">Dashboard</span>
+                      </a>
+                    )}
+                    {/* User dropdown */}
+                    <a
+                      href="/account"
+                      className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+                    >
+                      <div className="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center">
+                        <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
+                          {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                        </span>
+                      </div>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300 max-w-[100px] truncate">
+                        {user.name || user.email?.split('@')[0]}
+                      </span>
+                    </a>
+                  </div>
+                ) : (
+                  <a
+                    href="/login"
+                    className="flex items-center space-x-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors cursor-pointer whitespace-nowrap"
+                  >
+                    <i className="ri-login-box-line"></i>
+                    <span className="text-sm font-medium">Sign In</span>
+                  </a>
+                )}
               </div>
 
               {/* Mobile Menu Button - Visible on Tablet/Mobile */}
