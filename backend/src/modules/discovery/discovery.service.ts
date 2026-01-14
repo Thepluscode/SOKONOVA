@@ -629,4 +629,74 @@ export class DiscoveryService {
       },
     });
   }
+
+  /**
+   * Get search suggestions for autocomplete
+   * Returns matching products, categories, and sellers
+   */
+  async getSuggestions(query: string) {
+    const q = query.toLowerCase().trim();
+
+    // Get matching products (top 5)
+    const products = await this.prisma.product.findMany({
+      where: {
+        OR: [
+          { title: { contains: q, mode: 'insensitive' } },
+          { category: { contains: q, mode: 'insensitive' } },
+        ],
+      },
+      select: {
+        id: true,
+        title: true,
+        price: true,
+        imageUrl: true,
+        category: true,
+      },
+      orderBy: {
+        views: { _count: 'desc' },
+      },
+      take: 5,
+    });
+
+    // Get unique matching categories
+    const categoryProducts = await this.prisma.product.findMany({
+      where: {
+        category: { contains: q, mode: 'insensitive' },
+      },
+      select: {
+        category: true,
+      },
+      distinct: ['category'],
+      take: 5,
+    });
+    const categories = [...new Set(categoryProducts.map(p => p.category).filter(Boolean))];
+
+    // Get matching sellers (top 3)
+    const sellers = await this.prisma.user.findMany({
+      where: {
+        role: 'SELLER',
+        shopName: { contains: q, mode: 'insensitive' },
+        products: { some: {} },
+      },
+      select: {
+        id: true,
+        shopName: true,
+        country: true,
+        ratingAvg: true,
+        _count: {
+          select: { products: true },
+        },
+      },
+      orderBy: {
+        ratingAvg: 'desc',
+      },
+      take: 3,
+    });
+
+    return {
+      products,
+      categories,
+      sellers,
+    };
+  }
 }

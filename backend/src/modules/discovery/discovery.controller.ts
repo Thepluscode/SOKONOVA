@@ -66,4 +66,14 @@ export class DiscoveryController {
   async byRegion(@Param('regionSlug') regionSlug: string) {
     return this.disc.getRegionPage(regionSlug.toLowerCase());
   }
+
+  // PUBLIC: search suggestions for autocomplete
+  // GET /discovery/suggestions?q=...
+  @Get('suggestions')
+  async suggestions(@Query('q') q?: string) {
+    if (!q || q.length < 2) {
+      return { products: [], categories: [], sellers: [] };
+    }
+    return this.disc.getSuggestions(q);
+  }
 }
