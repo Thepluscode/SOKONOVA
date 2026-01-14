@@ -133,6 +133,23 @@ export const analyticsService = {
     ): Promise<unknown> => {
         return api.post(`/analytics/seller/${sellerId}/inventory-recommendations`, { productId });
     },
+
+    /**
+     * Get top selling products
+     * GET /analytics/seller/:sellerId/top-products
+     */
+    getTopSellingProducts: async (sellerId: string, limit: number = 10): Promise<unknown[]> => {
+        return api.get<unknown[]>(`/analytics/seller/${sellerId}/top-products?limit=${limit}`);
+    },
+
+    // Aliases for backwards compatibility
+    getSellerProfitability: async (sellerId: string): Promise<ProfitabilityMetrics> => {
+        return api.get<ProfitabilityMetrics>(`/analytics/seller/${sellerId}/profitability`);
+    },
+
+    getBuyerInsights: async (sellerId: string): Promise<unknown> => {
+        return api.get(`/analytics/seller/${sellerId}/buyer-segments`);
+    },
 };
 
 export default analyticsService;

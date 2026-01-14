@@ -30,6 +30,12 @@ export default function SellerAnalytics() {
     topCountries: [] as any[],
     ageGroups: [] as any[],
   });
+  // New: Inventory insights
+  const [inventoryInsights, setInventoryInsights] = useState({
+    riskAnalysis: null as any,
+    stockoutPredictions: [] as any[],
+    velocityMetrics: [] as any[],
+  });
 
   // Fetch analytics data
   useEffect(() => {
@@ -41,11 +47,21 @@ export default function SellerAnalytics() {
 
       try {
         // Fetch all analytics data in parallel
-        const [profitability, buyerInsights, sellerProducts] = await Promise.all([
+        const [profitability, buyerInsights, sellerProducts, inventoryRisk, stockoutPredictions, velocityMetrics] = await Promise.all([
           analyticsService.getSellerProfitability(user.id).catch(() => null),
           analyticsService.getBuyerInsights(user.id).catch(() => null),
           productsService.list({ sellerId: user.id }).catch(() => []),
+          analyticsService.getInventoryRiskAnalysis(user.id).catch(() => null),
+          analyticsService.getStockoutPredictions(user.id).catch(() => []),
+          analyticsService.getInventoryVelocity(user.id).catch(() => []),
         ]);
+
+        // Set inventory insights
+        setInventoryInsights({
+          riskAnalysis: inventoryRisk,
+          stockoutPredictions: stockoutPredictions as any[],
+          velocityMetrics: velocityMetrics,
+        });
 
         // Build analytics data from API response
         const revenue = profitability?.totalRevenue || 0;
@@ -203,8 +219,8 @@ export default function SellerAnalytics() {
               <button
                 onClick={() => setIsRealTime(!isRealTime)}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg border transition-all cursor-pointer ${isRealTime
-                    ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
-                    : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                  ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-500 text-emerald-600 dark:text-emerald-400'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
                   }`}
               >
                 <div className={`w-2 h-2 rounded-full ${isRealTime ? 'bg-emerald-500 animate-pulse' : 'bg-gray-400'}`}></div>
@@ -396,6 +412,82 @@ export default function SellerAnalytics() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Inventory Insights Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+          {/* Inventory Risk Summary */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <i className="ri-alert-line mr-2 text-amber-500"></i>
+              Inventory Risk
+            </h3>
+            {inventoryInsights.riskAnalysis ? (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                  <span className="text-red-700 dark:text-red-400">Low Stock</span>
+                  <span className="font-bold text-red-700 dark:text-red-400">{(inventoryInsights.riskAnalysis as any).lowStock || 0}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg">
+                  <span className="text-amber-700 dark:text-amber-400">Overstock</span>
+                  <span className="font-bold text-amber-700 dark:text-amber-400">{(inventoryInsights.riskAnalysis as any).overstock || 0}</span>
+                </div>
+                <div className="flex justify-between items-center p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
+                  <span className="text-emerald-700 dark:text-emerald-400">Healthy</span>
+                  <span className="font-bold text-emerald-700 dark:text-emerald-400">{(inventoryInsights.riskAnalysis as any).healthy || 0}</span>
+                </div>
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No risk data available</p>
+            )}
+          </div>
+
+          {/* Stockout Predictions */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <i className="ri-timer-line mr-2 text-red-500"></i>
+              Stockout Predictions
+            </h3>
+            {inventoryInsights.stockoutPredictions.length > 0 ? (
+              <div className="space-y-2">
+                {inventoryInsights.stockoutPredictions.slice(0, 5).map((item: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[60%]">{item.title || item.productTitle}</span>
+                    <span className="text-xs font-medium px-2 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 rounded">
+                      {item.daysUntilStockout || item.daysLeft || '?'} days
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No stockout risks</p>
+            )}
+          </div>
+
+          {/* Velocity Metrics */}
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center">
+              <i className="ri-speed-line mr-2 text-blue-500"></i>
+              Inventory Velocity
+            </h3>
+            {inventoryInsights.velocityMetrics.length > 0 ? (
+              <div className="space-y-2">
+                {inventoryInsights.velocityMetrics.slice(0, 5).map((item: any, index: number) => (
+                  <div key={index} className="flex justify-between items-center p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded">
+                    <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[60%]">{item.title}</span>
+                    <span className={`text-xs font-medium px-2 py-1 rounded ${item.velocity === 'fast' ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400' :
+                        item.velocity === 'medium' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400' :
+                          'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                      }`}>
+                      {item.velocity || 'slow'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-gray-500 text-center py-4">No velocity data</p>
+            )}
           </div>
         </div>
       </div>
