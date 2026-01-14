@@ -5,6 +5,8 @@ import Footer from '../../components/feature/Footer';
 import SkeletonLoader from '../../components/base/SkeletonLoader';
 import { cartService, productsService } from '../../lib/services';
 import { useAuth } from '../../lib/auth';
+import { useToast } from '../../contexts/ToastContext';
+import { getErrorMessage } from '../../lib/errorUtils';
 import type { Cart, CartItem, Product } from '../../lib/types';
 
 interface DisplayCartItem {
@@ -25,6 +27,7 @@ export default function CartPage() {
   const [updating, setUpdating] = useState<string | null>(null);
 
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   // Fetch cart from API
   useEffect(() => {
@@ -63,6 +66,10 @@ export default function CartPage() {
         }
       } catch (err) {
         console.error('Failed to fetch cart:', err);
+        showToast({
+          message: getErrorMessage(err, 'cart'),
+          type: 'error'
+        });
         // Fallback to localStorage
         const localCart = localStorage.getItem('cart');
         if (localCart) {
@@ -83,7 +90,7 @@ export default function CartPage() {
       }
     }
     fetchCart();
-  }, [user?.id]);
+  }, [user?.id, showToast]);
 
   const updateQuantity = async (id: string, productId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
@@ -98,6 +105,10 @@ export default function CartPage() {
       ));
     } catch (err) {
       console.error('Failed to update quantity:', err);
+      showToast({
+        message: 'Could not update quantity. Please try again.',
+        type: 'error'
+      });
     } finally {
       setUpdating(null);
     }
@@ -110,8 +121,16 @@ export default function CartPage() {
         await cartService.removeItem(cart.id, productId);
       }
       setCartItems(cartItems.filter(item => item.id !== id));
+      showToast({
+        message: 'Item removed from cart.',
+        type: 'success'
+      });
     } catch (err) {
       console.error('Failed to remove item:', err);
+      showToast({
+        message: 'Could not remove item. Please try again.',
+        type: 'error'
+      });
     } finally {
       setUpdating(null);
     }

@@ -6,6 +6,7 @@ import Button from '../../components/base/Button';
 import Input from '../../components/base/Input';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../lib/auth';
+import { getErrorMessage } from '../../lib/errorUtils';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ export default function LoginPage() {
       const user = await login(email, password);
 
       showToast({
-        message: 'Signed in. Redirecting...',
+        message: 'Signed in successfully. Redirecting...',
         type: 'success'
       });
 
@@ -46,10 +47,11 @@ export default function LoginPage() {
           navigate('/account');
         }
       }, 1000);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Login error:', error);
+      const message = getErrorMessage(error, 'login');
       showToast({
-        message: error.message || 'Login failed. Check your credentials and try again.',
+        message,
         type: 'error'
       });
     } finally {

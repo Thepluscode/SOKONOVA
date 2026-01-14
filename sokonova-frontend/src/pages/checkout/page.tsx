@@ -124,9 +124,11 @@ export default function Checkout() {
         // Navigate to order confirmation
         navigate(`/order-success?orderId=${order.id}`);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Checkout failed:', err);
-      setError(err.message || 'Could not process order. Please try again.');
+      const { getErrorMessage } = await import('../../lib/errorUtils');
+      const message = getErrorMessage(err, 'order');
+      setError(message);
       setProcessing(false);
     }
   };
@@ -146,13 +148,13 @@ export default function Checkout() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white">
         <Header />
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {error && (
-          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            {error}
-          </div>
-        )}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2">
               <SkeletonLoader type="card" />
             </div>
@@ -183,8 +185,8 @@ export default function Checkout() {
                 <div className="flex items-center">
                   <div
                     className={`w-12 h-12 rounded-full flex items-center justify-center font-bold transition-all duration-500 ${step >= item.num
-                        ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg scale-110'
-                        : 'bg-gray-200 text-gray-600'
+                      ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg scale-110'
+                      : 'bg-gray-200 text-gray-600'
                       }`}
                   >
                     <i className={`${item.icon} text-xl`}></i>
@@ -387,8 +389,8 @@ export default function Checkout() {
                       <label
                         key={provider.id}
                         className={`flex items-center p-4 border-2 rounded-xl cursor-pointer transition-all ${selectedPaymentProvider === provider.id
-                            ? 'border-teal-500 bg-teal-50'
-                            : 'border-gray-300 hover:border-gray-400'
+                          ? 'border-teal-500 bg-teal-50'
+                          : 'border-gray-300 hover:border-gray-400'
                           }`}
                       >
                         <input
