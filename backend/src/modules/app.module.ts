@@ -28,6 +28,7 @@ import { WishlistModule } from './wishlist/wishlist.module';
 // Security & Access Control
 import { TeamsModule } from './teams/teams.module';
 import { AuditLogsModule } from './audit-logs/audit-logs.module';
+import { UploadsModule } from './uploads/uploads.module';
 // Observability
 import { HealthModule } from '../health/health.module';
 import { MetricsModule } from '../metrics/metrics.module';
@@ -67,6 +68,7 @@ import { SentryExceptionFilter } from '../common/filters/sentry-exception.filter
     // Security & Access Control
     TeamsModule,
     AuditLogsModule,
+    UploadsModule,
   ],
 })
 export class AppModule { }

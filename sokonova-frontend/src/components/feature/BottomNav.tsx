@@ -1,7 +1,9 @@
 import { Link, useLocation } from 'react-router-dom';
+import { useCart } from '../../contexts/CartContext';
 
 export default function BottomNav() {
     const location = useLocation();
+    const { cartCount } = useCart();
     const isActive = (path: string) => location.pathname === path;
 
     return (
@@ -10,8 +12,8 @@ export default function BottomNav() {
                 <Link
                     to="/"
                     className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/')
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     <i className={`text-2xl ${isActive('/') ? 'ri-home-fill' : 'ri-home-line'}`}></i>
@@ -21,8 +23,8 @@ export default function BottomNav() {
                 <Link
                     to="/discover"
                     className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/discover')
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     <i className={`text-2xl ${isActive('/discover') ? 'ri-compass-3-fill' : 'ri-compass-3-line'}`}></i>
@@ -42,15 +44,17 @@ export default function BottomNav() {
                 <Link
                     to="/cart"
                     className={`relative flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/cart')
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     <div className="relative">
                         <i className={`text-2xl ${isActive('/cart') ? 'ri-shopping-cart-fill' : 'ri-shopping-cart-line'}`}></i>
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                            3
-                        </span>
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                                {cartCount > 9 ? '9+' : cartCount}
+                            </span>
+                        )}
                     </div>
                     <span className="text-[10px] font-medium">Cart</span>
                 </Link>
@@ -58,8 +62,8 @@ export default function BottomNav() {
                 <Link
                     to="/account"
                     className={`flex flex-col items-center justify-center w-full h-full space-y-1 ${isActive('/account')
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
                         }`}
                 >
                     <i className={`text-2xl ${isActive('/account') ? 'ri-user-fill' : 'ri-user-line'}`}></i>
@@ -69,3 +73,4 @@ export default function BottomNav() {
         </nav>
     );
 }
+

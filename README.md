@@ -545,3 +545,13 @@ nova/backend && npx ts-node scripts/create
 
 
 cd /Users/theophilusogieva/Downloads/sokonova/backend && DATABASE_URL="postgresql://postgres:fHAoeswkVjJhauHAtCQGxFKPmRHacvZl@caboose.proxy.rlwy.net:13048/railway" npx ts-node scripts/create-admin.ts admin@sokonova.com Admin123!
+
+
+
+
+Image uploads - S3/Cloudflare R2 for product photos
+Search improvements - Elasticsearch or full-text search
+Mobile app - React Native or Flutter
+Analytics dashboard - Enhanced seller insights
+Multi-language support - i18n/l10n
+Real-time features - WebSocket for live notifications
