@@ -32,6 +32,9 @@ const AdminBrandingPage = lazy(() => import('../pages/admin/branding/page'));
 const AdminPaymentSettingsPage = lazy(() => import('../pages/admin/payment-settings/page'));
 const AdminShippingSettingsPage = lazy(() => import('../pages/admin/shipping-settings/page'));
 const AdminFlashSalesPage = lazy(() => import('../pages/admin/flash-sales/page'));
+const AdminActivityLogsPage = lazy(() => import('../pages/admin/activity-logs/page'));
+const AdminExceptionsPage = lazy(() => import('../pages/admin/exceptions/page'));
+const AdminMicroFulfillmentPage = lazy(() => import('../pages/admin/micro-fulfillment/page'));
 const DiscoverPage = lazy(() => import('../pages/discover/page'));
 const PersonalizedFeedPage = lazy(() => import('../pages/discover/personalized/page'));
 const SellerStorefrontPage = lazy(() => import('../pages/store/[handle]/page'));
@@ -327,6 +330,18 @@ const routes: RouteObject[] = [
   {
     path: '/admin/flash-sales',
     element: <AdminFlashSalesPage />,
+  },
+  {
+    path: '/admin/activity-logs',
+    element: <AdminActivityLogsPage />,
+  },
+  {
+    path: '/admin/exceptions',
+    element: <AdminExceptionsPage />,
+  },
+  {
+    path: '/admin/micro-fulfillment',
+    element: <AdminMicroFulfillmentPage />,
   },
   {
     path: '/test-payment',
