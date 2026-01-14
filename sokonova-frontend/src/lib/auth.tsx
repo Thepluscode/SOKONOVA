@@ -11,7 +11,7 @@ interface AuthContextType {
     isLoading: boolean;
     isAuthenticated: boolean;
     needsOnboarding: boolean;
-    login: (email: string, password: string) => Promise<void>;
+    login: (email: string, password: string) => Promise<User>;
     logout: () => void;
     hasRole: (role: Role | Role[]) => boolean;
     completeOnboarding: () => void;
@@ -46,10 +46,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         }
     }, []);
 
-    const login = useCallback(async (email: string, password: string) => {
+    const login = useCallback(async (email: string, password: string): Promise<User> => {
         const response = await api.post<LoginResponse>('/auth/login', { email, password });
         setToken(response.token);
         setUser(response.user);
+        return response.user;
     }, []);
 
     const logout = useCallback(() => {

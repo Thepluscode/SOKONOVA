@@ -29,16 +29,22 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
+      const user = await login(email, password);
 
       showToast({
         message: 'Signed in. Redirecting...',
         type: 'success'
       });
 
-      // Redirect after short delay
+      // Role-based redirect
       setTimeout(() => {
-        navigate('/account');
+        if (user?.role === 'ADMIN') {
+          navigate('/admin/control-tower');
+        } else if (user?.role === 'SELLER') {
+          navigate('/seller-dashboard');
+        } else {
+          navigate('/account');
+        }
       }, 1000);
     } catch (error: any) {
       console.error('Login error:', error);

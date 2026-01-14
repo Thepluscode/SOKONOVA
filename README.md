@@ -540,3 +540,8 @@ nova/backend && npx ts-node scripts/create
 ✅ Admin user created!
    Email: admin@sokonova.com
    Password: Admin123!
+
+
+
+
+cd /Users/theophilusogieva/Downloads/sokonova/backend && DATABASE_URL="postgresql://postgres:fHAoeswkVjJhauHAtCQGxFKPmRHacvZl@caboose.proxy.rlwy.net:13048/railway" npx ts-node scripts/create-admin.ts admin@sokonova.com Admin123!
