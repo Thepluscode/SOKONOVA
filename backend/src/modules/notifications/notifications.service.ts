@@ -1,7 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { EmailAdapter } from './providers/email.adapter';
 import { SmsAdapter } from './providers/sms.adapter';
+import { NotificationsGateway } from './notifications.gateway';
 
 export type NotificationChannel = 'inapp' | 'email' | 'sms' | 'whatsapp';
 
@@ -28,6 +29,8 @@ export class NotificationsService {
     private prisma: PrismaService,
     private email: EmailAdapter,
     private sms: SmsAdapter,
+    @Inject(forwardRef(() => NotificationsGateway))
+    private gateway: NotificationsGateway,
   ) { }
 
   /**
@@ -78,6 +81,20 @@ export class NotificationsService {
       this.logger.log(
         `Created notification ${notification.id} for user ${userId}: ${title}`,
       );
+
+      // Emit real-time WebSocket notification
+      try {
+        this.gateway.notifyNew(userId, {
+          id: notification.id,
+          type,
+          title,
+          body,
+          data,
+          createdAt: notification.createdAt,
+        });
+      } catch (wsError) {
+        this.logger.warn(`WebSocket emit failed for user ${userId}:`, wsError);
+      }
 
       // Check quiet hours
       const inQuietHours = this.isInQuietHours(
