@@ -526,3 +526,17 @@ Built with Next.js, NestJS, Prisma, PostgreSQL, and TypeScript.
 **Last Updated:** 2025-10-28
 
 **Latest Feature:** Seller Onboarding with Admin Approval Workflow (scalable seller recruitment with quality control)
+
+
+
+If you want to use a different email/password:
+
+cd backend && npx ts-node scripts/create-admin.ts your-email@example.com YourPassword123
+
+
+cd /Users/theophilusogieva/Downloads/soko
+nova/backend && npx ts-node scripts/create
+-admin.ts admin@sokonova.com Admin123!
+✅ Admin user created!
+   Email: admin@sokonova.com
+   Password: Admin123!
