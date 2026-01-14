@@ -132,4 +132,24 @@ export class AdminSettingsController {
     async deleteFlashSale(@Param('id') id: string) {
         await this.settingsService.deleteFlashSale(id);
     }
+
+    // ============================================
+    // Analytics Endpoints
+    // ============================================
+
+    @Get('analytics/orders')
+    async getOrderAnalytics() {
+        return this.settingsService.getOrderAnalytics();
+    }
+
+    @Get('analytics/inventory')
+    async getInventoryAnalytics() {
+        return this.settingsService.getInventoryAnalytics();
+    }
+
+    @Get('analytics/logistics')
+    async getLogisticsAnalytics() {
+        return this.settingsService.getLogisticsAnalytics();
+    }
 }
+

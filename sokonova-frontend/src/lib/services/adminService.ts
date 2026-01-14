@@ -247,6 +247,75 @@ export const adminService = {
     updateReferralSettings: async (settings: any): Promise<any> => {
         return api.put('/admin/settings/referral', settings);
     },
+
+    // ============= Control Tower APIs =============
+
+    /**
+     * Get system health overview
+     * GET /admin-control-tower/health
+     */
+    getControlTowerHealth: async (): Promise<any> => {
+        return api.get('/admin-control-tower/health');
+    },
+
+    /**
+     * Get platform metrics
+     * GET /admin-control-tower/metrics
+     */
+    getControlTowerMetrics: async (): Promise<any> => {
+        return api.get('/admin-control-tower/metrics');
+    },
+
+    /**
+     * Get recent activities
+     * GET /admin-control-tower/activities
+     */
+    getControlTowerActivities: async (): Promise<any> => {
+        return api.get('/admin-control-tower/activities');
+    },
+
+    /**
+     * Get system alerts
+     * GET /admin-control-tower/alerts
+     */
+    getControlTowerAlerts: async (): Promise<any> => {
+        return api.get('/admin-control-tower/alerts');
+    },
+
+    /**
+     * Get user insights
+     * GET /admin-control-tower/user-insights
+     */
+    getControlTowerUserInsights: async (): Promise<any> => {
+        return api.get('/admin-control-tower/user-insights');
+    },
+
+    // ============= Operations Analytics APIs =============
+
+    /**
+     * Get order analytics
+     * GET /admin/analytics/orders
+     */
+    getOrderAnalytics: async (): Promise<any> => {
+        return api.get('/admin/analytics/orders');
+    },
+
+    /**
+     * Get inventory analytics
+     * GET /admin/analytics/inventory
+     */
+    getInventoryAnalytics: async (): Promise<any> => {
+        return api.get('/admin/analytics/inventory');
+    },
+
+    /**
+     * Get logistics analytics
+     * GET /admin/analytics/logistics
+     */
+    getLogisticsAnalytics: async (): Promise<any> => {
+        return api.get('/admin/analytics/logistics');
+    },
 };
 
 export default adminService;
+

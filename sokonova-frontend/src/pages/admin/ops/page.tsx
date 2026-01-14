@@ -7,6 +7,33 @@ import { useToast } from '../../../contexts/ToastContext';
 import { adminService } from '../../../lib/services';
 import { useRequireAuth } from '../../../lib/auth';
 
+interface OrderData {
+  id: string;
+  customer: string;
+  status: string;
+  amount: string;
+  items: number;
+  date: string;
+}
+
+interface InventoryData {
+  id: string;
+  product: string;
+  sku: string;
+  stock: number;
+  lowStock: boolean;
+  category: string;
+}
+
+interface LogisticsData {
+  id?: number;
+  carrier: string;
+  shipments: number;
+  onTime: string;
+  avgTime: string;
+  status: string;
+}
+
 export default function AdminOpsPage() {
   useRequireAuth('ADMIN');
 
@@ -14,6 +41,16 @@ export default function AdminOpsPage() {
   const [activeTab, setActiveTab] = useState<'commission' | 'orders' | 'inventory' | 'logistics'>('commission');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [loadingOrders, setLoadingOrders] = useState(false);
+  const [loadingInventory, setLoadingInventory] = useState(false);
+  const [loadingLogistics, setLoadingLogistics] = useState(false);
+
+  // Analytics data state
+  const [orders, setOrders] = useState<OrderData[]>([]);
+  const [inventory, setInventory] = useState<InventoryData[]>([]);
+  const [logistics, setLogistics] = useState<LogisticsData[]>([]);
+  const [orderStats, setOrderStats] = useState({ totalOrders: 0, inTransit: 0 });
+  const [inventoryStats, setInventoryStats] = useState({ totalProducts: 0, lowStockCount: 0 });
 
   // Commission Settings State
   const [commissionSettings, setCommissionSettings] = useState({
@@ -37,6 +74,43 @@ export default function AdminOpsPage() {
       .catch(err => console.error('Failed to fetch commission settings:', err));
   }, []);
 
+  // Fetch analytics data when tabs change
+  useEffect(() => {
+    if (activeTab === 'orders') {
+      setLoadingOrders(true);
+      adminService.getOrderAnalytics()
+        .then(data => {
+          if (data) {
+            setOrders(data.recentOrders || []);
+            setOrderStats({ totalOrders: data.totalOrders || 0, inTransit: data.inTransit || 0 });
+          }
+        })
+        .catch(err => console.error('Failed to fetch order analytics:', err))
+        .finally(() => setLoadingOrders(false));
+    } else if (activeTab === 'inventory') {
+      setLoadingInventory(true);
+      adminService.getInventoryAnalytics()
+        .then(data => {
+          if (data) {
+            setInventory(data.lowStockProducts || []);
+            setInventoryStats({ totalProducts: data.totalProducts || 0, lowStockCount: data.lowStockCount || 0 });
+          }
+        })
+        .catch(err => console.error('Failed to fetch inventory analytics:', err))
+        .finally(() => setLoadingInventory(false));
+    } else if (activeTab === 'logistics') {
+      setLoadingLogistics(true);
+      adminService.getLogisticsAnalytics()
+        .then(data => {
+          if (data?.carriers) {
+            setLogistics(data.carriers.map((c: any, i: number) => ({ ...c, id: i + 1 })));
+          }
+        })
+        .catch(err => console.error('Failed to fetch logistics analytics:', err))
+        .finally(() => setLoadingLogistics(false));
+    }
+  }, [activeTab]);
+
   const handleSaveCommission = async () => {
     setSaving(true);
     try {
@@ -51,29 +125,6 @@ export default function AdminOpsPage() {
       setSaving(false);
     }
   };
-
-  const orders = [
-    { id: 'ORD-2024-001', customer: 'Adebayo Okonkwo', status: 'processing', amount: '$234.50', items: 3, date: '2024-01-15' },
-    { id: 'ORD-2024-002', customer: 'Amara Kimani', status: 'shipped', amount: '$456.00', items: 2, date: '2024-01-15' },
-    { id: 'ORD-2024-003', customer: 'Mohamed Hassan', status: 'delivered', amount: '$789.99', items: 5, date: '2024-01-14' },
-    { id: 'ORD-2024-004', customer: 'Kwame Mensah', status: 'pending', amount: '$123.45', items: 1, date: '2024-01-14' },
-    { id: 'ORD-2024-005', customer: 'Thabo Ndlovu', status: 'processing', amount: '$567.80', items: 4, date: '2024-01-13' }
-  ];
-
-  const inventory = [
-    { id: 1, product: 'African Print Dress', sku: 'APD-001', stock: 45, lowStock: false, category: 'Fashion' },
-    { id: 2, product: 'Handwoven Basket', sku: 'HWB-002', stock: 8, lowStock: true, category: 'Crafts' },
-    { id: 3, product: 'Smartphone Case', sku: 'SPC-003', stock: 156, lowStock: false, category: 'Electronics' },
-    { id: 4, product: 'Leather Sandals', sku: 'LS-004', stock: 23, lowStock: false, category: 'Fashion' },
-    { id: 5, product: 'Beaded Necklace', sku: 'BN-005', stock: 5, lowStock: true, category: 'Jewelry' }
-  ];
-
-  const logistics = [
-    { id: 1, carrier: 'DHL Express', shipments: 234, onTime: '98%', avgTime: '2.3 days', status: 'excellent' },
-    { id: 2, carrier: 'FedEx', shipments: 189, onTime: '95%', avgTime: '2.8 days', status: 'good' },
-    { id: 3, carrier: 'Local Courier', shipments: 456, onTime: '92%', avgTime: '3.5 days', status: 'good' },
-    { id: 4, carrier: 'UPS', shipments: 167, onTime: '96%', avgTime: '2.5 days', status: 'excellent' }
-  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -169,8 +220,8 @@ export default function AdminOpsPage() {
               <button
                 onClick={() => setActiveTab('commission')}
                 className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'commission'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 <i className="ri-percent-line mr-2"></i>
@@ -179,8 +230,8 @@ export default function AdminOpsPage() {
               <button
                 onClick={() => setActiveTab('orders')}
                 className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'orders'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Orders
@@ -188,8 +239,8 @@ export default function AdminOpsPage() {
               <button
                 onClick={() => setActiveTab('inventory')}
                 className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'inventory'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Inventory
@@ -197,8 +248,8 @@ export default function AdminOpsPage() {
               <button
                 onClick={() => setActiveTab('logistics')}
                 className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'logistics'
-                    ? 'border-emerald-600 text-emerald-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
                   }`}
               >
                 Logistics
@@ -559,8 +610,8 @@ export default function AdminOpsPage() {
                     <div className="flex items-center justify-between mb-4">
                       <h3 className="text-lg font-bold text-gray-900">{carrier.carrier}</h3>
                       <span className={`px-3 py-1 text-sm font-medium rounded-full ${carrier.status === 'excellent'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-blue-100 text-blue-700'
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-blue-100 text-blue-700'
                         }`}>
                         {carrier.status}
                       </span>
