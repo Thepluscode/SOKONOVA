@@ -1,6 +1,6 @@
 # SokoNova — Multi-Seller Marketplace Platform
 
-A production-ready e-commerce marketplace platform built with Next.js 14, NestJS, and PostgreSQL.
+A production-ready e-commerce marketplace platform built with NestJS, React, and PostgreSQL.
 
 **Features:**
 - 🛒 Real-time cart with PostgreSQL persistence
@@ -9,9 +9,13 @@ A production-ready e-commerce marketplace platform built with Next.js 14, NestJS
 - 💰 Commission & payout system (10% marketplace fee)
 - 🚚 Fulfillment & shipping tracking (per-item status)
 - 📝 Seller onboarding with admin approval workflow
-- 🔐 NextAuth.js authentication
+- 🔐 JWT authentication with role-based access
 - 📦 Order management & tracking
-- 📊 Seller earnings dashboard with CSV export
+- 📊 Enhanced seller analytics dashboard
+- 📱 **React Native mobile app (Expo)**
+- 🔔 **WebSocket real-time notifications**
+- 📷 **S3/R2 image uploads**
+- 🔍 **Search suggestions & recent history**
 - 🎨 Light/dark theme support
 
 ---
@@ -523,35 +527,222 @@ Built with Next.js, NestJS, Prisma, PostgreSQL, and TypeScript.
 
 **Status:** ✅ Production-Ready Marketplace Platform | 🚀 Ready for Pilot Launch
 
-**Last Updated:** 2025-10-28
+**Last Updated:** 2026-01-14
 
-**Latest Feature:** Seller Onboarding with Admin Approval Workflow (scalable seller recruitment with quality control)
+**Latest Features:**
+- 📱 React Native Mobile App (Expo)
+- 🔔 WebSocket Real-time Notifications
+- 📊 Enhanced Seller Analytics Dashboard
+- 🔍 Search Suggestions with Recent History
+- 📷 S3/Cloudflare R2 Image Uploads
 
+---
 
+## 📱 Mobile App (React Native)
 
-If you want to use a different email/password:
+A cross-platform mobile app built with Expo and TypeScript.
 
-cd backend && npx ts-node scripts/create-admin.ts your-email@example.com YourPassword123
+**Location:** `sokonova-mobile/`
 
+### Tech Stack
+- Expo SDK 54 with TypeScript
+- expo-router (file-based routing)
+- React Query for data fetching
+- Cross-platform storage (localStorage/SecureStore)
 
-cd /Users/theophilusogieva/Downloads/soko
-nova/backend && npx ts-node scripts/create
--admin.ts admin@sokonova.com Admin123!
-✅ Admin user created!
-   Email: admin@sokonova.com
-   Password: Admin123!
+### Run Mobile App
+```bash
+cd sokonova-mobile
+npm install
+npm start
+# Scan QR code with Expo Go app
+```
 
+### Screens
+| Screen | Description |
+|--------|-------------|
+| Home | Featured products, categories |
+| Discover | Search, filters, product grid |
+| Cart | Shopping cart, checkout |
+| Account | Profile, settings, seller menu |
+| Login | Authentication |
 
+---
 
+## 🔔 WebSocket Real-time Notifications
 
-cd /Users/theophilusogieva/Downloads/sokonova/backend && DATABASE_URL="postgresql://postgres:fHAoeswkVjJhauHAtCQGxFKPmRHacvZl@caboose.proxy.rlwy.net:13048/railway" npx ts-node scripts/create-admin.ts admin@sokonova.com Admin123!
+Real-time push notifications via WebSocket.
 
+### Backend Gateway
+```typescript
+// notifications.gateway.ts
+- JWT authentication on connect
+- Room-based per-user subscriptions
+- Heartbeat ping/pong for connection health
+- Auto-emit on notification creation
+```
 
+### Event Types
+| Event | Description |
+|-------|-------------|
+| `order:created` | New order placed |
+| `order:updated` | Order status changed |
+| `payment:success` | Payment completed |
+| `notification:new` | New notification |
+| `chat:message` | Chat message received |
+| `product:sold` | Seller product sold |
 
+### Frontend Usage
+```typescript
+import { websocketService, WS_EVENTS } from './websocketService';
 
-Image uploads - S3/Cloudflare R2 for product photos
-Search improvements - Elasticsearch or full-text search
-Mobile app - React Native or Flutter
-Analytics dashboard - Enhanced seller insights
-Multi-language support - i18n/l10n
-Real-time features - WebSocket for live notifications
+websocketService.connect(token);
+websocketService.subscribe(WS_EVENTS.ORDER_CREATED, (data) => {
+  console.log('New order:', data);
+});
+```
+
+---
+
+## 📷 S3/Cloudflare R2 Image Uploads
+
+Product images stored in S3-compatible storage.
+
+### Backend Service
+```typescript
+// upload.service.ts
+- S3-compatible API (AWS S3, Cloudflare R2, DigitalOcean Spaces)
+- Presigned URLs for direct browser uploads
+- Automatic public URL generation
+```
+
+### Environment Variables
+```env
+S3_ENDPOINT=https://xxx.r2.cloudflarestorage.com
+S3_ACCESS_KEY_ID=your_access_key
+S3_SECRET_ACCESS_KEY=your_secret_key
+S3_BUCKET_NAME=sokonova-uploads
+S3_PUBLIC_URL=https://pub-xxx.r2.dev
+S3_REGION=auto
+```
+
+### API Endpoints
+```
+POST   /upload/presigned-url      - Get presigned URL for upload
+POST   /upload/product-image      - Upload product image (multipart)
+DELETE /upload/:key               - Delete uploaded file
+```
+
+---
+
+## 📊 Enhanced Seller Analytics
+
+Comprehensive analytics dashboard for sellers.
+
+### Features
+- **Profitability Metrics** - Revenue, fees, net profit
+- **Inventory Insights** - Stock levels, velocity, risk analysis
+- **Buyer Segmentation** - Customer cohorts, demographics
+- **Stockout Predictions** - AI-powered inventory alerts
+
+### API Endpoints
+```
+GET /analytics/seller/:id/profitability      - Revenue & fees breakdown
+GET /analytics/seller/:id/inventory-risk     - Low stock, overstock alerts
+GET /analytics/seller/:id/stockout-predictions - Stockout forecasts
+GET /analytics/seller/:id/inventory-velocity - Fast/slow moving items
+GET /analytics/seller/:id/buyer-segments     - Customer demographics
+GET /analytics/seller/:id/top-products       - Best selling products
+```
+
+---
+
+## 🔍 Search Improvements
+
+Enhanced product discovery with suggestions.
+
+### Backend
+```
+GET /discovery/suggestions?q=query   - Product, category, seller suggestions
+GET /discovery/products-search       - Full-text product search
+```
+
+### Frontend Features
+- Real-time search suggestions
+- Recent search history (localStorage)
+- Category and seller suggestions
+
+---
+
+## 🛠️ Environment Variables
+
+### Backend (.env)
+```env
+# Database
+DATABASE_URL="postgresql://..."
+
+# Authentication
+JWT_SECRET=your_jwt_secret
+
+# Payments
+PAYSTACK_SECRET_KEY=sk_test_xxx
+FLUTTERWAVE_SECRET_KEY=FLWSECK_TEST-xxx
+
+# Email
+SENDGRID_API_KEY=SG.xxx
+SENDGRID_FROM_EMAIL=noreply@sokonova.com
+
+# Storage
+S3_ENDPOINT=https://xxx.r2.cloudflarestorage.com
+S3_ACCESS_KEY_ID=xxx
+S3_SECRET_ACCESS_KEY=xxx
+S3_BUCKET_NAME=sokonova-uploads
+
+# Monitoring
+SENTRY_DSN=https://xxx@sentry.io/xxx
+```
+
+### Frontend (.env)
+```env
+VITE_API_URL=http://localhost:4001
+VITE_WS_URL=ws://localhost:4001
+```
+
+### Mobile (.env)
+```env
+EXPO_PUBLIC_API_URL=https://sokonova-backend-production.up.railway.app
+```
+
+---
+
+## 🚀 Deployment
+
+### Railway (Production)
+- Backend: Auto-deploys from `main` branch
+- Frontend: Vite build with static hosting
+- Database: PostgreSQL addon
+
+### Run Locally
+```bash
+# Backend
+cd backend && npm run start:dev
+
+# Frontend
+cd sokonova-frontend && npm run dev
+
+# Mobile
+cd sokonova-mobile && npm start
+```
+
+---
+
+## 📄 License
+
+[Your License Here]
+
+---
+
+## 🙏 Acknowledgments
+
+Built with Next.js, NestJS, Prisma, PostgreSQL, React Native (Expo), and TypeScript.
+
