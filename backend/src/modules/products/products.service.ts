@@ -259,7 +259,7 @@ export class ProductsService {
     });
 
     // Update product view count
-    const product = await this.prisma.product.update({
+    const updatedProduct = await this.prisma.product.update({
       where: { id: productId },
       data: {
         viewCount: {
@@ -268,6 +268,6 @@ export class ProductsService {
       },
     });
 
-    return product;
+    return updatedProduct;
   }
 }

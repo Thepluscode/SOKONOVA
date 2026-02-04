@@ -7,34 +7,39 @@ export class PrismaService extends PrismaClient implements OnModuleInit {
   webhook: any
   webhookDelivery: any
   async onModuleInit() {
-    this.$use(async (params, next) => {
-      if (params.model === 'Product') {
-        const action = params.action
-        const shouldFilter =
-          action === 'findUnique' ||
-          action === 'findFirst' ||
-          action === 'findMany' ||
-          action === 'count' ||
-          action === 'aggregate' ||
-          action === 'groupBy'
+    const extended = this.$extends({
+      query: {
+        product: {
+          $allOperations({ operation, args, query }) {
+            const shouldFilter =
+              operation === 'findFirst' ||
+              operation === 'findMany' ||
+              operation === 'count' ||
+              operation === 'aggregate' ||
+              operation === 'groupBy'
 
-        if (shouldFilter) {
-          params.args = params.args || {}
-          params.args.where = params.args.where || {}
+            if (!shouldFilter) {
+              return query(args)
+            }
 
-          if (params.args.where.isActive === undefined) {
-            params.args.where.isActive = true
-          }
+            const nextArgs = {
+              ...args,
+              where: {
+                ...(args as any)?.where,
+              },
+            } as typeof args
 
-          if (action === 'findUnique') {
-            params.action = 'findFirst'
-          }
-        }
-      }
+            if ((nextArgs as any).where?.isActive === undefined) {
+              ;(nextArgs as any).where.isActive = true
+            }
 
-      return next(params)
+            return query(nextArgs)
+          },
+        },
+      },
     })
 
+    Object.assign(this, extended)
     await this.$connect()
   }
   async enableShutdownHooks(app: INestApplication) {

@@ -14,6 +14,7 @@ export type NotificationType =
   | 'ORDER_DELIVERED'
   | 'DISPUTE_OPENED'
   | 'DISPUTE_RESOLVED'
+  | 'PAYOUT_REQUEST'
   | 'PAYOUT_RELEASED'
   | 'RISK_ALERT'
   | 'NEW_REVIEW'
