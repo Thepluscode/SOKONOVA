@@ -1,15 +1,14 @@
 import { NextResponse } from 'next/server'
 import { getRedis } from '@/lib/redis'
 import { getOrCreateSessionId } from '@/lib/session'
-import { authOptions } from '@/lib/auth'
-import { getServerSession } from 'next-auth'
+import { auth } from "@/auth";
 import type { CartItem } from '@/types'
 
 const guestKey = (sid: string) => `sn:cart:${sid}`
 const userKey = (uid: string) => `sn:cart:user:${uid}`
 
 export async function POST() {
-  const session = await getServerSession(authOptions)
+  const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
   const res = NextResponse.next()
   const sid = getOrCreateSessionId(res)

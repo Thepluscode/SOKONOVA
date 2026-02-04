@@ -1,7 +1,6 @@
 
-import { getServerSession } from 'next-auth'
-import { authOptions } from './auth'
+import { auth } from "@/auth";
 
 export function getSession() {
-  return getServerSession(authOptions)
+  return auth();
 }

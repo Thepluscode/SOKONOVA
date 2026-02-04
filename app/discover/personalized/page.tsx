@@ -1,12 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getPersonalizedDiscovery } from "@/lib/api/discovery";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export default async function PersonalizedDiscoveryPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   
   // Redirect to login if not authenticated
   if (!session?.user) {

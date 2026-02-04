@@ -1,9 +1,8 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import AdminTrustDashboardPage from "./page-content";
 
 export default async function AdminTrustPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user || session.user.role !== "ADMIN") {
     return (

@@ -1,5 +1,4 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,7 +10,7 @@ export default async function OrderTrackingPage({
 }: {
   params: { orderId: string };
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   if (!session?.user) {
     redirect("/auth/login?callbackUrl=/orders/" + params.orderId + "/tracking");

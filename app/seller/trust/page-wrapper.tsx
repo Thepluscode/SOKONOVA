@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import SellerTrustDashboard from "./page-content";
 
 export default async function SellerTrustDashboardPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   // Auth guard: redirect to login if not authenticated
   if (!session?.user) {

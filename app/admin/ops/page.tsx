@@ -1,10 +1,9 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { getOpsSummary } from "@/lib/api/analytics";
 
 export default async function OpsDashboardPage() {
   // Auth check: must be ADMIN
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user || session.user.role !== "ADMIN") {
     return (
       <div className="mx-auto max-w-xl px-4 py-16 text-center">

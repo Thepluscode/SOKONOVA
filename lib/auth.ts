@@ -1,4 +1,4 @@
-import type { NextAuthOptions } from 'next-auth'
+import type { NextAuthConfig } from 'next-auth'
 import CognitoProvider from 'next-auth/providers/cognito'
 import Credentials from 'next-auth/providers/credentials'
 import { Role } from '@/types/role'
@@ -16,7 +16,7 @@ const demoUsers: Array<{
   { id: 'u-3', name: 'Admin Ace',  email: 'admin@sokonova.dev', role: 'ADMIN',  password: 'admin123' },
 ]
 
-export const authOptions: NextAuthOptions = {
+export const authConfig = {
   providers: [
     ...(process.env.COGNITO_CLIENT_ID && process.env.COGNITO_CLIENT_SECRET && process.env.COGNITO_ISSUER ? [
       CognitoProvider({
@@ -58,4 +58,4 @@ export const authOptions: NextAuthOptions = {
     signIn: '/auth/signin'
   },
   secret: process.env.NEXTAUTH_SECRET,
-}
+} satisfies NextAuthConfig

@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { SellerDashboard } from "./seller-inner";
 import Link from "next/link";
 
@@ -10,7 +9,7 @@ import Link from "next/link";
  * This page is protected and requires authentication
  */
 export default async function SellerPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
 
   // Auth guard: redirect to login if not authenticated
   if (!session?.user) {

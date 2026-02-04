@@ -1,8 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getDiscoveryHighlights } from "@/lib/api/discovery";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import React from "react";
 
 // Define proper types for the data
@@ -33,7 +32,7 @@ interface DiscoveryData {
 }
 
 export default async function DiscoverPage() {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const data: DiscoveryData = await getDiscoveryHighlights();
   const { categories, regions } = data;
 

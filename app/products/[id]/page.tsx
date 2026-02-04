@@ -1,6 +1,5 @@
 import { getProductById } from "@/lib/api/products";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import Image from "next/image";
 import { AddToCartClient } from "./AddToCartClient";
 import { trackProductView } from "@/lib/api/productViews";
@@ -12,7 +11,7 @@ export default async function ProductDetailPage({
 }: {
   params: { id: string };
 }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const product = await getProductById(params.id);
   
   // Track product view for personalized recommendations if user is logged in

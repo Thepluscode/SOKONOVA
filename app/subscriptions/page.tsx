@@ -1,11 +1,10 @@
 import { getSubscriptionPlans, getMySubscription } from "@/lib/api/subscriptions";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 
 export default async function SubscriptionsPage() {
   // Get user session
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const userId = session?.user?.id;
 
   // Fetch subscription plans

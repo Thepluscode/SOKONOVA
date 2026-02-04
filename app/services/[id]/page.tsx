@@ -1,7 +1,6 @@
 import { getSellerServiceById, purchaseSellerService } from "@/lib/api/seller-services";
 import { ServiceDetail } from "@/components/ServiceDetail";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
 export default async function ServiceDetailPage({ 
@@ -26,7 +25,7 @@ export default async function ServiceDetailPage({
   }
 
   // Get user session
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   const userId = session?.user?.id;
 
   return (
