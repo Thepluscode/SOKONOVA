@@ -1,11 +1,15 @@
-[phases.setup]
-nixPkgs = ["nodejs_20", "openssl"]
-
 [phases.install]
-cmds = ["npm install", "npx prisma generate"]
+cmds = [
+  "npm install",
+  "npx prisma generate --schema prisma/schema.prisma"
+]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = [
+  "npm install",
+  "npx prisma generate --schema prisma/schema.prisma",
+  "npm run build"
+]
 
 [start]
-cmd = "npx prisma migrate deploy && npm run start:prod"
+cmd = "npx prisma migrate deploy --schema prisma/schema.prisma && npm run start:prod"
