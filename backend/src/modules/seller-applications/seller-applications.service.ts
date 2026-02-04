@@ -152,6 +152,23 @@ export class SellerApplicationsService {
     });
   }
 
+  async listByStatus(adminId: string, status: 'PENDING' | 'APPROVED' | 'REJECTED') {
+    const adminUser = await this.prisma.user.findUnique({
+      where: { id: adminId },
+    });
+    if (!adminUser || adminUser.role !== 'ADMIN') {
+      throw new ForbiddenException('Not authorized');
+    }
+
+    return this.prisma.sellerApplication.findMany({
+      where: { status },
+      orderBy: { reviewedAt: 'desc' },
+      include: {
+        user: { select: { id: true, email: true, name: true, role: true } },
+      },
+    });
+  }
+
   // 4. Admin approves
   async approve(appId: string, dto: ModerateDto) {
     // Check admin

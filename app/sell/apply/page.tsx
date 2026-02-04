@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { submitSellerApplication, getMySellerApplication } from "@/lib/api/seller-applications";
@@ -57,7 +57,7 @@ export default function SellerApplicationPage() {
   }, [session?.user, status]);
 
   // Handle submission
-  async function submit(e: React.FormEvent) {
+  async function submit(e: FormEvent) {
     e.preventDefault();
 
     const userId = session?.user?.id;

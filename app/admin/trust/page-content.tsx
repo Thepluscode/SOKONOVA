@@ -1,5 +1,6 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+"use client";
+
+import { useEffect, useState } from "react";
 import { getAdminTrustDashboard } from "@/lib/api/trust";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
@@ -14,21 +15,47 @@ import {
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
-export default async function AdminTrustDashboardPage() {
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user || session.user.role !== "ADMIN") {
+export default function AdminTrustDashboardPage({ adminId }: { adminId: string }) {
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    async function load() {
+      try {
+        const result = await getAdminTrustDashboard(adminId);
+        if (mounted) setData(result);
+      } catch (error) {
+        console.error("Failed to load trust dashboard:", error);
+        if (mounted) setData(null);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+    if (adminId) load();
+    return () => {
+      mounted = false;
+    };
+  }, [adminId]);
+
+  if (loading) {
     return (
-      <div className="mx-auto max-w-xl px-4 py-16 text-center">
-        <div className="text-xl font-semibold mb-2">Access denied</div>
-        <div className="text-muted-foreground text-sm">
-          Admins only.
-        </div>
+      <div className="mx-auto max-w-7xl px-4 py-10">
+        <div className="text-sm text-muted-foreground">Loading trust dashboard...</div>
       </div>
     );
   }
 
-  const data = await getAdminTrustDashboard(session.user.id);
+  if (!data) {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 text-center">
+        <div className="text-xl font-semibold mb-2">Unable to load dashboard</div>
+        <div className="text-muted-foreground text-sm">
+          Please try again later.
+        </div>
+      </div>
+    );
+  }
 
   // Prepare data for trust distribution chart
   const trustDistributionData = [

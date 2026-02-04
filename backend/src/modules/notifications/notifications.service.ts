@@ -388,6 +388,33 @@ export class NotificationsService {
   }
 
   /**
+   * Notify seller about payout request status
+   */
+  async notifyPayoutRequestUpdated(
+    sellerId: string,
+    requestId: string,
+    status: 'APPROVED' | 'REJECTED',
+    amount: number,
+    currency: string,
+  ) {
+    const title =
+      status === 'APPROVED' ? 'Payout Request Approved' : 'Payout Request Rejected';
+    const body =
+      status === 'APPROVED'
+        ? `Your payout request for ${currency} ${amount.toFixed(2)} has been approved.`
+        : `Your payout request for ${currency} ${amount.toFixed(2)} was rejected.`;
+
+    return this.create(
+      sellerId,
+      'PAYOUT_REQUEST',
+      title,
+      body,
+      { requestId, status, amount, currency },
+      ['inapp', 'email'],
+    );
+  }
+
+  /**
    * Notify seller of a new review
    */
   async notifyNewReview(

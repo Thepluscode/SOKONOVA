@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -327,5 +327,187 @@ export class PayoutsService {
     }, {} as Record<string, any>);
 
     return Object.values(grouped);
+  }
+
+  async listPayoutRequests(
+    status?: 'REQUESTED' | 'APPROVED' | 'REJECTED' | 'PAID',
+    page = 1,
+    limit = 20,
+  ) {
+    const take = Math.min(Math.max(limit, 1), 100);
+    const skip = (Math.max(page, 1) - 1) * take;
+
+    const where = status ? { status } : {};
+
+    const [items, total] = await this.prisma.$transaction([
+      this.prisma.payoutRequest.findMany({
+        where,
+        take,
+        skip,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          seller: {
+            select: { id: true, name: true, email: true, shopName: true },
+          },
+        },
+      }),
+      this.prisma.payoutRequest.count({ where }),
+    ]);
+
+    return {
+      items,
+      total,
+      page: Math.max(page, 1),
+      limit: take,
+    };
+  }
+
+  async approvePayoutRequest(id: string, note?: string) {
+    const request = await this.prisma.payoutRequest.findUnique({ where: { id } });
+    if (!request) {
+      throw new BadRequestException('Payout request not found');
+    }
+    if (request.status !== 'REQUESTED') {
+      throw new BadRequestException('Only requested payouts can be approved');
+    }
+
+    const updated = await this.prisma.payoutRequest.update({
+      where: { id },
+      data: {
+        status: 'APPROVED',
+        note: note || null,
+        processedAt: new Date(),
+      },
+    });
+
+    try {
+      await this.notifications.notifyPayoutRequestUpdated(
+        request.sellerId,
+        updated.id,
+        'APPROVED',
+        Number(updated.amount),
+        updated.currency,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send payout approval notification: ${error.message}`);
+    }
+
+    return updated;
+  }
+
+  async rejectPayoutRequest(id: string, note?: string) {
+    const request = await this.prisma.payoutRequest.findUnique({ where: { id } });
+    if (!request) {
+      throw new BadRequestException('Payout request not found');
+    }
+    if (request.status !== 'REQUESTED') {
+      throw new BadRequestException('Only requested payouts can be rejected');
+    }
+
+    const updated = await this.prisma.payoutRequest.update({
+      where: { id },
+      data: {
+        status: 'REJECTED',
+        note: note || null,
+        processedAt: new Date(),
+      },
+    });
+
+    try {
+      await this.notifications.notifyPayoutRequestUpdated(
+        request.sellerId,
+        updated.id,
+        'REJECTED',
+        Number(updated.amount),
+        updated.currency,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send payout rejection notification: ${error.message}`);
+    }
+
+    return updated;
+  }
+
+  async markPayoutRequestPaid(id: string, note?: string) {
+    const request = await this.prisma.payoutRequest.findUnique({ where: { id } });
+    if (!request) {
+      throw new BadRequestException('Payout request not found');
+    }
+    if (request.status !== 'APPROVED') {
+      throw new BadRequestException('Only approved payouts can be marked as paid');
+    }
+
+    const updated = await this.prisma.payoutRequest.update({
+      where: { id },
+      data: {
+        status: 'PAID',
+        note: note || null,
+        processedAt: new Date(),
+      },
+    });
+
+    try {
+      await this.notifications.notifyPayoutReleased(
+        request.sellerId,
+        Number(updated.amount),
+        updated.currency,
+        updated.id,
+        1,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to send payout paid notification: ${error.message}`);
+    }
+
+    return updated;
+  }
+
+  /**
+   * Seller requests a payout for available pending earnings
+   */
+  async requestPayout(
+    sellerId: string,
+    amount: number,
+    method: string,
+    note?: string,
+  ) {
+    if (!amount || amount <= 0) {
+      throw new BadRequestException('Amount must be greater than zero');
+    }
+
+    const pending = await this.getPendingForSeller(sellerId);
+    const pendingNet = Number(pending.totalNet || 0);
+
+    const outstandingRequests = await this.prisma.payoutRequest.findMany({
+      where: {
+        sellerId,
+        status: { in: ['REQUESTED', 'APPROVED'] },
+      },
+      select: { amount: true },
+    });
+
+    const reserved = outstandingRequests.reduce(
+      (sum, req) => sum + Number(req.amount),
+      0,
+    );
+
+    const available = pendingNet - reserved;
+    if (amount > available) {
+      throw new BadRequestException(
+        `Requested amount exceeds available payout balance (${available.toFixed(2)})`,
+      );
+    }
+
+    const currency = pending.currency || 'USD';
+
+    return this.prisma.payoutRequest.create({
+      data: {
+        sellerId,
+        amount,
+        currency,
+        method,
+        note: note || null,
+        status: 'REQUESTED',
+      },
+    });
   }
 }

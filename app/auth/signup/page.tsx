@@ -1,7 +1,7 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 import Link from 'next/link'
 
@@ -13,7 +13,7 @@ export default function SignUpPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     
     // Basic validation

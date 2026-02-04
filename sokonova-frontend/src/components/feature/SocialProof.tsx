@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import api from '../../lib/api';
 
 interface Notification {
   id: string;
@@ -10,13 +11,38 @@ interface Notification {
 }
 
 export default function SocialProof() {
-  // TODO: Fetch real purchase notifications from backend API
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
+    async function loadNotifications() {
+      try {
+        const data = await api.get<Notification[]>('/discovery/social-proof?limit=6');
+        if (mounted) {
+          setNotifications(data || []);
+        }
+      } catch (error) {
+        console.error('Failed to load social proof notifications:', error);
+        if (mounted) {
+          setNotifications([]);
+        }
+      }
+    }
+
+    loadNotifications();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (notifications.length === 0) return;
+
     const interval = setInterval(() => {
       setIsVisible(false);
       setTimeout(() => {

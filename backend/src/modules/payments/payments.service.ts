@@ -23,6 +23,22 @@ export class PaymentsService {
   ) {}
 
   /**
+   * Calculate marketplace fee from order total.
+   * Default take rate is 5%, premium sellers get 3%.
+   */
+  calculateMarketplaceFee(
+    orderTotal: number,
+    sellerTier: 'STANDARD' | 'PREMIUM' = 'STANDARD',
+  ) {
+    if (!orderTotal || orderTotal <= 0) {
+      return 0;
+    }
+
+    const feePercent = sellerTier === 'PREMIUM' ? 3 : 5;
+    return Number(((orderTotal * feePercent) / 100).toFixed(2));
+  }
+
+  /**
    * Helper: Call Paystack API to initialize payment
    */
   private async initPaystack(order: any, customerEmail: string) {

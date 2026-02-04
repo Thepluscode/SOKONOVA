@@ -1,7 +1,7 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { signIn } from 'next-auth/react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
@@ -10,7 +10,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     const res = await signIn('credentials', { email, password, redirect: true, callbackUrl: '/' })

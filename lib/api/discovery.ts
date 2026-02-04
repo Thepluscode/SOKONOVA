@@ -28,3 +28,10 @@ export async function getCategoryPage(slug: string) {
 export async function getRegionPage(regionSlug: string) {
   return apiFetch(`${apiBase}/discovery/by-region/${regionSlug}`);
 }
+
+/**
+ * PUBLIC: Get social proof events
+ */
+export async function getSocialProof(limit = 6) {
+  return apiFetch(`${apiBase}/discovery/social-proof?limit=${limit}`);
+}

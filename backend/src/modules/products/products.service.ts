@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 
 @Injectable()
@@ -6,12 +6,12 @@ export class ProductsService {
   [x: string]: any;
   async getByIds(idArray: string[]) {
     return this.prisma.product.findMany({
-      where: { id: { in: idArray } },
+      where: { id: { in: idArray }, isActive: true },
     });
   }
   async list(filters?: { sellerId?: string; category?: string; }) {
     return this.prisma.product.findMany({
-      where: filters || {},
+      where: { ...(filters || {}), isActive: true },
       include: {
         seller: {
           select: {
@@ -69,7 +69,7 @@ export class ProductsService {
 
   async getSellerProducts(sellerId: string) {
     const products = await this.prisma.product.findMany({
-      where: { sellerId },
+      where: { sellerId, isActive: true },
       include: {
         inventory: true,
         _count: {
@@ -87,8 +87,8 @@ export class ProductsService {
   }
 
   async getProductById(id: string) {
-    const product = await this.prisma.product.findUnique({
-      where: { id },
+    const product = await this.prisma.product.findFirst({
+      where: { id, isActive: true },
       include: {
         seller: {
           select: {
@@ -144,15 +144,112 @@ export class ProductsService {
   }
 
   async deleteProduct(productId: string) {
-    // Soft delete by marking as inactive or actually delete
-    const product = await this.prisma.product.delete({
+    const product = await this.prisma.product.update({
       where: { id: productId },
+      data: { isActive: false },
     });
 
     return product;
   }
 
+  async sellerList(sellerId: string) {
+    return this.getSellerProducts(sellerId);
+  }
+
+  async sellerListArchived(sellerId: string) {
+    return this.prisma.product.findMany({
+      where: { sellerId, isActive: false },
+      include: {
+        inventory: true,
+        _count: {
+          select: {
+            views: true,
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc',
+      },
+    });
+  }
+
+  async sellerUpdate(
+    sellerId: string,
+    productId: string,
+    data: {
+      title?: string;
+      description?: string;
+      price?: number;
+      currency?: string;
+      imageUrl?: string;
+      category?: string;
+    },
+  ) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, sellerId, isActive: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product.update({
+      where: { id: productId },
+      data,
+    });
+  }
+
+  async sellerUpdateInventory(
+    sellerId: string,
+    productId: string,
+    quantity: number,
+  ) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, sellerId, isActive: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.updateInventory(productId, quantity);
+  }
+
+  async sellerDelete(sellerId: string, productId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, sellerId, isActive: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: { isActive: false },
+    });
+  }
+
+  async sellerRestore(sellerId: string, productId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, sellerId, isActive: false },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    return this.prisma.product.update({
+      where: { id: productId },
+      data: { isActive: true },
+    });
+  }
+
   async recordProductView(userId: string, productId: string) {
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, isActive: true },
+      select: { id: true },
+    });
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
     // Record the view
     await this.prisma.productView.create({
       data: {

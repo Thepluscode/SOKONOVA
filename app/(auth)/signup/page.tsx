@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/Button'
@@ -14,7 +14,7 @@ export default function SignUpPage() {
   const [error, setError] = useState('')
   const router = useRouter()
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')

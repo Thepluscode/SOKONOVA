@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type FormEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getSellerSponsoredPlacements, createSponsoredPlacement } from '@/lib/api/sponsored-placements';
@@ -56,7 +56,7 @@ export default function SponsoredPlacementsPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     if (!userId) return;

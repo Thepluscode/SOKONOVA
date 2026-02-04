@@ -1,56 +1,18 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getAdminTrustDashboard } from "@/lib/api/trust";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
-import { Badge } from "@/components/ui/badge";
-import { 
-  ShieldAlert, 
-  Users, 
-  TrendingUp, 
-  AlertTriangle,
-  CheckCircle,
-  XCircle,
-  Clock
-} from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
+import AdminTrustDashboardPage from "./page-content";
 
-// lightweight stat card
-function CardStat({
-  icon,
-  label,
-  primary,
-  secondary,
-  variant = "default",
-}: {
-  icon: React.ReactNode;
-  label: string;
-  primary: string;
-  secondary: string;
-  variant?: "default" | "destructive" | "warning";
-}) {
-  const getVariantClasses = () => {
-    switch (variant) {
-      case "destructive":
-        return "text-red-500";
-      case "warning":
-        return "text-yellow-500";
-      default:
-        return "text-blue-500";
-    }
-  };
+export default async function AdminTrustPage() {
+  const session = await getServerSession(authOptions);
 
-  return (
-    <div className="border rounded-lg p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className={getVariantClasses()}>
-          {icon}
-        </div>
-        <div className="text-sm text-muted-foreground">{label}</div>
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return (
+      <div className="mx-auto max-w-xl px-4 py-16 text-center">
+        <div className="text-xl font-semibold mb-2">Access denied</div>
+        <div className="text-muted-foreground text-sm">Admins only.</div>
       </div>
-      <div className="text-2xl font-bold">{primary}</div>
-      <div className="text-xs text-muted-foreground">{secondary}</div>
-    </div>
-  );
-}
+    );
+  }
 
-// ... rest of the component implementation would go here
+  return <AdminTrustDashboardPage adminId={session.user.id} />;
+}

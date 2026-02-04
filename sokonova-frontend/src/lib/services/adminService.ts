@@ -32,13 +32,16 @@ export const adminService = {
      * GET /seller-applications/pending
      */
     getSellerApplications: async (status?: string): Promise<SellerApplication[]> => {
-        // For now, only fetch pending applications
         if (status === 'pending') {
             return api.get<SellerApplication[]>('/seller-applications/pending');
         }
+        if (status === 'approved') {
+            return api.get<SellerApplication[]>('/seller-applications/approved');
+        }
+        if (status === 'rejected') {
+            return api.get<SellerApplication[]>('/seller-applications/rejected');
+        }
 
-        // For approved/rejected, we'll use the same endpoint for now
-        // TODO: Backend should provide separate endpoints for these
         return api.get<SellerApplication[]>('/seller-applications/pending');
     },
 
@@ -315,7 +318,42 @@ export const adminService = {
     getLogisticsAnalytics: async (): Promise<any> => {
         return api.get('/admin/analytics/logistics');
     },
+
+    /**
+     * List payout requests
+     * GET /payouts/admin/requests
+     */
+    getPayoutRequests: async (status?: 'REQUESTED' | 'APPROVED' | 'REJECTED' | 'PAID', page: number = 1, limit: number = 20): Promise<any> => {
+        const params = new URLSearchParams();
+        if (status) params.set('status', status);
+        params.set('page', String(page));
+        params.set('limit', String(limit));
+        return api.get(`/payouts/admin/requests?${params.toString()}`);
+    },
+
+    /**
+     * Approve payout request
+     * PATCH /payouts/admin/requests/:id/approve
+     */
+    approvePayoutRequest: async (id: string, note?: string): Promise<any> => {
+        return api.patch(`/payouts/admin/requests/${id}/approve`, { note });
+    },
+
+    /**
+     * Reject payout request
+     * PATCH /payouts/admin/requests/:id/reject
+     */
+    rejectPayoutRequest: async (id: string, note?: string): Promise<any> => {
+        return api.patch(`/payouts/admin/requests/${id}/reject`, { note });
+    },
+
+    /**
+     * Mark payout request as paid
+     * PATCH /payouts/admin/requests/:id/mark-paid
+     */
+    markPayoutRequestPaid: async (id: string, note?: string): Promise<any> => {
+        return api.patch(`/payouts/admin/requests/${id}/mark-paid`, { note });
+    },
 };
 
 export default adminService;
-

@@ -76,4 +76,12 @@ export class DiscoveryController {
     }
     return this.disc.getSuggestions(q);
   }
+
+  // PUBLIC: social proof events
+  // GET /discovery/social-proof?limit=6
+  @Get('social-proof')
+  async socialProof(@Query('limit') limit?: string) {
+    const parsed = limit ? parseInt(limit, 10) : 6;
+    return this.disc.getSocialProof(Number.isNaN(parsed) ? 6 : parsed);
+  }
 }

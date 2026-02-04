@@ -1,7 +1,7 @@
 'use client'
 
 import { signIn } from 'next-auth/react'
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Button } from '@/components/ui/Button'
 
 export default function SignInPage() {
@@ -9,7 +9,7 @@ export default function SignInPage() {
   const [password, setPassword] = useState('buyer123')
   const [loading, setLoading] = useState(false)
 
-  const submit = async (e: React.FormEvent) => {
+  const submit = async (e: FormEvent) => {
     e.preventDefault()
     setLoading(true)
     

@@ -5,6 +5,31 @@ import { PrismaService } from '../prisma.service';
 export class DiscoveryService {
   constructor(private prisma: PrismaService) { }
 
+  private formatUserName(name?: string | null) {
+    if (!name) return 'SokoNova Shopper';
+    const parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0];
+    const lastInitial = parts[parts.length - 1]?.[0];
+    return `${parts[0]} ${lastInitial}.`;
+  }
+
+  private formatLocation(city?: string | null, country?: string | null) {
+    if (city && country) return `${city}, ${country}`;
+    if (city) return city;
+    if (country) return country;
+    return 'your area';
+  }
+
+  private timeAgo(date: Date) {
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.max(1, Math.floor(diffMs / 60000));
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  }
+
   async getDiscoveryHighlights() {
     // Get trending products based on views
     const trendingProducts = await this.prisma.product.findMany({
@@ -93,6 +118,95 @@ export class DiscoveryService {
       newArrivals,
       communityStories,
     };
+  }
+
+  async getSocialProof(limit = 6) {
+    const take = Math.max(1, Math.min(limit, 20));
+
+    const [orders, reviews, wishlists] = await Promise.all([
+      this.prisma.orderItem.findMany({
+        where: {
+          order: { status: 'PAID' },
+        },
+        take,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          createdAt: true,
+          product: { select: { title: true } },
+          order: {
+            select: {
+              user: { select: { name: true, city: true, country: true } },
+            },
+          },
+        },
+      }),
+      this.prisma.review.findMany({
+        where: { isVisible: true },
+        take,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          createdAt: true,
+          product: { select: { title: true } },
+          buyer: { select: { name: true, city: true, country: true } },
+        },
+      }),
+      this.prisma.wishlistItem.findMany({
+        take,
+        orderBy: { addedAt: 'desc' },
+        select: {
+          id: true,
+          addedAt: true,
+          product: { select: { title: true } },
+          user: { select: { name: true, city: true, country: true } },
+        },
+      }),
+    ]);
+
+    const events = [
+      ...orders.map((item) => ({
+        id: `order_${item.id}`,
+        userName: this.formatUserName(item.order.user?.name),
+        userLocation: this.formatLocation(
+          item.order.user?.city,
+          item.order.user?.country,
+        ),
+        productName: item.product?.title || 'a product',
+        action: 'purchased' as const,
+        createdAt: item.createdAt,
+        timeAgo: this.timeAgo(item.createdAt),
+      })),
+      ...reviews.map((review) => ({
+        id: `review_${review.id}`,
+        userName: this.formatUserName(review.buyer?.name),
+        userLocation: this.formatLocation(
+          review.buyer?.city,
+          review.buyer?.country,
+        ),
+        productName: review.product?.title || 'a product',
+        action: 'reviewed' as const,
+        createdAt: review.createdAt,
+        timeAgo: this.timeAgo(review.createdAt),
+      })),
+      ...wishlists.map((item) => ({
+        id: `wishlist_${item.id}`,
+        userName: this.formatUserName(item.user?.name),
+        userLocation: this.formatLocation(
+          item.user?.city,
+          item.user?.country,
+        ),
+        productName: item.product?.title || 'a product',
+        action: 'wishlisted' as const,
+        createdAt: item.addedAt,
+        timeAgo: this.timeAgo(item.addedAt),
+      })),
+    ]
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, take)
+      .map(({ createdAt, ...rest }) => rest);
+
+    return events;
   }
 
   async getProductsByCategory(slug: string) {

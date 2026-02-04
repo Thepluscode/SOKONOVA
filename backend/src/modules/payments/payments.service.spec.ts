@@ -207,8 +207,7 @@ describe('PaymentsService - Critical Revenue Tests', () => {
 
       expect(calculatedFee).toBe(expectedFee);
 
-      // TODO: Implement actual fee calculation method in PaymentsService
-      // expect(service.calculateMarketplaceFee(orderTotal)).toBe(expectedFee);
+      expect(service.calculateMarketplaceFee(orderTotal)).toBe(expectedFee);
     });
 
     it('should handle different fee tiers for seller levels', () => {
@@ -222,6 +221,9 @@ describe('PaymentsService - Critical Revenue Tests', () => {
 
       expect(standardRevenue).toBe(5.00);
       expect(premiumRevenue).toBe(3.00);
+
+      expect(service.calculateMarketplaceFee(orderTotal, 'STANDARD')).toBe(5.00);
+      expect(service.calculateMarketplaceFee(orderTotal, 'PREMIUM')).toBe(3.00);
 
       // This shows you lose $2 per $100 transaction for premium sellers
       // Make sure that's worth it!

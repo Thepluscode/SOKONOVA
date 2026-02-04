@@ -72,7 +72,7 @@ export const payoutsService = {
 
     /**
      * Request a payout
-     * TODO: backend endpoint not implemented yet
+     * POST /payouts/seller/:sellerId/request
      */
     requestPayout: async (sellerId: string, amount: number, method: string): Promise<{ id: string; status: string }> => {
         return api.post(`/payouts/seller/${sellerId}/request`, { amount, method });

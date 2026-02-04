@@ -4,9 +4,12 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import {
   getSellerProducts,
+  getSellerArchivedProducts,
   createSellerProduct,
   updateSellerProduct,
   updateSellerInventory,
+  archiveSellerProduct,
+  restoreSellerProduct,
   promoteToSeller,
 } from "@/lib/api/seller";
 import { sellerGetOpenFulfillment, sellerMarkDelivered, sellerMarkShipped } from "@/lib/api/fulfillment";
@@ -53,9 +56,11 @@ type PayoutInfo = {
 
 export function SellerDashboard({ userId, userName }: DashboardProps) {
   const [products, setProducts] = useState<Product[]>([]);
+  const [archivedProducts, setArchivedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [creatingProduct, setCreatingProduct] = useState(false);
+  const [productView, setProductView] = useState<"active" | "archived">("active");
   const [payout, setPayout] = useState<PayoutInfo | null>(null);
   const [shipQueue, setShipQueue] = useState<any[]>([]);
   const [issues, setIssues] = useState<any[]>([]);
@@ -83,13 +88,17 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
     setLoading(true);
     try {
       // Fix the void expression errors by properly handling the API calls
-      const productsData = await getSellerProducts(userId);
+      const [productsData, archivedData] = await Promise.all([
+        getSellerProducts(userId),
+        getSellerArchivedProducts(userId),
+      ]);
       const payoutData = await sellerGetPendingPayout(userId);
       const fulfillmentData = await sellerGetOpenFulfillment(userId);
       const issuesData = await sellerGetDisputes(userId);
       const analyticsData = await getSellerAnalyticsSummary(userId);
       
       setProducts(productsData || []);
+      setArchivedProducts(archivedData || []);
       setPayout(payoutData || null);
       setShipQueue(fulfillmentData || []);
       setIssues(issuesData || []);
@@ -167,6 +176,27 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
     } catch (error) {
       console.error("Error updating inventory:", error);
       alert("Failed to update inventory");
+    }
+  };
+
+  const handleArchive = async (productId: string) => {
+    if (!confirm("Archive this product? It will be hidden from buyers.")) return;
+    try {
+      await archiveSellerProduct(userId, productId);
+      await loadProducts();
+    } catch (error) {
+      console.error("Error archiving product:", error);
+      alert("Failed to archive product");
+    }
+  };
+
+  const handleRestore = async (productId: string) => {
+    try {
+      await restoreSellerProduct(userId, productId);
+      await loadProducts();
+    } catch (error) {
+      console.error("Error restoring product:", error);
+      alert("Failed to restore product");
     }
   };
 
@@ -714,13 +744,40 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
       {/* Products Table */}
       <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b">
-          <h2 className="text-xl font-semibold">My Products</h2>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-semibold">My Products</h2>
+              <p className="text-xs text-muted-foreground">
+                {products.length} active • {archivedProducts.length} archived
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setProductView("active")}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${productView === "active"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setProductView("archived")}
+                className={`px-3 py-1 rounded-full text-xs font-medium ${productView === "archived"
+                  ? "bg-emerald-100 text-emerald-700"
+                  : "bg-gray-100 text-gray-600"
+                  }`}
+              >
+                Archived
+              </button>
+            </div>
+          </div>
         </div>
-        {products.length === 0 ? (
+        {productView === "active" && products.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground">
             {'No products yet. Click "New Product" to get started.'}
           </div>
-        ) : (
+        ) : productView === "active" ? (
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-900">
@@ -774,12 +831,77 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
                       <div className="text-sm">{getTotalOrders(product)} orders</div>
                     </td>
                     <td className="px-6 py-4">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => startEdit(product)}
+                          className="text-sm py-1 px-3"
+                          disabled={editingProduct !== null || creatingProduct}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          onClick={() => handleArchive(product.id)}
+                          className="text-sm py-1 px-3 bg-gray-100 hover:bg-gray-200 text-gray-800"
+                          disabled={editingProduct !== null || creatingProduct}
+                        >
+                          Archive
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : archivedProducts.length === 0 ? (
+          <div className="p-6 text-center text-muted-foreground">
+            No archived products.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 dark:bg-gray-900">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase">Product</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase">Price</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase">Orders</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {archivedProducts.map((product) => (
+                  <tr key={product.id} className="hover:bg-gray-50 dark:hover:bg-gray-900/50">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        {product.imageUrl && (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.title}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        )}
+                        <div>
+                          <div className="font-medium">{product.title}</div>
+                          <div className="text-sm text-muted-foreground truncate max-w-xs">
+                            {product.description}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="font-medium">
+                        {Number(product.price).toFixed(2)} {product.currency}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="text-sm">{getTotalOrders(product)} orders</div>
+                    </td>
+                    <td className="px-6 py-4">
                       <Button
-                        onClick={() => startEdit(product)}
+                        onClick={() => handleRestore(product.id)}
                         className="text-sm py-1 px-3"
-                        disabled={editingProduct !== null || creatingProduct}
                       >
-                        Edit
+                        Restore
                       </Button>
                     </td>
                   </tr>

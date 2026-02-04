@@ -55,6 +55,24 @@ export class SellerApplicationsController {
     return this.svc.listPending(user.id);
   }
 
+  // ADMIN: list approved apps
+  // GET /seller-applications/approved
+  @Get('approved')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async approved(@CurrentUser() user: { id: string }) {
+    return this.svc.listByStatus(user.id, 'APPROVED');
+  }
+
+  // ADMIN: list rejected apps
+  // GET /seller-applications/rejected
+  @Get('rejected')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async rejected(@CurrentUser() user: { id: string }) {
+    return this.svc.listByStatus(user.id, 'REJECTED');
+  }
+
   // ADMIN: approve
   // PATCH /seller-applications/:id/approve
   @Patch(':id/approve')

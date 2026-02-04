@@ -39,13 +39,12 @@ export class UsersController {
 
   @Post('me/password')
   @UseGuards(JwtAuthGuard)
-  changePassword(
+  async changePassword(
     @CurrentUser('id') userId: string,
     @Body() body: { currentPassword: string; newPassword: string },
   ) {
-    // TODO: Extract userId from JWT token and implement password change
-    // TODO: Verify currentPassword and hash newPassword
-    return { message: 'Password change endpoint - implementation pending' };
+    await this.users.changePassword(userId, body.currentPassword, body.newPassword);
+    return { message: 'Password updated successfully' };
   }
 
   @Get('me/orders')

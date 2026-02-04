@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '../../contexts/ToastContext';
+import { cartService } from '../../lib/services';
+import { useAuth } from '../../lib/auth';
+import { useCart } from '../../contexts/CartContext';
 
 interface BundleProduct {
   id: string;
@@ -16,7 +19,10 @@ export default function ProductBundles({ currentProductId }: ProductBundlesProps
   const [selectedProducts, setSelectedProducts] = useState<string[]>([currentProductId]);
   const [bundleProducts, setBundleProducts] = useState<BundleProduct[]>([]);
   const [currentProduct, setCurrentProduct] = useState<BundleProduct | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
   const { showToast } = useToast();
+  const { user } = useAuth();
+  const { refreshCart } = useCart();
 
   useEffect(() => {
     // Mock current product data
@@ -76,14 +82,30 @@ export default function ProductBundles({ currentProductId }: ProductBundlesProps
   const savings = originalPrice - totalPrice;
   const discountPercent = Math.round((savings / originalPrice) * 100);
 
-  const addBundleToCart = () => {
+  const addBundleToCart = async () => {
     const selectedItems = allProducts.filter(p => selectedProducts.includes(p.id));
-    console.log('Adding bundle to cart:', selectedItems);
-    // TODO: Implement cart functionality
-    showToast({
-      message: `Added ${selectedItems.length} items to cart.`,
-      type: 'success',
-    });
+    if (selectedItems.length === 0) return;
+
+    setIsAdding(true);
+    try {
+      const cart = await cartService.get(user?.id);
+      await Promise.all(
+        selectedItems.map((item) => cartService.addItem(cart.id, item.id, 1)),
+      );
+      await refreshCart();
+      showToast({
+        message: `Added ${selectedItems.length} items to cart.`,
+        type: 'success',
+      });
+    } catch (error) {
+      console.error('Failed to add bundle to cart:', error);
+      showToast({
+        message: 'Failed to add items to cart. Please try again.',
+        type: 'error',
+      });
+    } finally {
+      setIsAdding(false);
+    }
   };
 
   return (
@@ -159,11 +181,11 @@ export default function ProductBundles({ currentProductId }: ProductBundlesProps
 
       <button
         onClick={addBundleToCart}
-        disabled={selectedProducts.length === 0}
+        disabled={selectedProducts.length === 0 || isAdding}
         className="w-full py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-lg hover:from-emerald-600 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all cursor-pointer whitespace-nowrap"
       >
         <i className="ri-shopping-cart-line mr-2"></i>
-        Add Selected to Cart
+        {isAdding ? 'Adding...' : 'Add Selected to Cart'}
       </button>
     </div>
   );

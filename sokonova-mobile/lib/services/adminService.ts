@@ -32,13 +32,16 @@ export const adminService = {
      * GET /seller-applications/pending
      */
     getSellerApplications: async (status?: string): Promise<SellerApplication[]> => {
-        // For now, only fetch pending applications
         if (status === 'pending') {
             return api.get<SellerApplication[]>('/seller-applications/pending');
         }
+        if (status === 'approved') {
+            return api.get<SellerApplication[]>('/seller-applications/approved');
+        }
+        if (status === 'rejected') {
+            return api.get<SellerApplication[]>('/seller-applications/rejected');
+        }
 
-        // For approved/rejected, we'll use the same endpoint for now
-        // TODO: Backend should provide separate endpoints for these
         return api.get<SellerApplication[]>('/seller-applications/pending');
     },
 
@@ -318,4 +321,3 @@ export const adminService = {
 };
 
 export default adminService;
-

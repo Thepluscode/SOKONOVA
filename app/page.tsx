@@ -5,6 +5,7 @@ import { TrendingProductsStripWithLoading } from "@/components/TrendingProductsS
 import { FeaturedSellersStripWithLoading } from "@/components/FeaturedSellersStripWithLoading";
 import { CategoryStrip } from "@/components/CategoryStrip";
 import { FeaturedSellersSkeleton } from "@/components/FeaturedSellersSkeleton";
+import { SocialProofToast } from "@/components/SocialProofToast";
 import Link from "next/link";
 import { ShoppingBag, MapPin, Users, Sparkles } from "lucide-react";
 import { CATEGORIES, CITIES } from "@/lib/config";
@@ -23,6 +24,7 @@ export default async function Home() {
 
   return (
     <div>
+      <SocialProofToast />
       {/* Hero Section */}
       <PageReveal>
         <section className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-accent/5 to-background">

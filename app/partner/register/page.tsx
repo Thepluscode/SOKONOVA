@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { registerPartner } from '@/lib/api/api-partner-platform';
 
 export default function PartnerRegisterPage() {
@@ -13,7 +13,7 @@ export default function PartnerRegisterPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
     try {

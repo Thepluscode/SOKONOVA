@@ -34,21 +34,38 @@ interface LogisticsData {
   status: string;
 }
 
+interface PayoutRequest {
+  id: string;
+  sellerId: string;
+  seller?: { id: string; name?: string; email?: string; shopName?: string };
+  amount: number;
+  currency: string;
+  method: string;
+  status: 'REQUESTED' | 'APPROVED' | 'REJECTED' | 'PAID';
+  note?: string | null;
+  createdAt: string;
+  processedAt?: string | null;
+}
+
 export default function AdminOpsPage() {
   useRequireAuth('ADMIN');
 
   const { showToast } = useToast();
-  const [activeTab, setActiveTab] = useState<'commission' | 'orders' | 'inventory' | 'logistics'>('commission');
+  const [activeTab, setActiveTab] = useState<'commission' | 'orders' | 'inventory' | 'logistics' | 'payouts'>('commission');
   const [showSuccessMessage, setShowSuccessMessage] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loadingOrders, setLoadingOrders] = useState(false);
   const [loadingInventory, setLoadingInventory] = useState(false);
   const [loadingLogistics, setLoadingLogistics] = useState(false);
+  const [loadingPayouts, setLoadingPayouts] = useState(false);
 
   // Analytics data state
   const [orders, setOrders] = useState<OrderData[]>([]);
   const [inventory, setInventory] = useState<InventoryData[]>([]);
   const [logistics, setLogistics] = useState<LogisticsData[]>([]);
+  const [payoutRequests, setPayoutRequests] = useState<PayoutRequest[]>([]);
+  const [payoutStatusFilter, setPayoutStatusFilter] = useState<'REQUESTED' | 'APPROVED' | 'REJECTED' | 'PAID'>('REQUESTED');
+  const [processingRequestId, setProcessingRequestId] = useState<string | null>(null);
   const [orderStats, setOrderStats] = useState({ totalOrders: 0, inTransit: 0 });
   const [inventoryStats, setInventoryStats] = useState({ totalProducts: 0, lowStockCount: 0 });
 
@@ -108,8 +125,38 @@ export default function AdminOpsPage() {
         })
         .catch(err => console.error('Failed to fetch logistics analytics:', err))
         .finally(() => setLoadingLogistics(false));
+    } else if (activeTab === 'payouts') {
+      setLoadingPayouts(true);
+      adminService.getPayoutRequests(payoutStatusFilter)
+        .then(data => {
+          setPayoutRequests(data?.items || []);
+        })
+        .catch(err => console.error('Failed to fetch payout requests:', err))
+        .finally(() => setLoadingPayouts(false));
     }
-  }, [activeTab]);
+  }, [activeTab, payoutStatusFilter]);
+
+  const handlePayoutAction = async (id: string, action: 'approve' | 'reject' | 'paid') => {
+    setProcessingRequestId(id);
+    try {
+      if (action === 'approve') {
+        await adminService.approvePayoutRequest(id);
+      } else if (action === 'reject') {
+        await adminService.rejectPayoutRequest(id);
+      } else {
+        await adminService.markPayoutRequestPaid(id);
+      }
+
+      const updated = await adminService.getPayoutRequests(payoutStatusFilter);
+      setPayoutRequests(updated?.items || []);
+      showToast({ message: 'Payout request updated', type: 'success' });
+    } catch (err: any) {
+      console.error('Failed to update payout request:', err);
+      showToast({ message: err.message || 'Failed to update payout request', type: 'error' });
+    } finally {
+      setProcessingRequestId(null);
+    }
+  };
 
   const handleSaveCommission = async () => {
     setSaving(true);
@@ -135,7 +182,14 @@ export default function AdminOpsPage() {
       case 'processing':
         return 'bg-yellow-100 text-yellow-700';
       case 'pending':
+      case 'requested':
         return 'bg-orange-100 text-orange-700';
+      case 'approved':
+        return 'bg-emerald-100 text-emerald-700';
+      case 'rejected':
+        return 'bg-red-100 text-red-700';
+      case 'paid':
+        return 'bg-green-100 text-green-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -253,6 +307,15 @@ export default function AdminOpsPage() {
                   }`}
               >
                 Logistics
+              </button>
+              <button
+                onClick={() => setActiveTab('payouts')}
+                className={`py-4 border-b-2 font-medium text-sm transition-colors cursor-pointer whitespace-nowrap ${activeTab === 'payouts'
+                  ? 'border-emerald-600 text-emerald-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+                  }`}
+              >
+                Payout Requests
               </button>
             </div>
           </div>
@@ -632,6 +695,105 @@ export default function AdminOpsPage() {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {activeTab === 'payouts' && (
+              <div className="bg-white rounded-lg border border-gray-200 p-6 animate-fade-in-up">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900">Payout Requests</h3>
+                    <p className="text-sm text-gray-600">Approve, reject, or mark payout requests as paid.</p>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <label className="text-sm text-gray-600">Status</label>
+                    <select
+                      value={payoutStatusFilter}
+                      onChange={(e) => setPayoutStatusFilter(e.target.value as any)}
+                      className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+                    >
+                      <option value="REQUESTED">Requested</option>
+                      <option value="APPROVED">Approved</option>
+                      <option value="REJECTED">Rejected</option>
+                      <option value="PAID">Paid</option>
+                    </select>
+                  </div>
+                </div>
+
+                {loadingPayouts ? (
+                  <div className="text-center py-10 text-gray-500">Loading payout requests...</div>
+                ) : payoutRequests.length === 0 ? (
+                  <div className="text-center py-10 text-gray-500">No payout requests found.</div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seller</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Amount</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Method</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Requested</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-200">
+                        {payoutRequests.map((request) => (
+                          <tr key={request.id} className="hover:bg-gray-50">
+                            <td className="px-6 py-4">
+                              <div className="font-medium text-gray-900">
+                                {request.seller?.shopName || request.seller?.name || 'Seller'}
+                              </div>
+                              <div className="text-xs text-gray-500">{request.seller?.email}</div>
+                            </td>
+                            <td className="px-6 py-4 font-medium text-gray-900">
+                              {request.currency} {Number(request.amount).toFixed(2)}
+                            </td>
+                            <td className="px-6 py-4 text-gray-600">{request.method}</td>
+                            <td className="px-6 py-4">
+                              <span className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(request.status.toLowerCase())}`}>
+                                {request.status}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-gray-600">
+                              {new Date(request.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-6 py-4">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="whitespace-nowrap"
+                                  disabled={processingRequestId === request.id || request.status !== 'REQUESTED'}
+                                  onClick={() => handlePayoutAction(request.id, 'approve')}
+                                >
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="whitespace-nowrap"
+                                  disabled={processingRequestId === request.id || request.status !== 'REQUESTED'}
+                                  onClick={() => handlePayoutAction(request.id, 'reject')}
+                                >
+                                  Reject
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  className="whitespace-nowrap"
+                                  disabled={processingRequestId === request.id || request.status !== 'APPROVED'}
+                                  onClick={() => handlePayoutAction(request.id, 'paid')}
+                                >
+                                  Mark Paid
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
           </div>

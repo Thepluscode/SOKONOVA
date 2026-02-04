@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -87,6 +88,39 @@ export class UsersService {
     });
     
     return user;
+  }
+
+  async changePassword(userId: string, currentPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, password: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (!user.password) {
+      throw new BadRequestException('Password change not available for this account');
+    }
+
+    const isValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isValid) {
+      throw new UnauthorizedException('Current password is incorrect');
+    }
+
+    if (currentPassword === newPassword) {
+      throw new BadRequestException('New password must be different');
+    }
+
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { password: hashed },
+    });
+
+    return { success: true };
   }
 
   async getSellerByHandle(handle: string) {

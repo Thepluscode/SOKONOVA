@@ -3,6 +3,8 @@ import {
   Controller,
   ForbiddenException,
   Get,
+  Patch,
+  Param,
   Post,
   Query,
   Res,
@@ -12,6 +14,8 @@ import { Role } from '@prisma/client';
 import { PayoutsService } from './payouts.service';
 import { Response } from 'express';
 import { MarkPaidDto } from './dto/mark-paid.dto';
+import { RequestPayoutDto } from './dto/request-payout.dto';
+import { AdminPayoutRequestDto } from './dto/admin-payout-request.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
@@ -26,7 +30,7 @@ import { CurrentUser } from '../../common/decorators/current-user.decorator';
  * - /payouts/seller/*   -> Seller-facing endpoints
  * - /payouts/admin/*    -> Finance/admin endpoints
  *
- * TODO: In production, add authentication guards:
+ * Authentication enforced:
  * - Seller endpoints: require seller to own the data
  * - Admin endpoints: require ADMIN role
  */
@@ -49,7 +53,6 @@ export class PayoutsController {
    *   items: [...]
    * }
    *
-   * TODO: Add auth guard
    * @UseGuards(JwtAuthGuard)
    * async sellerPending(@CurrentUser() user: User) {
    *   return this.payouts.getPendingForSeller(user.id);
@@ -77,7 +80,6 @@ export class PayoutsController {
    *
    * Returns all order items (pending and paid) for reconciliation.
    *
-   * TODO: Add auth guard to ensure seller owns the data
    */
   @Get('seller/all')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -104,7 +106,6 @@ export class PayoutsController {
    * - Mobile money upload (M-Pesa, MoMo)
    * - Accounting reconciliation
    *
-   * TODO: Add auth guard
    */
   @Get('seller/csv')
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -130,6 +131,26 @@ export class PayoutsController {
   }
 
   /**
+   * Seller: Request payout
+   *
+   * POST /payouts/seller/:sellerId/request
+   * { "amount": 100.0, "method": "Bank Transfer" }
+   */
+  @Post('seller/:sellerId/request')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.SELLER, Role.ADMIN)
+  async requestPayout(
+    @Param('sellerId') sellerId: string,
+    @Body() dto: RequestPayoutDto,
+    @CurrentUser() user: { id: string; role: Role },
+  ) {
+    if (sellerId !== user.id && user.role !== Role.ADMIN) {
+      throw new ForbiddenException('Not allowed to request payout for another seller');
+    }
+    return this.payouts.requestPayout(sellerId, dto.amount, dto.method, dto.note);
+  }
+
+  /**
    * Admin: Mark order items as paid out
    *
    * POST /payouts/admin/mark-paid
@@ -146,7 +167,6 @@ export class PayoutsController {
    *   "lines": [...]
    * }
    *
-   * TODO: Add admin auth guard
    * @UseGuards(JwtAuthGuard, RolesGuard)
    * @Roles('ADMIN')
    */
@@ -155,6 +175,69 @@ export class PayoutsController {
   @Roles(Role.ADMIN)
   async markPaid(@Body() dto: MarkPaidDto) {
     return this.payouts.markPaidOut(dto.orderItemIds, dto.batchId);
+  }
+
+  /**
+   * Admin: List payout requests
+   *
+   * GET /payouts/admin/requests?status=REQUESTED&page=1&limit=20
+   */
+  @Get('admin/requests')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async listRequests(
+    @Query('status') status?: 'REQUESTED' | 'APPROVED' | 'REJECTED' | 'PAID',
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ) {
+    const pageNum = page ? parseInt(page, 10) : 1;
+    const limitNum = limit ? parseInt(limit, 10) : 20;
+    return this.payouts.listPayoutRequests(status, pageNum, limitNum);
+  }
+
+  /**
+   * Admin: Approve payout request
+   *
+   * PATCH /payouts/admin/requests/:id/approve
+   */
+  @Patch('admin/requests/:id/approve')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async approveRequest(
+    @Param('id') id: string,
+    @Body() body: AdminPayoutRequestDto,
+  ) {
+    return this.payouts.approvePayoutRequest(id, body?.note);
+  }
+
+  /**
+   * Admin: Reject payout request
+   *
+   * PATCH /payouts/admin/requests/:id/reject
+   */
+  @Patch('admin/requests/:id/reject')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async rejectRequest(
+    @Param('id') id: string,
+    @Body() body: AdminPayoutRequestDto,
+  ) {
+    return this.payouts.rejectPayoutRequest(id, body?.note);
+  }
+
+  /**
+   * Admin: Mark payout request as paid
+   *
+   * PATCH /payouts/admin/requests/:id/mark-paid
+   */
+  @Patch('admin/requests/:id/mark-paid')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN)
+  async markRequestPaid(
+    @Param('id') id: string,
+    @Body() body: AdminPayoutRequestDto,
+  ) {
+    return this.payouts.markPayoutRequestPaid(id, body?.note);
   }
 
   /**
@@ -180,7 +263,6 @@ export class PayoutsController {
    *   }
    * ]
    *
-   * TODO: Add admin auth guard
    */
   @Get('admin/summary')
   @UseGuards(JwtAuthGuard, RolesGuard)

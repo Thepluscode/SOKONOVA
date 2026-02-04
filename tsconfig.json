@@ -16,6 +16,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
+    "types": ["node", "react", "react-dom"],
     "plugins": [
       {
         "name": "next"
@@ -40,6 +41,12 @@
     "types/prisma-fix.d.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "backend/**",
+    "sokonova-mobile/**",
+    "sokonova-frontend/**",
+    "prisma/**",
+    "prisma */**",
+    "prisma *"
   ]
 }

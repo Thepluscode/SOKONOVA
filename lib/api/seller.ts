@@ -9,6 +9,13 @@ export function getSellerProducts(sellerId: string) {
 }
 
 /**
+ * Get archived products for a seller
+ */
+export function getSellerArchivedProducts(sellerId: string) {
+  return apiFetch(`${apiBase}/seller/products/archived?sellerId=${sellerId}`);
+}
+
+/**
  * Create a new product (seller)
  */
 export function createSellerProduct(data: {
@@ -56,6 +63,24 @@ export function updateSellerInventory(
   return apiFetch(`${apiBase}/seller/products/${productId}/inventory?sellerId=${sellerId}`, {
     method: "PATCH",
     body: JSON.stringify({ quantity }),
+  });
+}
+
+/**
+ * Archive (soft delete) a product
+ */
+export function archiveSellerProduct(sellerId: string, productId: string) {
+  return apiFetch(`${apiBase}/seller/products/${productId}?sellerId=${sellerId}`, {
+    method: "DELETE",
+  });
+}
+
+/**
+ * Restore an archived product
+ */
+export function restoreSellerProduct(sellerId: string, productId: string) {
+  return apiFetch(`${apiBase}/seller/products/${productId}/restore?sellerId=${sellerId}`, {
+    method: "PATCH",
   });
 }
 
