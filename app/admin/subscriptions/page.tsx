@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getAllSubscriptions, getSubscriptionStats } from '@/lib/api/subscriptions';
@@ -15,24 +15,7 @@ export default function AdminSubscriptionsPage() {
 
   const userId = session?.user?.id;
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session?.user) {
-      router.push('/auth/login?callbackUrl=/admin/subscriptions');
-      return;
-    }
-
-    // Check if user is admin
-    if (session.user.role !== 'ADMIN') {
-      router.push('/'); // Redirect to home if not admin
-      return;
-    }
-
-    fetchData();
-  }, [session, status]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!userId) return;
     
     try {
@@ -50,7 +33,24 @@ export default function AdminSubscriptionsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/auth/login?callbackUrl=/admin/subscriptions');
+      return;
+    }
+
+    // Check if user is admin
+    if (session.user.role !== 'ADMIN') {
+      router.push('/'); // Redirect to home if not admin
+      return;
+    }
+
+    fetchData();
+  }, [session, status, router, fetchData]);
 
   if (status === 'loading') {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;

@@ -26,6 +26,7 @@ backend/dist/
 # misc
 .DS_Store
 *.pem
+prisma *
 
 # debug
 npm-debug.log*

@@ -1,5 +1,3 @@
-'use client';
-
 import { getSubscriptionPlans, getMySubscription } from "@/lib/api/subscriptions";
 import { SubscriptionPlans } from "@/components/SubscriptionPlans";
 import { getServerSession } from "next-auth";

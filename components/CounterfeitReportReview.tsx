@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/badge";
 import { getProductCounterfeitScan } from "@/lib/api/trust";
+import Image from "next/image";
 
 interface CounterfeitReport {
   id: string;
@@ -94,9 +95,11 @@ export function CounterfeitReportReview({ report, onStatusChange }: CounterfeitR
               <h3 className="font-medium mb-2">Product</h3>
               <div className="flex items-center gap-3">
                 {report.product.imageUrl && (
-                  <img 
-                    src={report.product.imageUrl} 
-                    alt={report.product.title} 
+                  <Image
+                    src={report.product.imageUrl}
+                    alt={report.product.title}
+                    width={64}
+                    height={64}
                     className="w-16 h-16 object-cover rounded"
                   />
                 )}

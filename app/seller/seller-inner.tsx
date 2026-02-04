@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/Button";
+import Image from "next/image";
 import {
   getSellerProducts,
   getSellerArchivedProducts,
@@ -84,7 +85,7 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
   const [analytics, setAnalytics] = useState<any>(null);
 
   // Load seller's products, payout info, fulfillment queue, disputes, and analytics
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     setLoading(true);
     try {
       // Fix the void expression errors by properly handling the API calls
@@ -108,11 +109,11 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
     } finally{
       setLoading(false);
     }
-  };
+  }, [userId]);
 
   useEffect(() => {
     loadProducts();
-  }, [userId]);
+  }, [loadProducts]);
 
   // Create new product
   const handleCreate = async () => {
@@ -795,9 +796,11 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <img
+                          <Image
                             src={product.imageUrl}
                             alt={product.title}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded"
                           />
                         )}
@@ -874,9 +877,11 @@ export function SellerDashboard({ userId, userName }: DashboardProps) {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {product.imageUrl && (
-                          <img
+                          <Image
                             src={product.imageUrl}
                             alt={product.title}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 object-cover rounded"
                           />
                         )}
@@ -964,9 +969,11 @@ function ShipmentCard({
         <div>
           <div className="flex items-start gap-4 mb-4">
             {item.product?.imageUrl && (
-              <img
+              <Image
                 src={item.product.imageUrl}
                 alt={item.product?.title || "Product"}
+                width={80}
+                height={80}
                 className="w-20 h-20 object-cover rounded-lg"
               />
             )}

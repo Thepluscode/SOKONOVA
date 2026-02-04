@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getDeliveryPromise } from '@/lib/api/fulfillment';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
@@ -21,11 +21,7 @@ export function DeliveryPromise({ productId, location }: { productId: string; lo
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadDeliveryPromise();
-  }, [productId, location]);
-
-  const loadDeliveryPromise = async () => {
+  const loadDeliveryPromise = useCallback(async () => {
     try {
       setLoading(true);
       const data = await getDeliveryPromise(productId, location);
@@ -36,7 +32,11 @@ export function DeliveryPromise({ productId, location }: { productId: string; lo
     } finally {
       setLoading(false);
     }
-  };
+  }, [productId, location]);
+
+  useEffect(() => {
+    loadDeliveryPromise();
+  }, [loadDeliveryPromise]);
 
   if (loading) {
     return (

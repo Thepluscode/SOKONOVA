@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getMySubscription, cancelSubscription } from '@/lib/api/subscriptions';
@@ -16,16 +16,7 @@ export default function ManageSubscriptionPage() {
 
   const userId = session?.user?.id;
 
-  useEffect(() => {
-    if (!session?.user) {
-      router.push('/auth/login?callbackUrl=/subscriptions/manage');
-      return;
-    }
-
-    fetchData();
-  }, [session]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!userId) return;
     
     try {
@@ -43,7 +34,16 @@ export default function ManageSubscriptionPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (!session?.user) {
+      router.push('/auth/login?callbackUrl=/subscriptions/manage');
+      return;
+    }
+
+    fetchData();
+  }, [session, router, fetchData]);
 
   const handleCancel = async () => {
     if (!subscription || !userId) return;

@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import Image from "next/image";
 
 interface ShareProductProps {
   userId: string;
@@ -73,10 +74,12 @@ export function ShareProduct({ userId, productId, productName, productImage }: S
               <div className="flex items-center gap-3 p-3 rounded-md border bg-muted/50">
                 {productImage && (
                   <div className="relative w-12 h-12 rounded-md overflow-hidden">
-                    <img
+                    <Image
                       src={productImage}
                       alt={productName}
-                      className="object-cover w-full h-full"
+                      fill
+                      sizes="48px"
+                      className="object-cover"
                     />
                   </div>
                 )}

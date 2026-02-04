@@ -1,8 +1,3 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { getMySellerServices, getServiceOrders } from "@/lib/api/seller-services";
 import { SellerServicesManager } from "@/components/SellerServicesManager";
 

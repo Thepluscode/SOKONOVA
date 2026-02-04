@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getSellerProfitability, simulatePricingScenario } from '@/lib/api/analytics';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -49,11 +49,7 @@ export function ProfitabilityConsole({ sellerId }: { sellerId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [simulating, setSimulating] = useState<boolean>(false);
 
-  useEffect(() => {
-    loadProfitabilityData();
-  }, [sellerId]);
-
-  const loadProfitabilityData = async () => {
+  const loadProfitabilityData = useCallback(async () => {
     try {
       const data = await getSellerProfitability(sellerId);
       setProfitabilityData(data);
@@ -62,7 +58,11 @@ export function ProfitabilityConsole({ sellerId }: { sellerId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sellerId]);
+
+  useEffect(() => {
+    loadProfitabilityData();
+  }, [loadProfitabilityData]);
 
   const runSimulation = async () => {
     if (!profitabilityData) return;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { getBuyerCohorts, getBuyerSegments, generateDiscountCampaign } from '@/lib/api/analytics';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -39,21 +39,16 @@ export function BuyerCohortIntelligence({ sellerId }: { sellerId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [creatingCampaign, setCreatingCampaign] = useState<boolean>(false);
 
-  useEffect(() => {
-    loadCohortData();
-    loadSegmentData();
-  }, [sellerId]);
-
-  const loadCohortData = async () => {
+  const loadCohortData = useCallback(async () => {
     try {
       const data = await getBuyerCohorts(sellerId);
       setCohorts(data);
     } catch (error) {
       console.error('Failed to load cohort data:', error);
     }
-  };
+  }, [sellerId]);
 
-  const loadSegmentData = async () => {
+  const loadSegmentData = useCallback(async () => {
     try {
       const data = await getBuyerSegments(sellerId);
       setSegments(data);
@@ -65,7 +60,12 @@ export function BuyerCohortIntelligence({ sellerId }: { sellerId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sellerId]);
+
+  useEffect(() => {
+    loadCohortData();
+    loadSegmentData();
+  }, [loadCohortData, loadSegmentData]);
 
   const createDiscountCampaign = async () => {
     if (!selectedSegment) return;

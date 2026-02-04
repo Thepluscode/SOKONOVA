@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useCallback, type FormEvent } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getSellerSponsoredPlacements, createSponsoredPlacement } from '@/lib/api/sponsored-placements';
@@ -25,18 +25,7 @@ export default function SponsoredPlacementsPage() {
 
   const userId = session?.user?.id;
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session?.user) {
-      router.push('/auth/login?callbackUrl=/seller/sponsored-placements');
-      return;
-    }
-
-    fetchData();
-  }, [session, status]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     if (!userId) return;
     
     try {
@@ -54,7 +43,18 @@ export default function SponsoredPlacementsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [userId]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session?.user) {
+      router.push('/auth/login?callbackUrl=/seller/sponsored-placements');
+      return;
+    }
+
+    fetchData();
+  }, [session, status, router, fetchData]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();

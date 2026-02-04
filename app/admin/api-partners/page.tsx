@@ -1,8 +1,3 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { getAllPartners } from "@/lib/api/api-partner-platform";
 import { ApiPartnersDashboard } from "@/components/ApiPartnersDashboard";
 

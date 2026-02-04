@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useState, useRef, useEffect, ReactNode } from 'react'
+import { useState, useRef, useEffect, useCallback, ReactNode } from 'react'
 import { clsx } from 'clsx'
 
 // DropdownMenu component
@@ -66,9 +66,9 @@ export function DropdownMenuContent({
   }, [])
 
   // Toggle dropdown
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen)
-  }
+  const toggleDropdown = useCallback(() => {
+    setIsOpen((prev) => !prev)
+  }, [])
 
   // Pass toggle function to parent
   useEffect(() => {
@@ -79,7 +79,7 @@ export function DropdownMenuContent({
         trigger.removeEventListener('click', toggleDropdown)
       }
     }
-  }, [])
+  }, [toggleDropdown])
 
   // Alignment classes
   const alignmentClasses = {

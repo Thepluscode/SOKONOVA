@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   getInventoryRiskAnalysis, 
   getAgingInventory, 
@@ -88,11 +88,7 @@ export function InventoryRiskRadar({ sellerId }: { sellerId: string }) {
   const [loading, setLoading] = useState<boolean>(true);
   const [generatingRecommendations, setGeneratingRecommendations] = useState<boolean>(false);
 
-  useEffect(() => {
-    loadData();
-  }, [sellerId]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [riskData, agingData, stockoutData] = await Promise.all([
         getInventoryRiskAnalysis(sellerId),
@@ -108,7 +104,11 @@ export function InventoryRiskRadar({ sellerId }: { sellerId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sellerId]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const generateRecommendations = async () => {
     setGeneratingRecommendations(true);

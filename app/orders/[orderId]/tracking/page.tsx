@@ -2,6 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { DisputeButtonClient } from "../DisputeButtonClient";
 import { ReviewFormClient } from "../ReviewFormClient";
 
@@ -104,9 +105,11 @@ export default async function OrderTrackingPage({
             {/* Product Info */}
             <div className="flex items-start gap-4 mb-4 pb-4 border-b">
               {item.productImage && (
-                <img
+                <Image
                   src={item.productImage}
                   alt={item.productTitle}
+                  width={96}
+                  height={96}
                   className="w-24 h-24 object-cover rounded-lg"
                 />
               )}

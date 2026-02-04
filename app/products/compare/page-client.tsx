@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { compareProducts } from "@/lib/api/chat";
 import { getProductsByIds } from "@/lib/api/products";
@@ -16,17 +16,13 @@ export default function ProductComparisonClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Get product IDs from URL params
-  const productIds = searchParams.get("ids")?.split(",") || [];
+  const idsParam = searchParams.get("ids") ?? "";
+  const productIds = useMemo(
+    () => idsParam.split(",").filter(Boolean),
+    [idsParam]
+  );
 
-  // Fetch products
-  useEffect(() => {
-    if (productIds.length > 0) {
-      fetchProducts();
-    }
-  }, [productIds]);
-
-  const fetchProducts = async () => {
+  const fetchProducts = useCallback(async () => {
     try {
       const productsData = await getProductsByIds(productIds);
       setProducts(productsData);
@@ -34,7 +30,14 @@ export default function ProductComparisonClient() {
       setError("Failed to load products");
       console.error("Error fetching products:", err);
     }
-  };
+  }, [productIds]);
+
+  // Fetch products
+  useEffect(() => {
+    if (productIds.length > 0) {
+      fetchProducts();
+    }
+  }, [productIds, fetchProducts]);
 
   const handleCompare = async () => {
     if (!session?.user?.id || productIds.length === 0) return;

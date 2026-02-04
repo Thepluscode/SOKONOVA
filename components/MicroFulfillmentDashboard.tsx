@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { 
   getMicroFulfillmentMetrics, 
   getFulfillmentPartners, 
@@ -70,11 +70,7 @@ export function MicroFulfillmentDashboard({ sellerId }: { sellerId: string }) {
   const [optingIn, setOptingIn] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadMicroFulfillmentData();
-  }, [sellerId]);
-
-  const loadMicroFulfillmentData = async () => {
+  const loadMicroFulfillmentData = useCallback(async () => {
     try {
       setLoading(true);
       const [metricsData, partnersData] = await Promise.all([
@@ -94,7 +90,11 @@ export function MicroFulfillmentDashboard({ sellerId }: { sellerId: string }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [sellerId]);
+
+  useEffect(() => {
+    loadMicroFulfillmentData();
+  }, [loadMicroFulfillmentData]);
 
   const handleOptIn = async () => {
     if (!selectedPartner) return;

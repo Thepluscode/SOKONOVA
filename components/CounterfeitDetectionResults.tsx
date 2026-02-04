@@ -2,6 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 interface CounterfeitDetectionResultsProps {
   productId: string;
@@ -88,9 +89,11 @@ export function CounterfeitDetectionResults({
             <div className="border rounded-lg p-4">
               <h4 className="font-medium mb-2">Image Analysis</h4>
               <div className="flex items-center gap-4">
-                <img 
-                  src={imageAnalysis.url} 
-                  alt="Product" 
+                <Image
+                  src={imageAnalysis.url}
+                  alt="Product"
+                  width={96}
+                  height={96}
                   className="w-24 h-24 object-cover rounded"
                 />
                 <div className="flex-1">

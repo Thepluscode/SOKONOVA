@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { getAllSponsoredPlacements } from '@/lib/api/sponsored-placements';
@@ -13,6 +13,21 @@ export default function AdminSponsoredPlacementsPage() {
   const [error, setError] = useState<string | null>(null);
 
   const userId = session?.user?.id;
+
+  const fetchData = useCallback(async () => {
+    if (!userId) return;
+    
+    try {
+      setLoading(true);
+      const placementsData = await getAllSponsoredPlacements();
+      setPlacements(placementsData);
+    } catch (err) {
+      setError('Failed to load sponsored placements');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -29,22 +44,7 @@ export default function AdminSponsoredPlacementsPage() {
     }
 
     fetchData();
-  }, [session, status]);
-
-  const fetchData = async () => {
-    if (!userId) return;
-    
-    try {
-      setLoading(true);
-      const placementsData = await getAllSponsoredPlacements();
-      setPlacements(placementsData);
-    } catch (err) {
-      setError('Failed to load sponsored placements');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [session, status, router, fetchData]);
 
   if (status === 'loading') {
     return <div className="container mx-auto px-4 py-8">Loading...</div>;
