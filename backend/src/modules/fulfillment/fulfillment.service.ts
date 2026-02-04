@@ -502,8 +502,8 @@ export class FulfillmentService {
    */
   async calculateDeliveryPromise(productId: string, location?: string) {
     // Get product information
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, isActive: true },
       include: {
         // Removed fulfillmentSettings since it doesn't exist in the schema
       },

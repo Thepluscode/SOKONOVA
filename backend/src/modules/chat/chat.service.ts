@@ -81,6 +81,7 @@ export class ChatService {
     const products = await this.prisma.product.findMany({
       where: {
         id: { in: productIds },
+        isActive: true,
       },
       include: {
         productReviews: {
@@ -96,8 +97,8 @@ export class ChatService {
   // AUTHENTICATED: Get AI-powered answer for product questions
   async getAnswer(userId: string, productId: string, question: string) {
     // Get product details
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, isActive: true },
       include: {
         seller: true,
         productReviews: {

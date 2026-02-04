@@ -39,8 +39,8 @@ export class WishlistService {
    */
   async addToWishlist(userId: string, productId: string) {
     // Check if product exists
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, isActive: true },
     });
 
     if (!product) {

@@ -745,8 +745,8 @@ export class TrustService {
     // In a real implementation, this would integrate with AI systems
     // For now, we'll return mock data with more sophisticated detection
     
-    const product = await this.prisma.product.findUnique({
-      where: { id: productId },
+    const product = await this.prisma.product.findFirst({
+      where: { id: productId, isActive: true },
       select: {
         title: true,
         description: true,

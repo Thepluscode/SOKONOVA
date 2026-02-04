@@ -67,8 +67,8 @@ export class CartService {
       const currentVersion = cart.version;
 
       // 2. Verify product exists and check inventory
-      const product = await tx.product.findUnique({
-        where: { id: productId },
+      const product = await tx.product.findFirst({
+        where: { id: productId, isActive: true },
         include: { inventory: true },
       })
 

@@ -48,8 +48,8 @@ export class SocialService {
     }
     
     // Verify product exists
-    const product = await this.prisma.product.findUnique({
-      where: { id: data.productId },
+    const product = await this.prisma.product.findFirst({
+      where: { id: data.productId, isActive: true },
     });
     
     if (!product) {

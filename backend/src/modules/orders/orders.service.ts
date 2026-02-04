@@ -103,8 +103,8 @@ export class OrdersService {
     const orderItemsData = [];
 
     for (const item of items) {
-      const product = await this.prisma.product.findUnique({
-        where: { id: item.productId },
+      const product = await this.prisma.product.findFirst({
+        where: { id: item.productId, isActive: true },
       });
 
       if (!product) {
