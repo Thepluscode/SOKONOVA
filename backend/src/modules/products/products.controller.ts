@@ -55,9 +55,9 @@ export class ProductsController {
     return this.products.search(q.trim(), { category, limit: take });
   }
 
-  // PUBLIC: get product by ID
+  // PUBLIC: get product by ID (cuid)
   // GET /products/:id
-  @Get(':id')
+  @Get(':id(c[a-z0-9]{10,})')
   async getById(@Param('id') id: string) {
     return this.products.getById(id);
   }
