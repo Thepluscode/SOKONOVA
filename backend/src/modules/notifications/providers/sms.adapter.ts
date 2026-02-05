@@ -1,36 +1,30 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as AfricasTalking from 'africastalking';
-
-interface AfricasTalkingService {
-  SMS: {
-    send(options: {
-      to: string[];
-      message: string;
-      from?: string;
-    }): Promise<any>;
-  };
-}
 
 @Injectable()
 export class SmsAdapter {
   private readonly logger = new Logger(SmsAdapter.name);
   private readonly enabled: boolean;
-  private readonly at: AfricasTalkingService | null = null;
   private readonly shortCode: string;
+  private readonly apiKey: string | undefined;
+  private readonly username: string | undefined;
+  private readonly baseUrl: string;
 
   constructor() {
     // Initialize Africa's Talking if credentials are available
-    const apiKey = process.env.AFRICASTALKING_API_KEY;
-    const username = process.env.AFRICASTALKING_USERNAME;
+    this.apiKey = process.env.AFRICASTALKING_API_KEY;
+    this.username = process.env.AFRICASTALKING_USERNAME;
 
-    this.enabled = !!(apiKey && username);
+    this.enabled = !!(this.apiKey && this.username);
     this.shortCode = process.env.AFRICASTALKING_SHORT_CODE || 'SokoNova';
+    const env = (process.env.AFRICASTALKING_ENV || '').toLowerCase();
+    const isSandbox = env === 'sandbox' || this.username === 'sandbox';
+    this.baseUrl =
+      process.env.AFRICASTALKING_BASE_URL ||
+      (isSandbox
+        ? 'https://api.sandbox.africastalking.com'
+        : 'https://api.africastalking.com');
 
     if (this.enabled) {
-      this.at = AfricasTalking({
-        apiKey,
-        username,
-      });
       this.logger.log("Africa's Talking SMS adapter initialized");
     } else {
       this.logger.warn(
@@ -49,7 +43,7 @@ export class SmsAdapter {
   ): Promise<{ sent: boolean; channel: string }> {
     this.logger.log(`[SMS] to ${toPhone}: ${message.substring(0, 50)}...`);
 
-    if (!this.enabled || !this.at) {
+    if (!this.enabled || !this.apiKey || !this.username) {
       this.logger.debug(`SMS body: ${message}`);
       return { sent: false, channel: 'sms' };
     }
@@ -62,11 +56,36 @@ export class SmsAdapter {
       const truncatedMessage =
         message.length > 160 ? message.substring(0, 157) + '...' : message;
 
-      const result = await this.at.SMS.send({
-        to: [formattedPhone],
-        message: truncatedMessage,
-        from: this.shortCode,
-      });
+      const payload = new URLSearchParams();
+      payload.set('username', this.username);
+      payload.set('to', formattedPhone);
+      payload.set('message', truncatedMessage);
+      if (this.shortCode) {
+        payload.set('from', this.shortCode);
+      }
+
+      const response = await fetch(
+        `${this.baseUrl}/version1/messaging`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            Accept: 'application/json',
+            Apikey: this.apiKey,
+          },
+          body: payload.toString(),
+        },
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        this.logger.error(
+          `SMS send failed (${response.status}): ${text}`,
+        );
+        return { sent: false, channel: 'sms' };
+      }
+
+      const result = await response.json();
 
       this.logger.log(`SMS sent successfully to ${toPhone}:`, result);
       return { sent: true, channel: 'sms' };
