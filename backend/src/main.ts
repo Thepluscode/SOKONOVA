@@ -57,6 +57,7 @@ async function bootstrap() {
   const server = app.getHttpAdapter().getInstance()
 
   server.get('/discovery/social-proof', async (req, res) => {
+    res.setHeader('x-sokonova-route', 'express-discovery-social-proof')
     const raw = req.query.limit as string | undefined
     const parsed = raw ? parseInt(raw, 10) : 6
     try {
@@ -68,6 +69,7 @@ async function bootstrap() {
   })
 
   server.get('/discovery/suggestions', async (req, res) => {
+    res.setHeader('x-sokonova-route', 'express-discovery-suggestions')
     const q = (req.query.q as string | undefined) || ''
     if (!q || q.length < 2) {
       return res.json({ products: [], categories: [], sellers: [] })
@@ -81,6 +83,7 @@ async function bootstrap() {
   })
 
   server.get('/products/search', async (req, res) => {
+    res.setHeader('x-sokonova-route', 'express-products-search')
     const q = (req.query.q as string | undefined) || ''
     if (!q.trim()) {
       return res.json([])
