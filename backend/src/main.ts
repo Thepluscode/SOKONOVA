@@ -14,6 +14,7 @@ const morgan = require('morgan')
 const cookieParser = require('cookie-parser')
 
 async function bootstrap() {
+  console.log('BOOT: sokonova backend main.ts v1')
   const app = await NestFactory.create(AppModule)
 
   // CORS - Must be enabled BEFORE Helmet
