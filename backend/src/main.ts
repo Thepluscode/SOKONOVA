@@ -38,6 +38,10 @@ async function bootstrap() {
   }))
   app.use(morgan('dev'))
   app.use(cookieParser())
+  app.use((req, res, next) => {
+    res.setHeader('x-sokonova-app', '1')
+    next()
+  })
   app.use(
     express.json({
       verify: (req: any, res, buf) => {
