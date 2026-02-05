@@ -54,6 +54,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
   app.useGlobalFilters(new SentryExceptionFilter())
 
+  // Ensure app is initialized before attaching raw express routes
+  await app.init()
+
   // Explicit route fallbacks to avoid routing/caching mismatches
   const discovery = app.get(DiscoveryService)
   const products = app.get(ProductsService)
