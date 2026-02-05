@@ -5,12 +5,12 @@ import { nanoid } from 'nanoid'
 import type { RedisCartItem } from '@/types'
 
 async function currentKey() {
-  const cookieStore = cookies()
+  const cookieStore = await cookies()
   let anonKey = cookieStore.get('cart_anon_key')?.value
   if (!anonKey) {
     anonKey = `anon_${nanoid()}`
     // Set cookie for 30 days
-    cookies().set('cart_anon_key', anonKey, {
+    cookieStore.set('cart_anon_key', anonKey, {
       maxAge: 60 * 60 * 24 * 30,
       httpOnly: true,
       sameSite: 'lax',

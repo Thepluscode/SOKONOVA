@@ -10,8 +10,7 @@ const userKey = (uid: string) => `sn:cart:user:${uid}`
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: 'Not signed in' }, { status: 401 })
-  const res = NextResponse.next()
-  const sid = getOrCreateSessionId(res)
+  const sid = await getOrCreateSessionId()
   const redis = getRedis()
   const [guest, user] = await Promise.all([
     redis.get(guestKey(sid)),
