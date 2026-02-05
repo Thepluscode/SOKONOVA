@@ -85,4 +85,20 @@ export class HealthController {
       timestamp: new Date().toISOString(),
     };
   }
+
+  @Get('version')
+  version() {
+    return {
+      timestamp: new Date().toISOString(),
+      version: process.env.npm_package_version || '1.0.0',
+      commit:
+        process.env.RAILWAY_GIT_COMMIT_SHA ||
+        process.env.GIT_COMMIT_SHA ||
+        process.env.GIT_SHA ||
+        process.env.VERCEL_GIT_COMMIT_SHA ||
+        process.env.SOURCE_VERSION ||
+        null,
+      nodeEnv: process.env.NODE_ENV || 'development',
+    };
+  }
 }
