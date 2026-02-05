@@ -39,6 +39,22 @@ export class ProductsController {
     return this.products.list({ sellerId, category });
   }
 
+  // PUBLIC: simple product search
+  // GET /products/search?q=...&category=...&limit=...
+  @Get('search')
+  async search(
+    @Query('q') q?: string,
+    @Query('category') category?: string,
+    @Query('limit') limit?: string,
+  ) {
+    if (!q?.trim()) {
+      return [];
+    }
+
+    const take = Math.min(parseInt(limit || '20', 10) || 20, 50);
+    return this.products.search(q.trim(), { category, limit: take });
+  }
+
   // PUBLIC: get product by ID
   // GET /products/:id
   @Get(':id')

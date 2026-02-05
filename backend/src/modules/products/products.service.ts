@@ -24,6 +24,37 @@ export class ProductsService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async search(
+    query: string,
+    filters?: { category?: string; limit?: number },
+  ) {
+    const where: any = {
+      isActive: true,
+      OR: [
+        { title: { contains: query, mode: 'insensitive' } },
+        { description: { contains: query, mode: 'insensitive' } },
+      ],
+    };
+    if (filters?.category) {
+      where.category = filters.category;
+    }
+
+    return this.prisma.product.findMany({
+      where,
+      include: {
+        seller: {
+          select: {
+            id: true,
+            shopName: true,
+            ratingAvg: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+      take: filters?.limit ?? 20,
+    });
+  }
   async getById(id: string) {
     return this.getProductById(id);
   }
