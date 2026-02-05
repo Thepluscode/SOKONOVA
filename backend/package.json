@@ -6,7 +6,7 @@
     "dev": "nest start --watch",
     "start:dev": "nest start --watch",
     "start:prod": "node dist/main.js",
-    "build": "npx prisma generate --schema prisma/schema.prisma && nest build",
+    "build": "rm -rf dist && npx prisma generate --schema prisma/schema.prisma && nest build",
     "start": "node dist/main.js",
     "test": "jest",
     "test:watch": "jest --watch",
