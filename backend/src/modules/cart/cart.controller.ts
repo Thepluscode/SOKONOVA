@@ -14,6 +14,12 @@ export class CartController {
     return cart
   }
 
+  @Post()
+  async addRoot(@Body() dto: CartAddDto) {
+    const updatedCart = await this.cart.addItem(dto.cartId, dto.productId, dto.qty)
+    return updatedCart
+  }
+
   @Post('add')
   async add(@Body() dto: CartAddDto) {
     // Add item and return updated cart directly from service
