@@ -107,6 +107,10 @@ async function bootstrap() {
     }
   })
 
+  server.get('/_debug/echo', (req, res) => {
+    return res.json({ ok: true, ts: new Date().toISOString() })
+  })
+
   const port = process.env.PORT || 4001
   // Listen on 0.0.0.0 for Docker/Railway compatibility
   await app.listen(port, '0.0.0.0')
