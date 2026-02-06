@@ -62,6 +62,9 @@ export class NotificationsGateway
 
         // Start heartbeat to detect dead connections
         this.heartbeatInterval = setInterval(() => {
+            if (!this.server || !this.server.clients) {
+                return;
+            }
             this.server.clients.forEach((ws: AuthenticatedSocket) => {
                 if (ws.isAlive === false) {
                     return ws.terminate();
@@ -162,6 +165,9 @@ export class NotificationsGateway
      * Broadcast to all connected clients
      */
     broadcast(type: string, payload: any) {
+        if (!this.server || !this.server.clients) {
+            return;
+        }
         this.server.clients.forEach((client: AuthenticatedSocket) => {
             this.sendToClient(client, type, payload);
         });
