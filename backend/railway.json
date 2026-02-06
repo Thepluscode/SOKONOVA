@@ -6,7 +6,7 @@
     "buildCommand": "npm install && npx prisma generate && npm run build"
   },
   "deploy": {
-    "startCommand": "sh -c \"set -ex; echo STARTCMD; npx prisma migrate deploy; echo AFTER_MIGRATE; npm run start:prod || (echo NODE EXIT $?; sleep 3600)\"",
+    "startCommand": "npx prisma migrate deploy && npm run start:prod",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 100,
     "restartPolicyType": "ON_FAILURE",
