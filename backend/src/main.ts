@@ -10,6 +10,7 @@ import { DiscoveryService } from './modules/discovery/discovery.service'
 import { ProductsService } from './modules/products/products.service'
 import rateLimit from 'express-rate-limit'
 import { validateEnvironment } from './config/env.validation'
+import { createLogger } from './config/logger.config'
 
 const express = require('express')
 const morgan = require('morgan')
@@ -21,7 +22,10 @@ async function bootstrap() {
   // Validate environment variables before proceeding
   validateEnvironment()
 
-  const app = await NestFactory.create(AppModule)
+  // Create NestJS app with Winston logger
+  const app = await NestFactory.create(AppModule, {
+    logger: createLogger(),
+  })
 
   // CORS - Must be enabled BEFORE Helmet
   // Configure allowed origins from environment variable or defaults

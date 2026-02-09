@@ -1,0 +1,45 @@
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # SokoNova Application Logs
+  - job_name: sokonova-backend
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: sokonova-backend
+          app: sokonova
+          environment: development
+          __path__: /var/log/app/*.log
+
+    pipeline_stages:
+      # Parse JSON logs
+      - json:
+          expressions:
+            level: level
+            message: message
+            timestamp: timestamp
+            context: context
+            trace: trace
+
+      # Extract timestamp
+      - timestamp:
+          source: timestamp
+          format: RFC3339
+
+      # Add labels
+      - labels:
+          level:
+          context:
+
+      # Output parsed message
+      - output:
+          source: message
