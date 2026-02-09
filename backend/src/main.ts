@@ -9,6 +9,7 @@ import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
 import { DiscoveryService } from './modules/discovery/discovery.service'
 import { ProductsService } from './modules/products/products.service'
 import rateLimit from 'express-rate-limit'
+import { validateEnvironment } from './config/env.validation'
 
 const express = require('express')
 const morgan = require('morgan')
@@ -16,18 +17,29 @@ const cookieParser = require('cookie-parser')
 
 async function bootstrap() {
   console.log('BOOT: sokonova backend main.ts v1')
+
+  // Validate environment variables before proceeding
+  validateEnvironment()
+
   const app = await NestFactory.create(AppModule)
 
   // CORS - Must be enabled BEFORE Helmet
+  // Configure allowed origins from environment variable or defaults
+  const allowedOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map(origin => origin.trim())
+    : [
+        'http://localhost:3000',
+        'http://localhost:5173',
+        'http://localhost:8081',  // Expo web
+        'http://localhost:54112',
+        'https://sokonova-frontend-production.up.railway.app',
+        'https://sokonova-backend-production.up.railway.app',
+      ];
+
+  console.log('CORS: Allowed origins:', allowedOrigins);
+
   app.enableCors({
-    origin: [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'http://localhost:8081',  // Expo web
-      'http://localhost:54112',
-      'https://sokonova-frontend-production.up.railway.app',
-      'https://sokonova-backend-production.up.railway.app',
-    ],
+    origin: allowedOrigins,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
     credentials: true,
