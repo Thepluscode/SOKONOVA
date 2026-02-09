@@ -18,8 +18,22 @@ node_modules
 
 # backend dist
 backend/dist/
+dist/
+
+# Environment files - NEVER COMMIT
 .env
+.env.local
+.env.development
+.env.production
 .env.docker
+backend/.env
+backend/.env.local
+backend/.env.production
+sokonova-frontend/.env
+sokonova-frontend/.env.local
+sokonova-mobile/.env
+
+# Logs
 *.log
 *.backup
 
