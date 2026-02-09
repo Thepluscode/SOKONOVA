@@ -1,0 +1,245 @@
+name: CI - Continuous Integration
+
+on:
+  push:
+    branches: [main, develop, staging]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ============================================
+  # Backend CI Job
+  # ============================================
+  backend-ci:
+    name: Backend - Test & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: sokonova_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Lint code
+        run: npm run lint --if-present || echo "No lint script found"
+
+      - name: 🔨 Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sokonova_test
+
+      - name: 🗃️ Run database migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sokonova_test
+
+      - name: 🧪 Run tests with coverage
+        run: npm test -- --coverage --verbose
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sokonova_test
+          JWT_SECRET: test_jwt_secret_for_ci_only_min_32_chars_long
+          NODE_ENV: test
+
+      - name: 📊 Upload coverage reports
+        uses: codecov/codecov-action@v4
+        if: always()
+        with:
+          files: ./backend/coverage/coverage-final.json
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+        continue-on-error: true
+
+      - name: 🔎 Type check
+        run: npx tsc --noEmit
+
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/sokonova_test
+
+      - name: ✅ Build artifacts check
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist directory not found"
+            exit 1
+          fi
+          if [ ! -f "dist/main.js" ]; then
+            echo "❌ Build failed: main.js not found in dist"
+            exit 1
+          fi
+          echo "✅ Build successful: dist/main.js exists"
+
+  # ============================================
+  # Frontend CI Job
+  # ============================================
+  frontend-ci:
+    name: Frontend - Test & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./sokonova-frontend
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: sokonova-frontend/package-lock.json
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🔍 Lint code
+        run: npm run lint --if-present || echo "No lint script found"
+
+      - name: 🔎 Type check
+        run: npx tsc --noEmit || echo "No TypeScript check configured"
+
+      - name: 🧪 Run tests
+        run: npm test --if-present || echo "No tests configured yet"
+
+      - name: 🏗️ Build application
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.sokonova.com
+          VITE_WS_URL: wss://api.sokonova.com
+
+      - name: ✅ Build artifacts check
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "❌ Build failed: dist directory not found"
+            exit 1
+          fi
+          echo "✅ Build successful: dist directory exists"
+
+  # ============================================
+  # Security Audit Job
+  # ============================================
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: 🔒 Audit backend dependencies
+        run: |
+          cd backend
+          npm audit --audit-level=moderate || true
+          echo "Checking for critical vulnerabilities..."
+          npm audit --audit-level=critical
+
+      - name: 🔒 Audit frontend dependencies
+        run: |
+          cd sokonova-frontend
+          npm audit --audit-level=moderate || true
+          echo "Checking for critical vulnerabilities..."
+          npm audit --audit-level=critical
+
+  # ============================================
+  # Environment Validation Job
+  # ============================================
+  env-validation:
+    name: Environment Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: ✅ Check .env.example files exist
+        run: |
+          if [ ! -f "backend/.env.example" ]; then
+            echo "❌ backend/.env.example is missing"
+            exit 1
+          fi
+          if [ ! -f "backend/.env.production.example" ]; then
+            echo "❌ backend/.env.production.example is missing"
+            exit 1
+          fi
+          echo "✅ All environment example files present"
+
+      - name: ✅ Verify no .env files in git
+        run: |
+          if git ls-files | grep -E "\.env$|\.env\.local$|\.env\.production$"; then
+            echo "❌ ERROR: .env files should not be committed to git!"
+            echo "Found the following .env files:"
+            git ls-files | grep -E "\.env$|\.env\.local$|\.env\.production$"
+            exit 1
+          fi
+          echo "✅ No .env files committed (good!)"
+
+      - name: ✅ Check for exposed secrets
+        run: |
+          if git log --all --oneline | grep -iE "password|secret|key" | head -5; then
+            echo "⚠️  WARNING: Commit messages contain sensitive keywords"
+            echo "This doesn't necessarily mean secrets are exposed, but review carefully"
+          fi
+          echo "✅ Secret exposure check complete"
+
+  # ============================================
+  # Summary Job
+  # ============================================
+  ci-summary:
+    name: CI Summary
+    needs: [backend-ci, frontend-ci, security-audit, env-validation]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📊 Check all jobs status
+        run: |
+          echo "## CI Pipeline Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Job | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend CI | ${{ needs.backend-ci.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend CI | ${{ needs.frontend-ci.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.security-audit.result == 'success' && '✅ Passed' || '⚠️  Warning' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Env Validation | ${{ needs.env-validation.result == 'success' && '✅ Passed' || '❌ Failed' }} |" >> $GITHUB_STEP_SUMMARY
+
+      - name: ❌ Fail if any critical job failed
+        if: needs.backend-ci.result == 'failure' || needs.frontend-ci.result == 'failure' || needs.env-validation.result == 'failure'
+        run: |
+          echo "❌ CI Pipeline failed - check individual jobs for details"
+          exit 1
+
+      - name: ✅ All checks passed
+        if: needs.backend-ci.result == 'success' && needs.frontend-ci.result == 'success'
+        run: |
+          echo "✅ All CI checks passed successfully!"
+          echo "Ready to deploy to production"

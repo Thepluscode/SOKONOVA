@@ -1,0 +1,165 @@
+name: PR Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+jobs:
+  # ============================================
+  # PR Title Check
+  # ============================================
+  pr-title:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR title format
+        uses: amannn/action-semantic-pull-request@v5
+        with:
+          types: |
+            feat
+            fix
+            chore
+            docs
+            style
+            refactor
+            perf
+            test
+            build
+            ci
+          requireScope: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # ============================================
+  # Changed Files Detection
+  # ============================================
+  detect-changes:
+    name: Detect Changed Files
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.changes.outputs.backend }}
+      frontend: ${{ steps.changes.outputs.frontend }}
+      workflows: ${{ steps.changes.outputs.workflows }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔍 Detect file changes
+        id: changes
+        run: |
+          echo "backend=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^backend/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "frontend=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^sokonova-frontend/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+          echo "workflows=$(git diff --name-only origin/${{ github.base_ref }}...HEAD | grep -E '^\.github/workflows/' && echo 'true' || echo 'false')" >> $GITHUB_OUTPUT
+
+  # ============================================
+  # PR Size Check
+  # ============================================
+  pr-size:
+    name: Check PR Size
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📏 Calculate PR size
+        id: pr-size
+        run: |
+          ADDITIONS=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$1} END {print sum}')
+          DELETIONS=$(git diff --numstat origin/${{ github.base_ref }}...HEAD | awk '{sum+=$2} END {print sum}')
+          TOTAL=$((ADDITIONS + DELETIONS))
+
+          echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+          echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          echo "total=$TOTAL" >> $GITHUB_OUTPUT
+
+          echo "## PR Size Analysis" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metric | Count |" >> $GITHUB_STEP_SUMMARY
+          echo "|--------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines Added | $ADDITIONS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lines Deleted | $DELETIONS |" >> $GITHUB_STEP_SUMMARY
+          echo "| Total Changed | $TOTAL |" >> $GITHUB_STEP_SUMMARY
+
+          if [ $TOTAL -gt 1000 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "⚠️  **Large PR Warning**: This PR changes $TOTAL lines. Consider breaking it into smaller PRs for easier review." >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # ============================================
+  # Comment Summary
+  # ============================================
+  pr-comment:
+    name: Post PR Summary
+    needs: [detect-changes, pr-size]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: 💬 Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const additions = '${{ needs.pr-size.outputs.additions }}';
+            const deletions = '${{ needs.pr-size.outputs.deletions }}';
+            const total = '${{ needs.pr-size.outputs.total }}';
+            const backend = '${{ needs.detect-changes.outputs.backend }}';
+            const frontend = '${{ needs.detect-changes.outputs.frontend }}';
+
+            let sizeEmoji = '✅';
+            let sizeLabel = 'Small';
+            if (total > 500 && total <= 1000) {
+              sizeEmoji = '⚠️';
+              sizeLabel = 'Medium';
+            } else if (total > 1000) {
+              sizeEmoji = '🔴';
+              sizeLabel = 'Large';
+            }
+
+            const message = `## 🤖 PR Analysis
+
+            ### 📏 Size
+            ${sizeEmoji} **${sizeLabel} PR** (${total} lines changed)
+            - ➕ ${additions} additions
+            - ➖ ${deletions} deletions
+
+            ### 🎯 Affected Areas
+            ${backend === 'true' ? '✅' : '⬜'} Backend
+            ${frontend === 'true' ? '✅' : '⬜'} Frontend
+
+            ### 📋 Checklist
+            - [ ] Tests added/updated
+            - [ ] Documentation updated
+            - [ ] Environment variables documented (if any)
+            - [ ] Breaking changes noted (if any)
+            - [ ] Database migrations included (if needed)
+
+            ---
+            _Automated by GitHub Actions_`;
+
+            // Find existing comment
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' && comment.body.includes('🤖 PR Analysis')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: message
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: message
+              });
+            }

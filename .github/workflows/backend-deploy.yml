@@ -6,10 +6,11 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/backend-*.yml'
-  pull_request:
+  workflow_run:
+    workflows: ["CI - Continuous Integration"]
+    types:
+      - completed
     branches: [main]
-    paths:
-      - 'backend/**'
 
 jobs:
   test:
@@ -64,7 +65,10 @@ jobs:
 
   deploy-production:
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: |
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'))
     runs-on: ubuntu-latest
     environment:
       name: production
