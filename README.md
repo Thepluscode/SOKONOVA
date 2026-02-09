@@ -162,6 +162,48 @@ See [PRODUCTION_DEPLOYMENT_CHECKLIST.md](PRODUCTION_DEPLOYMENT_CHECKLIST.md) for
 - Dependency security audits in CI pipeline
 - No secrets committed to git (verified in CI)
 
+## Monitoring & Observability
+
+SokoNova includes a comprehensive monitoring stack for production observability:
+
+### Features
+- **Prometheus Metrics**: HTTP requests, database queries, business metrics
+- **Grafana Dashboards**: Pre-configured dashboards for visualization
+- **Sentry Error Tracking**: Real-time error monitoring and alerting
+- **Structured Logging**: Winston logger with JSON output in production
+- **Health Checks**: Kubernetes-style liveness/readiness probes
+- **Log Aggregation**: Optional Loki integration for centralized logs
+
+### Quick Start
+
+```bash
+# Start monitoring stack (Prometheus + Grafana + Loki)
+cd monitoring
+docker-compose up -d
+
+# Access Grafana dashboards
+open http://localhost:3001
+# Login: admin / admin
+```
+
+### Monitoring Endpoints
+
+- `GET /metrics` - Prometheus metrics endpoint
+- `GET /health` - Application health check
+- `GET /health/ready` - Readiness probe
+- `GET /health/live` - Liveness probe
+- `GET /health/version` - Version information
+
+### Documentation
+
+See [MONITORING.md](MONITORING.md) for complete monitoring setup guide including:
+- Metrics collection and querying
+- Dashboard configuration
+- Error tracking with Sentry
+- Log aggregation
+- Alerting rules
+- Production deployment
+
 ## Architecture
 
 ```
