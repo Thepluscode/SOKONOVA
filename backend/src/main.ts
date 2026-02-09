@@ -8,6 +8,7 @@ import helmet from 'helmet'
 import { SentryExceptionFilter } from './common/filters/sentry-exception.filter'
 import { DiscoveryService } from './modules/discovery/discovery.service'
 import { ProductsService } from './modules/products/products.service'
+import rateLimit from 'express-rate-limit'
 
 const express = require('express')
 const morgan = require('morgan')
@@ -37,6 +38,29 @@ async function bootstrap() {
     crossOriginResourcePolicy: { policy: 'cross-origin' },
     crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
   }))
+
+  // Rate Limiting - Prevent brute force attacks
+  const generalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+
+  const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each IP to 5 login attempts per windowMs
+    message: 'Too many login attempts, please try again later.',
+    standardHeaders: true,
+    legacyHeaders: false,
+  })
+
+  // Apply rate limiters
+  app.use('/auth/login', authLimiter)
+  app.use('/auth/register', authLimiter)
+  app.use(generalLimiter)
+
   app.use(morgan('dev'))
   app.use(cookieParser())
   app.use((req, res, next) => {
@@ -110,6 +134,28 @@ async function bootstrap() {
 
   server.get('/_debug/echo', (req, res) => {
     return res.json({ ok: true, ts: new Date().toISOString() })
+  })
+
+  // Health check endpoint for load balancers and monitoring
+  server.get('/health', async (req, res) => {
+    try {
+      // Check database connection
+      const prisma = app.get('PrismaService')
+      await prisma.$queryRaw`SELECT 1`
+
+      return res.json({
+        status: 'healthy',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        environment: process.env.NODE_ENV || 'development',
+      })
+    } catch (error) {
+      return res.status(503).json({
+        status: 'unhealthy',
+        error: error.message,
+        timestamp: new Date().toISOString(),
+      })
+    }
   })
 
   const port = process.env.PORT || 4001
