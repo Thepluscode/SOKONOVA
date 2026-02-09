@@ -4,7 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto'
 
 @Injectable()
 export class OrdersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) { }
 
   async listForUser(userId: string) {
     return this.prisma.order.findMany({
@@ -164,11 +164,15 @@ export class OrdersService {
     if (!cart) {
       throw new NotFoundException('Cart not found')
     }
-    
+
+
     // Check if the cart belongs to the requesting user
-    if (cart.userId !== dto.userId) {
+    // For anonymous carts (no userId), allow access
+    // For user carts, verify ownership
+    if (cart.userId && cart.userId !== dto.userId) {
       throw new ForbiddenException('You do not have permission to access this cart')
     }
+
 
     if (!cart.items.length) {
       throw new Error('Cart is empty')
@@ -177,16 +181,18 @@ export class OrdersService {
     // 2. Calculate total on the server side
     let calculatedTotal = 0;
     const orderItemsData = [];
+    let defaultCurrency = 'USD';
 
     for (const ci of cart.items) {
       const unitPrice = Number(ci.product.price); // Decimal -> number
       const qty = ci.qty;
       const lineTotal = unitPrice * qty;
       calculatedTotal += lineTotal;
+      defaultCurrency = ci.product.currency || 'USD';
 
       // Snapshot seller earnings data at order time
       const sellerId = ci.product.sellerId;
-      
+
       // Calculate earnings using centralized function
       const { gross, fee, net } = this.calculateFee(lineTotal);
 
@@ -204,10 +210,12 @@ export class OrdersService {
       });
     }
 
-    // 3. Verify the client-supplied total matches our calculation
-    const tolerance = 0.01; // Allow for small floating point differences
-    if (Math.abs(dto.total - calculatedTotal) > tolerance) {
-      throw new Error(`Total mismatch: expected ${calculatedTotal}, got ${dto.total}`)
+    // 3. Optional: Verify the client-supplied total if provided
+    if (dto.total !== undefined) {
+      const tolerance = 0.01; // Allow for small floating point differences
+      if (Math.abs(dto.total - calculatedTotal) > tolerance) {
+        throw new Error(`Total mismatch: expected ${calculatedTotal}, got ${dto.total}`)
+      }
     }
 
     // 4. Create order with verified data
@@ -216,9 +224,12 @@ export class OrdersService {
         data: {
           userId: dto.userId,
           total: calculatedTotal, // Use our calculated total
-          currency: dto.currency,
+          currency: dto.currency || defaultCurrency,
           status: 'PENDING',
           shippingAdr: dto.shippingAdr,
+          buyerName: dto.buyerName,
+          buyerPhone: dto.buyerPhone,
+          buyerEmail: dto.buyerEmail,
         },
       })
 
@@ -240,4 +251,5 @@ export class OrdersService {
 
     return order
   }
+
 }

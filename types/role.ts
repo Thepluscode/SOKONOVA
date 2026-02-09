@@ -1,1 +1,0 @@
-export type Role = 'BUYER' | 'SELLER' | 'ADMIN';

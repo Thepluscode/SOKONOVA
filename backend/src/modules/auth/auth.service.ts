@@ -11,7 +11,7 @@ export class AuthService {
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   async register(registerDto: RegisterDto) {
     // Check if user already exists
@@ -91,4 +91,55 @@ export class AuthService {
       token,
     };
   }
+
+  /**
+   * Find or create a user from OAuth provider data
+   * Creates a new user if they don't exist, or returns existing user
+   */
+  async findOrCreateOAuthUser(oauthData: {
+    provider: string;
+    providerId: string;
+    email?: string;
+    name?: string;
+    picture?: string;
+  }) {
+    const { provider, providerId, email, name, picture } = oauthData;
+
+    // If we have an email, try to find existing user
+    let user = email
+      ? await this.prisma.user.findUnique({ where: { email } })
+      : null;
+
+    if (!user) {
+      // Create new user from OAuth data
+      user = await this.prisma.user.create({
+        data: {
+          email: email || `${provider}_${providerId}@oauth.local`,
+          name: name || 'OAuth User',
+          role: Role.BUYER,
+          // No password for OAuth users
+          password: null,
+        },
+      });
+    }
+
+    // Generate JWT token
+    const token = this.jwtService.sign({
+      sub: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        picture, // Include picture from OAuth but not stored in DB
+      },
+      token,
+    };
+  }
+
 }

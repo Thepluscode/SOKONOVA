@@ -5,6 +5,8 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma.service';
 import { JwtStrategy } from '../../common/strategies/jwt.strategy';
+import { GoogleStrategy } from '../../common/strategies/google.strategy';
+import { FacebookStrategy } from '../../common/strategies/facebook.strategy';
 
 @Module({
   imports: [
@@ -15,7 +17,13 @@ import { JwtStrategy } from '../../common/strategies/jwt.strategy';
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, PrismaService, JwtStrategy],
+  providers: [
+    AuthService,
+    PrismaService,
+    JwtStrategy,
+    GoogleStrategy,
+    FacebookStrategy,
+  ],
   exports: [AuthService, JwtStrategy],
 })
 export class AuthModule { }
